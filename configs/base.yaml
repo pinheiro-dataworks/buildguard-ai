@@ -1,0 +1,44 @@
+# Base configuration for BuildGuard AI.
+# Every threshold and magic number referenced by src/buildguard should
+# resolve back to a documented value here (or in business.yaml / training.yaml
+# / monitoring.yaml) rather than being hard-coded — see Section 27/37 of
+# BUILDGUARD_AI_PROJECT_SCOPE.md.
+
+seed: 42
+
+paths:
+  data_sample: "data/sample"
+  models_dir: "models"
+  reports_dir: "reports"
+  mlflow_tracking_uri: "file:./mlruns"
+
+targets:
+  # cost_overrun = final_cost > approved_budget * (1 + cost_overrun_tolerance)
+  # Primary tolerance used for the headline classification target. Configurable
+  # to 0 / 5 / 10% per Section 6.1 — 10% chosen as the primary default because
+  # it matches a common construction-industry contingency-band convention
+  # (small variances are normal project noise, not "overrun" events worth
+  # flagging to management). Rationale recorded in docs/adr/0006-model-selection.md.
+  cost_overrun_tolerance: 0.10
+
+  # schedule_delay = actual_completion_date > planned_completion_date + tolerance_days
+  schedule_delay_tolerance_days: 14
+
+synthetic_data:
+  # Target scale per Section 8.2 (range 100-500 projects). 220 chosen to stay
+  # comfortably inside Streamlit Community Cloud free-tier memory/CPU limits
+  # while still giving enough rows per project-type/size/geography slice for
+  # meaningful subgroup evaluation (Section 18).
+  n_projects: 220
+  work_packages_per_project_min: 20
+  work_packages_per_project_max: 80
+  suppliers_total_min: 100
+  suppliers_total_max: 1000
+  monthly_observations_min: 12
+  monthly_observations_max: 48
+
+split:
+  # Chronological split, oldest-first. See docs/adr/0003-temporal-validation.md.
+  train_fraction: 0.60
+  calibration_fraction: 0.20
+  test_fraction: 0.20

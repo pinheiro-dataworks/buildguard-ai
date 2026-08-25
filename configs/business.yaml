@@ -1,0 +1,17 @@
+# Business-cost matrix for threshold optimization (Section 17).
+# Values are illustrative defaults for the public demo, not a claim about any
+# real portfolio's economics — documented and adjustable per deployment.
+
+cost_risk:
+  false_negative_cost: 10  # missed real overrun: costly to discover late
+  false_positive_cost: 2   # false alarm: investigation time, low cost
+
+schedule_risk:
+  false_negative_cost: 8   # missed real delay
+  false_positive_cost: 2   # false alarm
+
+business_impact:
+  # Scenario-based estimated decision-support value (Section 21). All
+  # assumptions must stay explicitly labeled as "scenario-based estimated
+  # impact" in any UI/report surface — never a claimed realized ROI.
+  avoidable_impact_assumption: 0.30
