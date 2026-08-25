@@ -30,5 +30,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   CV, SV, CPI, SPI, two independent EAC baselines (CPI-based and
   schedule-adjusted composite), ETC, VAC — each documented with its
   business interpretation and safe division-by-zero handling (Section 9).
+- Deterministic synthetic portfolio generator
+  (`src/buildguard/data/synthetic.py`): all six core tables (Projects,
+  Project Snapshots, Work Packages, Change Orders, Suppliers, Economic
+  Index) generated from one seeded RNG, correlated through a per-project
+  latent risk profile so the required realism relationships (Section 8.2)
+  hold by construction. Design rationale, a caught progress-accumulation
+  bug, and the validated nominal-vs-inflation-adjusted overrun-rate finding
+  are recorded in `docs/adr/0004-synthetic-data-design.md`.
+- `scripts/generate_data.py` (`make data`): writes the full dataset to
+  `data/processed/` (gitignored) and a small 20-project sample to
+  `data/sample/` (committed) from the same run.
+- `docs/DATA_DICTIONARY.md`: column-level reference for all six tables.
 - 98% test coverage on everything shipped so far (`tests/unit/`,
-  `tests/contracts/`); Ruff and Mypy (`--strict`) both clean.
+  `tests/contracts/`); Ruff, Ruff format, and Mypy (`--strict`) all clean.

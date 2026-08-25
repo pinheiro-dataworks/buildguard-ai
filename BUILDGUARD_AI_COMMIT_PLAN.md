@@ -14,7 +14,9 @@ match reality — this document follows the work, not the other way around.
 Check off an item (`- [x]`) once it is actually committed. Update the
 **Progress** line at the top after every session.
 
-**Progress:** 9 / ~50 planned commits done · 0 / 12 PRs opened · Phase 0 complete, Phase 1 ~30% complete.
+**Progress:** 8 / 55 planned commits actually committed (C09–C13 code is
+written and tested, ready to commit) · 0 / 12 PRs opened · Phase 0 complete,
+Phase 1 ~55% complete.
 
 ---
 
@@ -26,9 +28,9 @@ earlier ones (e.g. no modeling before the temporal split exists).
 
 | Session | Phase(s) | Suggested PR | Status |
 |---|---|---|---|
-| A — Repository foundation | 0 | #1 Project foundation | ✅ Done (uncommitted, ready to commit) |
-| B — Data foundation core | 1 | #1 / #2 | ✅ Done (uncommitted, ready to commit) |
-| C — Synthetic portfolio generator | 1 | #2 Synthetic portfolio generator | ⬜ Not started |
+| A — Repository foundation | 0 | #1 Project foundation | ✅ Committed (C01–C05) |
+| B — Data foundation core | 1 | #1 / #2 | ✅ Committed (C06–C08) |
+| C — Synthetic portfolio generator | 1 | #2 Synthetic portfolio generator | ✅ Done (uncommitted, ready to commit) |
 | D — EDA & data understanding | 1–2 | #2 (docs) | ⬜ Not started |
 | E — Inflation & temporal features | 2 | #3 EVM feature engine (cont'd) | ⬜ Not started |
 | F — Anti-leakage & split | 3 | #4 Temporal anti-leakage split | ⬜ Not started |
@@ -46,7 +48,7 @@ earlier ones (e.g. no modeling before the temporal split exists).
 
 ## Session A — Repository Foundation (Phase 0)
 
-Already done in the working tree; ready to commit as-is.
+Committed.
 
 - [x] **C01** `chore: bootstrap project tooling and environment`
   `pyproject.toml`, `uv.lock`, `.python-version`, `Makefile`, `.gitignore`, `.pre-commit-config.yaml`, `.env.example`
@@ -61,7 +63,7 @@ Already done in the working tree; ready to commit as-is.
 
 ## Session B — Data Foundation Core (Phase 1, part 1)
 
-Already done in the working tree; ready to commit as-is.
+Committed.
 
 - [x] **C06** `feat: add typed configuration loading over YAML configs`
   `src/buildguard/__init__.py`, `src/buildguard/config.py`, `configs/base.yaml`, `configs/business.yaml`, `tests/unit/test_config.py`
@@ -77,80 +79,90 @@ you prefer one larger foundational PR — your call; either is defensible).
 
 ## Session C — Synthetic Portfolio Generator (Phase 1, part 2)
 
-- [ ] **C09** `feat: add synthetic project portfolio generator (core project table)`
-- [ ] **C10** `feat: extend synthetic generator with monthly project snapshots`
-- [ ] **C11** `feat: extend synthetic generator with work packages and change orders`
-- [ ] **C12** `feat: extend synthetic generator with suppliers and demo economic index`
-- [ ] **C13** `test: add synthetic data contract-compliance and reproducibility tests`
-- [ ] **C14** `feat: add generate_data.py CLI entry point and commit data/sample output`
-- [ ] **C15** `docs: add data dictionary`
+Done (uncommitted, ready to commit). Revised from the original C09-C15 split: the generator was
+designed and smoke-tested as one cohesive module (all six tables share one
+per-project risk-profile mechanism, so splitting it table-by-table would
+have meant committing intermediate states that didn't actually work yet --
+a real bug, permanently-stalled delayed projects, was only caught by
+testing the whole thing together). Reflecting reality per this file's own
+rule: "if a real session naturally merges or splits an item, update this
+file to match."
 
-**→ PR #2 "Synthetic portfolio generator"**
+- [x] **C09** `style: apply ruff formatting to EVM module and tests`
+  `src/buildguard/features/evm.py`, `tests/unit/test_evm.py` (cosmetic only, line-wrap width)
+- [x] **C10** `feat: add deterministic synthetic portfolio generator`
+  `src/buildguard/data/synthetic.py` -- Projects, Snapshots, Work Packages, Change Orders, Suppliers, Economic Index, all six tables, correlated via a shared per-project latent risk profile (see ADR-0004)
+- [x] **C11** `test: add synthetic generator test suite`
+  `tests/unit/test_synthetic.py` -- determinism, contract compliance, scale, realism, economic-index tests
+- [x] **C12** `feat: add generate_data CLI and data-output config`
+  `scripts/generate_data.py`, `configs/base.yaml` (+`data_processed` path, new `synthetic_data` fields), `src/buildguard/config.py`, `tests/unit/test_config.py`, `data/sample/*.csv` (small committed sample)
+- [x] **C13** `docs: add synthetic-data-design ADR and data dictionary`
+  `docs/adr/0004-synthetic-data-design.md`, `docs/DATA_DICTIONARY.md`
 
 ## Session D — EDA & Data Understanding (Phase 1–2)
 
-- [ ] **C16** `docs: add 01_data_understanding notebook`
-- [ ] **C17** `docs: add 02_eda notebook with synthetic portfolio analysis`
-- [ ] **C18** `docs: add EDA written conclusions and key figures to reports/figures`
+- [ ] **C14** `docs: add 01_data_understanding notebook`
+- [ ] **C15** `docs: add 02_eda notebook with synthetic portfolio analysis`
+- [ ] **C16** `docs: add EDA written conclusions and key figures to reports/figures`
 
 **→ folds into PR #2 as documentation, or its own small PR**
 
 ## Session E — Inflation & Temporal Features (Phase 2)
 
-- [ ] **C19** `feat: add inflation-adjusted cost normalization layer`
-- [ ] **C20** `feat: add temporal snapshot feature pipeline`
-- [ ] **C21** `test: add inflation and temporal feature edge-case tests`
-- [ ] **C22** `docs: add EVM and inflation methodology notes to ARCHITECTURE.md`
+- [ ] **C17** `feat: add inflation-adjusted cost normalization layer`
+- [ ] **C18** `feat: add temporal snapshot feature pipeline`
+- [ ] **C19** `test: add inflation and temporal feature edge-case tests`
+- [ ] **C20** `docs: add EVM and inflation methodology notes to ARCHITECTURE.md`
 
 **→ PR #3 "EVM & feature engine" (extends C08)**
 
 ## Session F — Anti-Leakage & Temporal Split (Phase 3)
 
-- [ ] **C23** `docs: add leakage policy document`
-- [ ] **C24** `feat: add chronological train/calibration/test split with project grouping`
-- [ ] **C25** `test: add automated leakage detection tests (feature vs. prediction timestamp)`
+- [ ] **C21** `docs: add leakage policy document`
+- [ ] **C22** `feat: add chronological train/calibration/test split with project grouping`
+- [ ] **C23** `test: add automated leakage detection tests (feature vs. prediction timestamp)`
 
 **→ PR #4 "Temporal anti-leakage split"**
 
 ## Session G — Baselines (Phase 3)
 
-- [ ] **C26** `feat: add classification baselines (dummy, logistic regression, CPI rule)`
-- [ ] **C27** `feat: add regression baselines (mean/median, deterministic EAC, linear regression)`
+- [ ] **C24** `feat: add classification baselines (dummy, logistic regression, CPI rule)`
+- [ ] **C25** `feat: add regression baselines (mean/median, deterministic EAC, linear regression)`
 
 **→ PR #5 "Baseline models"**
 
 ## Session H — Advanced Modeling (Phase 4)
 
-- [ ] **C28** `feat: add MLflow experiment tracking scaffolding`
-- [ ] **C29** `feat: train and tune cost-overrun risk model`
-- [ ] **C30** `feat: train and tune schedule-delay risk model`
-- [ ] **C31** `feat: train and tune final-cost regression model`
-- [ ] **C32** `docs: add model-selection ADR (families considered, trade-offs)`
+- [ ] **C26** `feat: add MLflow experiment tracking scaffolding`
+- [ ] **C27** `feat: train and tune cost-overrun risk model`
+- [ ] **C28** `feat: train and tune schedule-delay risk model`
+- [ ] **C29** `feat: train and tune final-cost regression model`
+- [ ] **C30** `docs: add model-selection ADR (families considered, trade-offs)`
 
 **→ PR #6 / #7 / #8 (one per model, or combined — your call at the time)**
 
 ## Session I — Calibration, Threshold, Uncertainty (Phase 5)
 
-- [ ] **C33** `feat: add probability calibration (Platt/isotonic comparison, Brier score)`
-- [ ] **C34** `feat: add business-cost threshold optimization`
-- [ ] **C35** `feat: add prediction uncertainty (conformal or quantile intervals)`
-- [ ] **C36** `docs: add calibration, threshold-policy, and uncertainty-method ADRs`
+- [ ] **C31** `feat: add probability calibration (Platt/isotonic comparison, Brier score)`
+- [ ] **C32** `feat: add business-cost threshold optimization`
+- [ ] **C33** `feat: add prediction uncertainty (conformal or quantile intervals)`
+- [ ] **C34** `docs: add calibration, threshold-policy, and uncertainty-method ADRs`
 
 **→ PR #9 "Calibration & threshold optimization"**
 
 ## Session J — Explainability & Error Analysis (Phase 6)
 
-- [ ] **C37** `feat: add global and local SHAP explainability`
-- [ ] **C38** `feat: add slice evaluation across project type/size/geography/lifecycle`
-- [ ] **C39** `docs: add senior-level failure analysis report`
+- [ ] **C35** `feat: add global and local SHAP explainability`
+- [ ] **C36** `feat: add slice evaluation across project type/size/geography/lifecycle`
+- [ ] **C37** `docs: add senior-level failure analysis report`
 
 **→ folds into PR #9 or its own small PR**
 
 ## Session K — Monitoring & Retraining Policy (Phase 7)
 
-- [ ] **C40** `feat: add data quality and drift monitoring`
-- [ ] **C41** `feat: add prediction and performance monitoring`
-- [ ] **C42** `docs: add monitoring documentation, retraining policy, and monitoring ADR`
+- [ ] **C38** `feat: add data quality and drift monitoring`
+- [ ] **C39** `feat: add prediction and performance monitoring`
+- [ ] **C40** `docs: add monitoring documentation, retraining policy, and monitoring ADR`
 
 **→ PR #10 "Monitoring"**
 
@@ -159,36 +171,36 @@ you prefer one larger foundational PR — your call; either is defensible).
 This is where [`docs/design/UI_DESIGN_SPEC.md`](docs/design/UI_DESIGN_SPEC.md)
 (the renan-standard sidebar/branding direction) finally gets implemented.
 
-- [ ] **C43** `feat: add FastAPI inference service and Pydantic schemas`
-- [ ] **C44** `test: add API contract tests`
-- [ ] **C45** `feat: add Streamlit app shell (sidebar, branding, navigation)`
-- [ ] **C46** `feat: add Executive Overview and Project Diagnostic pages`
-- [ ] **C47** `feat: add Scenario Simulator, Model Performance, and Model Health pages`
-- [ ] **C48** `docs: add streamlit-fastapi-boundary ADR`
+- [ ] **C41** `feat: add FastAPI inference service and Pydantic schemas`
+- [ ] **C42** `test: add API contract tests`
+- [ ] **C43** `feat: add Streamlit app shell (sidebar, branding, navigation)`
+- [ ] **C44** `feat: add Executive Overview and Project Diagnostic pages`
+- [ ] **C45** `feat: add Scenario Simulator, Model Performance, and Model Health pages`
+- [ ] **C46** `docs: add streamlit-fastapi-boundary ADR`
 
 **→ PR #11 "Public app"**
 
 ## Session M — Testing Hardening & CI/CD (Phase 9)
 
-- [ ] **C49** `test: add integration tests (raw → validation → features → prediction)`
-- [ ] **C50** `ci: add GitHub Actions pipeline (lint, format, type-check, test, coverage gate)`
-- [ ] **C51** `security: add dependency and secret scanning (pip-audit, Bandit)`
+- [ ] **C47** `test: add integration tests (raw → validation → features → prediction)`
+- [ ] **C48** `ci: add GitHub Actions pipeline (lint, format, type-check, test, coverage gate)`
+- [ ] **C49** `security: add dependency and secret scanning (pip-audit, Bandit)`
 
 **→ PR #12 "Release hardening" (part 1)**
 
 ## Session N — Documentation Completion (Phase 9)
 
-- [ ] **C52** `docs: add architecture, monitoring, and limitations docs`
-- [ ] **C53** `docs: complete model card and runbook`
-- [ ] **C54** `docs: add interview guide and remaining ADRs`
+- [ ] **C50** `docs: add architecture, monitoring, and limitations docs`
+- [ ] **C51** `docs: complete model card and runbook`
+- [ ] **C52** `docs: add interview guide and remaining ADRs`
 
 **→ folds into PR #12**
 
 ## Session O — Deployment & v1.0.0 Release (Phase 10–11)
 
-- [ ] **C55** `chore: add Dockerfile and package_model.py`
-- [ ] **C56** `chore: deploy to Streamlit Community Cloud and add smoke tests`
-- [ ] **C57** `chore: cut v1.0.0 release, update CHANGELOG and README with final results`
+- [ ] **C53** `chore: add Dockerfile and package_model.py`
+- [ ] **C54** `chore: deploy to Streamlit Community Cloud and add smoke tests`
+- [ ] **C55** `chore: cut v1.0.0 release, update CHANGELOG and README with final results`
 
 **→ PR #12 "Release hardening" (part 2), tag `v1.0.0`**
 
@@ -196,7 +208,7 @@ This is where [`docs/design/UI_DESIGN_SPEC.md`](docs/design/UI_DESIGN_SPEC.md)
 
 ## Running totals
 
-- **Commits:** 57 planned across 15 sessions — inside the 30 (minimum) to
+- **Commits:** 55 planned across 15 sessions — inside the 30 (minimum) to
   85 (stretch) range from Section 43, biased toward the upper-middle
   because the foundation phase legitimately needed more setup than the
   minimum plan assumed (governance files, ADRs, brand/UI spec captured
@@ -208,5 +220,6 @@ This is where [`docs/design/UI_DESIGN_SPEC.md`](docs/design/UI_DESIGN_SPEC.md)
 
 ## Next action
 
-Commit **C01–C08** now (Sessions A + B), open PR #1, then start Session C
-(synthetic portfolio generator) — the next substantial piece of Phase 1.
+Commit **C09–C13** now (Session C), open PR #2, then start Session D (EDA
+notebooks) or jump straight to Session E (inflation & temporal features) --
+either order is fine since D is documentation-only and doesn't block E.
