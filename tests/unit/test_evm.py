@@ -37,7 +37,9 @@ class TestVariances:
         assert cv.iloc[0] == pytest.approx(350_000.0 - 380_000.0)
         assert cv.iloc[0] < 0
 
-    def test_schedule_variance_unfavorable_when_behind(self, snapshot: dict[str, pd.Series]) -> None:
+    def test_schedule_variance_unfavorable_when_behind(
+        self, snapshot: dict[str, pd.Series]
+    ) -> None:
         sv = schedule_variance(snapshot["ev"], snapshot["pv"])
         assert sv.iloc[0] == pytest.approx(350_000.0 - 400_000.0)
         assert sv.iloc[0] < 0

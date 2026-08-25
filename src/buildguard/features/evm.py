@@ -96,9 +96,7 @@ def estimate_at_completion_composite(
     return actual_cost + _safe_divide(remaining_work, combined_efficiency)
 
 
-def estimate_to_complete(
-    estimate_at_completion: pd.Series, actual_cost: pd.Series
-) -> pd.Series:
+def estimate_to_complete(estimate_at_completion: pd.Series, actual_cost: pd.Series) -> pd.Series:
     """ETC = EAC - AC.
 
     Business meaning: the cost still expected to be spent from today until
