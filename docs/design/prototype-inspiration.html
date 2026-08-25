@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BuildGuard AI — Construction Cost &amp; Schedule Risk Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+/* ============ DESIGN TOKENS ============ */
+:root{
+  --bg:#EEF2F5;
+  --surface:#FFFFFF;
+  --surface-alt:#F4F7F9;
+  --border:#D7DEE4;
+  --border-strong:#C1CBD3;
+  --ink:#16212E;
+  --ink-soft:#51606E;
+  --ink-faint:#8697A4;
+  --sidebar:#151F2B;
+  --sidebar-alt:#1E2C3B;
+  --sidebar-text:#AEBECC;
+  --sidebar-text-dim:#71879B;
+  --accent:#1F5C8B;
+  --accent-bright:#4FA3D9;
+  --accent-soft:#E4EEF5;
+  --accent-ink:#0E3652;
+  --risk-low:#25794F;
+  --risk-low-soft:#E3F3EA;
+  --risk-medium:#A9700A;
+  --risk-medium-soft:#FBF0DA;
+  --risk-high:#B14A1E;
+  --risk-high-soft:#FBE7DC;
+  --risk-critical:#A32620;
+  --risk-critical-soft:#F9DEDC;
+  --font-display:'Space Grotesk',sans-serif;
+  --font-body:'IBM Plex Sans',sans-serif;
+  --font-mono:'IBM Plex Mono',monospace;
+  --radius:6px;
+  --radius-sm:4px;
+  --shadow-card:0 1px 2px rgba(15,25,38,0.07),0 1px 0 rgba(15,25,38,0.04);
+}
+
+*,*::before,*::after{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  margin:0;font-family:var(--font-body);color:var(--ink);background:var(--bg);
+  font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:var(--font-display);margin:0;color:var(--ink);}
+p{margin:0;}
+button{font-family:inherit;}
+a{color:var(--accent);}
+::selection{background:var(--accent-soft);color:var(--accent-ink);}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.001ms !important;animation-iteration-count:1 !important;transition-duration:0.001ms !important;scroll-behavior:auto !important;}
+}
+
+:focus-visible{outline:2px solid var(--accent-bright);outline-offset:2px;border-radius:2px;}
+
+/* ============ APP SHELL ============ */
+.app-shell{display:flex;min-height:100vh;}
+
+/* ---- sidebar ---- */
+.sidebar{
+  width:246px;flex-shrink:0;background:var(--sidebar);color:var(--sidebar-text);
+  display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;
+  border-right:1px solid rgba(255,255,255,0.06);
+}
+.sidebar-brand{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.brand-mark{display:flex;align-items:center;gap:10px;}
+.brand-logo{width:30px;height:30px;flex-shrink:0;}
+.brand-word{font-family:var(--font-display);font-weight:700;font-size:16.5px;color:#fff;line-height:1.15;letter-spacing:-0.01em;}
+.brand-word span{color:var(--accent-bright);}
+.brand-sub{margin-top:7px;font-size:10.5px;text-transform:uppercase;letter-spacing:0.07em;color:var(--sidebar-text-dim);font-weight:500;}
+
+.sidebar-nav{flex:1;padding:14px 10px;display:flex;flex-direction:column;gap:2px;}
+.nav-item{
+  display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:5px;
+  font-size:13.2px;font-weight:500;color:var(--sidebar-text);cursor:pointer;
+  border-left:2px solid transparent;background:none;width:100%;text-align:left;
+  transition:background .15s ease,color .15s ease;
+}
+.nav-item svg{flex-shrink:0;opacity:0.85;}
+.nav-item:hover{background:rgba(255,255,255,0.055);color:#fff;}
+.nav-item.active{background:rgba(79,163,217,0.14);color:#fff;}
+.nav-item.active svg{opacity:1;color:var(--accent-bright);}
+.nav-eyebrow{padding:14px 12px 6px;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--sidebar-text-dim);font-weight:600;}
+
+.sidebar-footer{padding:14px 20px 18px;border-top:1px solid rgba(255,255,255,0.08);font-family:var(--font-mono);font-size:10.8px;color:var(--sidebar-text-dim);line-height:1.7;}
+.sidebar-footer .sf-row{display:flex;justify-content:space-between;gap:8px;}
+.sidebar-footer .sf-tag{display:inline-block;margin-top:8px;padding:3px 8px;border-radius:20px;background:rgba(79,163,217,0.15);color:var(--accent-bright);font-size:10px;letter-spacing:0.02em;}
+
+/* ---- main / topbar ---- */
+.main{flex:1;min-width:0;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{
+  position:sticky;top:0;z-index:6;background:var(--surface);border-bottom:1px solid var(--border);
+  padding:16px 30px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+}
+.topbar-title{font-size:19px;font-weight:600;letter-spacing:-0.01em;}
+.topbar-sub{font-size:12.5px;color:var(--ink-soft);margin-top:3px;}
+.topbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11.3px;font-weight:600;padding:5px 11px;border-radius:20px;letter-spacing:0.01em;}
+.pill-decision{background:var(--accent-soft);color:var(--accent-ink);}
+.pill-version{background:var(--surface-alt);color:var(--ink-soft);border:1px solid var(--border);font-family:var(--font-mono);font-weight:500;}
+
+.proto-banner{
+  background:#FCF6E9;border-bottom:1px solid #EBD9A8;color:#7A5A0E;font-size:12.3px;
+  padding:8px 30px;display:flex;gap:9px;align-items:flex-start;
+}
+.proto-banner svg{flex-shrink:0;margin-top:1px;}
+.proto-banner b{font-weight:600;}
+
+.content{flex:1;padding:26px 30px 60px;
+  background-color:var(--bg);
+  background-image:
+    linear-gradient(rgba(31,92,139,0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(31,92,139,0.045) 1px, transparent 1px);
+  background-size:64px 64px;
+}
+.content-inner{max-width:1280px;margin:0 auto;}
+
+/* ============ PAGES ============ */
+.page{display:none;}
+.page.active{display:block;animation:fadeIn .28s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
+
+.section-header{margin-bottom:20px;}
+.section-header h2{font-size:18.5px;font-weight:600;letter-spacing:-0.01em;}
+.section-header p{font-size:13px;color:var(--ink-soft);margin-top:5px;max-width:760px;}
+
+/* ============ KPI CARDS (signature: drafting corner-bracket) ============ */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:13px;margin-bottom:22px;}
+.kpi-card{
+  position:relative;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px 17px 15px;box-shadow:var(--shadow-card);
+}
+.kpi-card::before,.kpi-card::after{content:"";position:absolute;width:9px;height:9px;opacity:0.55;pointer-events:none;}
+.kpi-card::before{top:6px;left:6px;border-top:1.5px solid var(--accent);border-left:1.5px solid var(--accent);}
+.kpi-card::after{bottom:6px;right:6px;border-bottom:1.5px solid var(--accent);border-right:1.5px solid var(--accent);}
+.kpi-label{font-size:10.6px;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-soft);font-weight:600;margin-bottom:8px;}
+.kpi-value{font-family:var(--font-mono);font-size:23px;font-weight:600;color:var(--ink);line-height:1;}
+.kpi-sub{font-size:11.8px;color:var(--ink-soft);margin-top:7px;}
+.kpi-sub.up{color:var(--risk-high);}
+.kpi-sub.down{color:var(--risk-low);}
+
+/* ============ PANELS ============ */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:19px 21px;margin-bottom:18px;box-shadow:var(--shadow-card);}
+.panel-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:15px;}
+.panel-title{font-size:14.5px;font-weight:600;letter-spacing:-0.005em;}
+.panel-sub{font-size:11.8px;color:var(--ink-soft);margin-top:3px;}
+.panel-tag{font-size:10.6px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:3px 9px;border-radius:20px;letter-spacing:0.02em;white-space:nowrap;}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+.grid-12-8{display:grid;grid-template-columns:1.55fr 1fr;gap:18px;}
+@media (max-width:980px){
+  .grid-2,.grid-3,.grid-12-8{grid-template-columns:1fr;}
+}
+
+.chart-box{position:relative;height:250px;}
+.chart-box.tall{height:300px;}
+.chart-box.short{height:180px;}
+.chart-box.gauge{height:210px;}
+
+/* ============ TABLES ============ */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12.8px;}
+th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-soft);font-weight:600;padding:9px 11px;border-bottom:2px solid var(--border);background:var(--surface-alt);white-space:nowrap;}
+td{padding:10px 11px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tbody tr.clickable{cursor:pointer;transition:background .12s ease;}
+tbody tr.clickable:hover td{background:var(--surface-alt);}
+.mono{font-family:var(--font-mono);}
+td.num{font-family:var(--font-mono);text-align:right;}
+th.num{text-align:right;}
+.text-soft{color:var(--ink-soft);}
+.row-selected td{background:var(--accent-soft) !important;}
+
+/* ============ RISK BADGES ============ */
+.risk-badge{display:inline-flex;align-items:center;gap:5px;font-size:10.6px;font-weight:700;padding:3.5px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:0.03em;white-space:nowrap;}
+.risk-badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.risk-low{background:var(--risk-low-soft);color:var(--risk-low);}
+.risk-medium{background:var(--risk-medium-soft);color:var(--risk-medium);}
+.risk-high{background:var(--risk-high-soft);color:var(--risk-high);}
+.risk-critical{background:var(--risk-critical-soft);color:var(--risk-critical);}
+
+/* ============ DISCLAIMERS / NOTES ============ */
+.note{display:flex;gap:10px;padding:11px 14px;border-radius:var(--radius-sm);font-size:12.3px;align-items:flex-start;line-height:1.55;}
+.note svg{flex-shrink:0;margin-top:2px;}
+.note-caution{background:var(--risk-medium-soft);color:#6E5108;border:1px solid #E8D5A0;}
+.note-info{background:var(--accent-soft);color:var(--accent-ink);border:1px solid #C6DDEC;}
+.note-neutral{background:var(--surface-alt);color:var(--ink-soft);border:1px solid var(--border);}
+
+/* ============ BUTTONS / FORM CONTROLS ============ */
+.btn{font-size:12.8px;font-weight:600;padding:8px 15px;border-radius:5px;border:1px solid transparent;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:background .15s ease,border-color .15s ease;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:#184A70;}
+.btn-secondary{background:#fff;border-color:var(--border-strong);color:var(--ink);}
+.btn-secondary:hover{background:var(--surface-alt);}
+.btn-ghost{background:none;border-color:transparent;color:var(--accent);padding:8px 6px;}
+.btn-ghost:hover{text-decoration:underline;}
+.btn-row{display:flex;gap:9px;flex-wrap:wrap;align-items:center;}
+
+.field-label{display:block;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;}
+select.control,input.control{width:100%;padding:9px 11px;border:1px solid var(--border-strong);border-radius:5px;font-family:var(--font-body);font-size:13px;background:#fff;color:var(--ink);}
+select.control:focus,input.control:focus{border-color:var(--accent);}
+
+/* ============ TABS (used inside pages) ============ */
+.tabbar{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:16px;flex-wrap:wrap;}
+.tabbtn{padding:9px 4px;margin-right:18px;background:none;border:none;border-bottom:2px solid transparent;font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer;}
+.tabbtn.active{color:var(--accent);border-color:var(--accent);}
+.tabpanel{display:none;}
+.tabpanel.active{display:block;}
+
+/* ============ SLIDERS (scenario simulator) ============ */
+.slider-block{margin-bottom:18px;}
+.slider-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+.slider-name{font-size:13px;font-weight:600;color:var(--ink);}
+.slider-desc{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
+.slider-value{font-family:var(--font-mono);font-size:14px;font-weight:600;color:var(--accent);}
+input[type=range]{width:100%;accent-color:var(--accent);height:4px;cursor:pointer;}
+.slider-range-labels{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-faint);margin-top:4px;font-family:var(--font-mono);}
+
+/* ============ FORMULA / CODE CARD ============ */
+.formula-card{background:var(--sidebar);color:#CFE3F2;font-family:var(--font-mono);font-size:12px;padding:16px 18px;border-radius:var(--radius);line-height:1.9;overflow-x:auto;white-space:pre;}
+.formula-card .fk{color:var(--accent-bright);}
+.formula-card .fc{color:#7FA;opacity:0.8;}
+
+/* ============ STEPPER (retraining workflow) ============ */
+.stepper{display:flex;gap:0;overflow-x:auto;border-radius:var(--radius-sm);}
+.step{flex:1;min-width:118px;text-align:center;padding:11px 8px 9px;border-bottom:3px solid var(--border);font-size:11.5px;color:var(--ink-faint);font-weight:600;position:relative;}
+.step.done{border-color:var(--risk-low);color:var(--risk-low);}
+.step.active{border-color:var(--risk-medium);color:var(--risk-medium);}
+.step-num{display:block;font-family:var(--font-mono);font-size:10px;margin-bottom:3px;opacity:0.7;}
+
+/* ============ DRIVER LIST (fallback / legend) ============ */
+.legend-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-soft);margin-top:10px;flex-wrap:wrap;}
+.legend-dot{width:9px;height:9px;border-radius:2px;display:inline-block;}
+
+/* ============ DOC GRID (governance) ============ */
+.doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:11px;}
+.doc-item{border:1px solid var(--border);border-radius:5px;padding:12px 14px;background:var(--surface-alt);}
+.doc-item .doc-name{font-family:var(--font-mono);font-weight:600;font-size:12px;color:var(--ink);display:block;margin-bottom:4px;}
+.doc-item .doc-desc{font-size:11.5px;color:var(--ink-soft);line-height:1.5;}
+
+/* ============ STATUS DOTS ============ */
+.status-ok{color:var(--risk-low);}
+.status-watch{color:var(--risk-medium);}
+.status-bad{color:var(--risk-critical);}
+.status-chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;}
+.status-chip::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;}
+
+/* ============ GAUGE CENTER TEXT ============ */
+.gauge-wrap{position:relative;}
+.gauge-center{position:absolute;top:52%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;}
+.gauge-center .gv{font-family:var(--font-mono);font-size:27px;font-weight:600;color:var(--ink);line-height:1;}
+.gauge-center .gl{font-size:10.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.05em;margin-top:4px;}
+
+/* ============ SCROLLBAR (subtle) ============ */
+.sidebar::-webkit-scrollbar{width:6px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.14);border-radius:3px;}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width:840px){
+  .sidebar{position:fixed;left:0;top:0;height:100vh;transform:translateX(-100%);transition:transform .2s ease;z-index:50;}
+  .sidebar.open{transform:translateX(0);box-shadow:6px 0 24px rgba(0,0,0,0.25);}
+  .menu-toggle{display:inline-flex !important;}
+  .topbar{padding:14px 16px;}
+  .proto-banner{padding:8px 16px;}
+  .content{padding:18px 14px 50px;}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+}
+.menu-toggle{display:none;background:none;border:1px solid var(--border-strong);border-radius:5px;padding:7px 9px;cursor:pointer;color:var(--ink);}
+.sidebar-scrim{display:none;}
+.sidebar-scrim.show{display:block;position:fixed;inset:0;background:rgba(10,15,22,0.4);z-index:40;}
+
+footer.page-footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--border);font-size:11.5px;color:var(--ink-faint);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+</style>
+</head>
+<body>
+
+<div class="sidebar-scrim" id="scrim"></div>
+<div class="app-shell">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">
+        <svg class="brand-logo" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="1" y="1" width="30" height="30" rx="6" fill="#1E2C3B" stroke="#4FA3D9" stroke-width="1.2"/>
+          <path d="M9 22V14L16 9L23 14V22" stroke="#4FA3D9" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M13 22V17H19V22" stroke="#DCEBF5" stroke-width="1.6" stroke-linejoin="round"/>
+          <circle cx="23.5" cy="9.5" r="2.4" fill="#B14A1E"/>
+        </svg>
+        <div>
+          <div class="brand-word">BuildGuard<span>AI</span></div>
+        </div>
+      </div>
+      <div class="brand-sub">Construction Risk Intelligence</div>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebarNav">
+      <div class="nav-eyebrow">Decision Support</div>
+      <button class="nav-item active" data-page="overview">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg>
+        Executive Overview
+      </button>
+      <button class="nav-item" data-page="diagnostic">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 13l4-7 3 5 3-9 3 8 3-4 2 3"/><path d="M3 20h18" stroke-linecap="round"/></svg>
+        Project Diagnostic
+      </button>
+      <button class="nav-item" data-page="simulator">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"/></svg>
+        Scenario Simulator
+      </button>
+      <button class="nav-item" data-page="performance">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        Model Performance
+      </button>
+      <button class="nav-item" data-page="health">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2 7 4-14 2 7h6"/></svg>
+        Model Health
+      </button>
+      <button class="nav-item" data-page="governance">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/><path d="M9 12.2l2 2 4-4.2"/></svg>
+        About &amp; Governance
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sf-row"><span>Model</span><span>cost-risk-lightgbm</span></div>
+      <div class="sf-row"><span>Version</span><span>v1.0.0</span></div>
+      <div class="sf-row"><span>Data version</span><span>v3.2</span></div>
+      <span class="sf-tag">$0.00 recurring cost</span>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div>
+          <div class="topbar-title" id="pageTitle">Executive Overview</div>
+          <div class="topbar-sub" id="pageSubtitle">Portfolio-level cost &amp; schedule risk, updated with the latest project snapshots.</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span class="pill pill-decision">Decision Support — Not Autonomous</span>
+        <span class="pill pill-version">v1.0.0-prototype</span>
+      </div>
+    </header>
+
+    <div class="proto-banner">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01" stroke-linecap="round"/></svg>
+      <span><b>Interface prototype.</b> All portfolio, model, and monitoring figures below are illustrative synthetic data generated for this walkthrough — no production backend, live model, or real project data is connected. See <span class="mono" style="font-size:11.6px;">docs/DATA_PRIVACY.md</span> for the actual data policy.</span>
+    </div>
+
+    <main class="content"><div class="content-inner">
+
+      <!-- ================================================================ -->
+      <!-- PAGE: EXECUTIVE OVERVIEW                                        -->
+      <!-- ================================================================ -->
+      <section class="page active" id="page-overview">
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-label">Priority Watchlist</div>
+    <div class="kpi-value">9</div>
+    <div class="kpi-sub">of 142 active projects monitored</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Combined Approved Budget</div>
+    <div class="kpi-value">$303.3M</div>
+    <div class="kpi-sub">across 9 watchlist projects</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Combined Expected Final Cost</div>
+    <div class="kpi-value">$322.4M</div>
+    <div class="kpi-sub up">+6.3% vs. approved budget</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Portfolio Cost Exposure</div>
+    <div class="kpi-value">+$19.1M</div>
+    <div class="kpi-sub up">expected final cost − approved budget</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">High / Critical Risk</div>
+    <div class="kpi-value">5 <span style="font-size:14px;color:var(--ink-faint);">/ 9</span></div>
+    <div class="kpi-sub up">56% of watchlist projects</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Avg. Schedule Delay Prob.</div>
+    <div class="kpi-value">44.6%</div>
+    <div class="kpi-sub">watchlist mean, all project types</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Risk Band Distribution</div>
+        <div class="panel-sub">Top 9 priority projects (of 142 active) — not the full portfolio</div>
+      </div>
+    </div>
+    <div class="chart-box"><canvas id="chartRiskDist"></canvas></div>
+    <div class="legend-row">
+      <span><span class="legend-dot" style="background:var(--risk-critical)"></span> Critical</span>
+      <span><span class="legend-dot" style="background:var(--risk-high)"></span> High</span>
+      <span><span class="legend-dot" style="background:var(--risk-medium)"></span> Medium</span>
+      <span><span class="legend-dot" style="background:var(--risk-low)"></span> Low</span>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Approved Budget vs. Expected Final Cost</div>
+        <div class="panel-sub">Top 5 projects by risk priority score</div>
+      </div>
+    </div>
+    <div class="chart-box"><canvas id="chartBudgetVsForecast"></canvas></div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <div>
+      <div class="panel-title">Priority Watchlist</div>
+      <div class="panel-sub">Ranked by Risk Priority Score — click a row to open its full diagnostic</div>
+    </div>
+    <span class="panel-tag">Objective D — Management Prioritization</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Project</th><th>Type</th><th>Location</th>
+          <th class="num">Budget</th><th class="num">Expected Final</th>
+          <th class="num">Cost Overrun P.</th><th class="num">Delay P.</th>
+          <th>Risk Band</th><th class="num">Priority Score</th><th></th>
+        </tr>
+      </thead>
+      <tbody id="watchlistBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Risk Priority Score — Formula</div>
+        <div class="panel-sub">Fully documented and explainable — never a black-box executive score</div>
+      </div>
+    </div>
+    <div class="formula-card">RiskPriorityScore <span class="fc">(0–100)</span> =
+    <span class="fk">45</span> × P(cost overrun)
+  + <span class="fk">30</span> × P(schedule delay)
+  + <span class="fk">25</span> × min( expected variance % / 20%, 1 )</div>
+    <p style="font-size:12px;color:var(--ink-soft);margin-top:12px;line-height:1.6;">
+      Weights are configuration, not hard-coded model internals — see <span class="mono">configs/business.yaml</span>.
+      Example — Metro Logistics Hub: 45×0.81 + 30×0.68 + 25×min(6.9/20,1) = <b>65.5</b>. Sensitivity to each
+      weight is reviewed whenever the cost matrix in <span class="mono">business.yaml</span> changes.
+    </p>
+  </div>
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Estimated Decision-Support Value</div>
+        <div class="panel-sub">Scenario-based, illustrative assumptions — not measured ROI</div>
+      </div>
+    </div>
+    <table style="font-size:12.6px;">
+      <tbody>
+        <tr><td>Active projects monitored</td><td class="num mono">142</td></tr>
+        <tr><td>Historical cost-overrun prevalence</td><td class="num mono">34%</td></tr>
+        <tr><td>Avg. financial exposure per overrun</td><td class="num mono">$1.35M</td></tr>
+        <tr><td>Model recall @ operating threshold</td><td class="num mono">92.1%</td></tr>
+        <tr><td>Assumed avoidable-impact fraction</td><td class="num mono">25%</td></tr>
+        <tr style="font-weight:700;"><td>Estimated scenario value / year</td><td class="num mono" style="color:var(--accent);">≈ $15.0M</td></tr>
+      </tbody>
+    </table>
+    <div class="note note-caution" style="margin-top:12px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3l9-16z"/><path d="M12 10v4M12 17h.01"/></svg>
+      <span>All five factors are explicit, editable assumptions for demonstration purposes — not a measured, audited return. See <span class="mono" style="font-size:11.4px;">docs/MODEL_CARD.md</span> for governance on how this framework should be validated before being quoted externally.</span>
+    </div>
+  </div>
+</div>
+
+<footer class="page-footer">
+  <span>Business objectives A–D · see <span class="mono">README.md §5</span></span>
+  <span>Last portfolio refresh: synthetic snapshot, illustrative</span>
+</footer>
+
+</section>
+
+      <!-- ================================================================ -->
+      <!-- PAGE: PROJECT DIAGNOSTIC                                        -->
+      <!-- ================================================================ -->
+      <section class="page" id="page-diagnostic">
+<div class="panel" style="padding-bottom:16px;">
+  <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;justify-content:space-between;">
+    <div style="flex:1;min-width:240px;">
+      <label class="field-label" for="projectSelect">Select project</label>
+      <select class="control" id="projectSelect"></select>
+    </div>
+    <div class="note note-neutral" style="max-width:420px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v6l4 2"/></svg>
+      <span>Snapshot as of <b id="diagCurrentMonth">Month 10</b> of a planned 14-month schedule. Months beyond this point are model forecast, shown dashed.</span>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;margin-bottom:6px;">
+    <div>
+      <h2 id="diagName" style="font-size:19px;">Residential Tower A</h2>
+      <div class="panel-sub" id="diagMeta" style="margin-top:5px;">Residential · São Paulo, SP · Approved budget $24.8M</div>
+    </div>
+    <div id="diagBadgeWrap"></div>
+  </div>
+</div>
+
+<div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(210px,1fr));">
+  <div class="kpi-card">
+    <div class="kpi-label">Cost Overrun Probability</div>
+    <div class="kpi-value" id="diagCostProb">73%</div>
+    <div class="kpi-sub" id="diagCostBand">Risk Band: High</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Schedule Delay Probability</div>
+    <div class="kpi-value" id="diagDelayProb">61%</div>
+    <div class="kpi-sub" id="diagDelayRange">Expected delay: 18–34 days</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Expected Final Cost</div>
+    <div class="kpi-value" id="diagFinalCost">$27.1M</div>
+    <div class="kpi-sub" id="diagVariance">+9.3% expected variance</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">80% Prediction Interval</div>
+    <div class="kpi-value" style="font-size:17px;" id="diagPI">$25.9M – $28.7M</div>
+    <div class="kpi-sub" id="diagConfidence">Model confidence: 86%</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">CPI &amp; SPI Trend</div>
+        <div class="panel-sub">Cost / Schedule Performance Index — reference line at 1.00</div>
+      </div>
+    </div>
+    <div class="chart-box"><canvas id="chartCpiSpi"></canvas></div>
+  </div>
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Cost Trend</div>
+        <div class="panel-sub">Planned vs. actual vs. forecast (dashed) cost, $M</div>
+      </div>
+    </div>
+    <div class="chart-box"><canvas id="chartCostTrend"></canvas></div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Progress Trend</div>
+        <div class="panel-sub">Planned vs. actual physical progress vs. financial progress, %</div>
+      </div>
+    </div>
+    <div class="chart-box"><canvas id="chartProgress"></canvas></div>
+    <div class="note note-info" style="margin-top:12px;" id="progressNote">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+      <span>Financial progress is running well ahead of physical progress — cost is being spent faster than work is being completed, a leading indicator of overrun risk.</span>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Top Prediction Drivers</div>
+        <div class="panel-sub">Local feature attribution for this project's current risk score</div>
+      </div>
+    </div>
+    <div class="chart-box"><canvas id="chartDrivers"></canvas></div>
+    <div class="note note-caution" style="margin-top:12px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3l9-16z"/><path d="M12 10v4M12 17h.01"/></svg>
+      <span>Feature attribution explains the model's prediction; it does not establish causality.</span>
+    </div>
+  </div>
+</div>
+
+<footer class="page-footer">
+  <span>EVM formulas: CV = EV−AC · SV = EV−PV · CPI = EV/AC · SPI = EV/PV — see <span class="mono">src/buildguard/features/evm.py</span></span>
+  <span>Explainability: <span class="mono">src/buildguard/explainability/shap.py</span></span>
+</footer>
+
+</section>
+
+      <!-- ================================================================ -->
+      <!-- PAGE: SCENARIO SIMULATOR                                        -->
+      <!-- ================================================================ -->
+      <section class="page" id="page-simulator">
+<div class="note note-caution" style="margin-bottom:18px;">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3l9-16z"/><path d="M12 10v4M12 17h.01"/></svg>
+  <span><b>What-if model scenario, not a causal intervention estimate.</b> Moving these sliders re-scores the same probabilistic model under hypothetical inputs — it does not simulate how the real project would actually respond to a management action.</span>
+</div>
+
+<div class="grid-12-8">
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Scenario Inputs</div>
+        <div class="panel-sub">Adjust controllable / observable parameters for the selected project</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:18px;">
+      <label class="field-label" for="simProjectSelect">Project</label>
+      <select class="control" id="simProjectSelect"></select>
+    </div>
+
+    <div class="slider-block">
+      <div class="slider-top">
+        <div>
+          <div class="slider-name">Change-order ratio</div>
+          <div class="slider-desc">Approved change orders as % of budget</div>
+        </div>
+        <div class="slider-value" id="valChangeOrder">—%</div>
+      </div>
+      <input type="range" id="simChangeOrder" min="0" max="25" step="0.5">
+      <div class="slider-range-labels"><span>0%</span><span>25%</span></div>
+    </div>
+
+    <div class="slider-block">
+      <div class="slider-top">
+        <div>
+          <div class="slider-name">Procurement delay</div>
+          <div class="slider-desc">Cumulative days behind planned procurement</div>
+        </div>
+        <div class="slider-value" id="valProcurement">— d</div>
+      </div>
+      <input type="range" id="simProcurement" min="0" max="90" step="1">
+      <div class="slider-range-labels"><span>0 d</span><span>90 d</span></div>
+    </div>
+
+    <div class="slider-block">
+      <div class="slider-top">
+        <div>
+          <div class="slider-name">Physical progress</div>
+          <div class="slider-desc">Actual work completed to date</div>
+        </div>
+        <div class="slider-value" id="valProgress">—%</div>
+      </div>
+      <input type="range" id="simProgress" min="0" max="100" step="1">
+      <div class="slider-range-labels"><span>0%</span><span>100%</span></div>
+    </div>
+
+    <div class="slider-block" style="margin-bottom:6px;">
+      <div class="slider-top">
+        <div>
+          <div class="slider-name">Cost burn rate</div>
+          <div class="slider-desc">Actual spend vs. planned spend (100% = on plan)</div>
+        </div>
+        <div class="slider-value" id="valBurn">—%</div>
+      </div>
+      <input type="range" id="simBurn" min="50" max="150" step="1">
+      <div class="slider-range-labels"><span>50%</span><span>150%</span></div>
+    </div>
+
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="btn btn-secondary" id="btnResetScenario">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 1 3 6.7"/><path d="M3 20v-5h5"/></svg>
+        Reset to current snapshot
+      </button>
+      <button class="btn btn-primary" id="btnCopyScenario">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="1.5"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/></svg>
+        Copy scenario summary
+      </button>
+    </div>
+    <div style="font-size:11.5px;color:var(--ink-faint);margin-top:8px;" id="copyStatus"></div>
+  </div>
+
+  <div>
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Scenario Result</div>
+          <div class="panel-sub">Recomputed live from the inputs on the left</div>
+        </div>
+        <div id="simBadgeWrap"></div>
+      </div>
+      <div class="gauge-wrap">
+        <div class="chart-box gauge"><canvas id="chartGauge"></canvas></div>
+        <div class="gauge-center">
+          <div class="gv" id="gaugeValue">73%</div>
+          <div class="gl">Cost Overrun Prob.</div>
+        </div>
+      </div>
+      <table style="margin-top:6px;font-size:12.6px;">
+        <tbody>
+          <tr>
+            <td>Schedule delay probability</td>
+            <td class="num mono" id="simDelayProb">61%</td>
+            <td class="num" id="simDelayDelta" style="width:70px;"></td>
+          </tr>
+          <tr>
+            <td>Expected final cost</td>
+            <td class="num mono" id="simFinalCost">$27.1M</td>
+            <td class="num" id="simFinalDelta" style="width:70px;"></td>
+          </tr>
+          <tr>
+            <td>Expected variance</td>
+            <td class="num mono" id="simVariance">+9.3%</td>
+            <td class="num" id="simVarianceDelta" style="width:70px;"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title" style="margin-bottom:10px;">How this is computed</div>
+      <div class="formula-card" style="font-size:11.2px;">P(overrun)_scenario =
+  sigmoid( logit(P(overrun)_baseline)
+    + <span class="fk">0.9</span> × Δchange_order
+    + <span class="fk">0.7</span> × Δcost_burn
+    + <span class="fk">0.6</span> × Δprocurement_delay
+    + <span class="fk">0.5</span> × Δphysical_progress )</div>
+      <p style="font-size:11.6px;color:var(--ink-soft);margin-top:10px;line-height:1.55;">
+        A simplified, fully transparent client-side formula for this walkthrough — the production system would
+        instead re-run the actual feature pipeline (<span class="mono">src/buildguard/features/pipeline.py</span>)
+        through the trained model, guaranteeing train/serve consistency.
+      </p>
+    </div>
+  </div>
+</div>
+
+<footer class="page-footer">
+  <span>Section 33.3 — Scenario Simulator</span>
+  <span>Business cost matrix: false_negative_cost=10 · false_positive_cost=2</span>
+</footer>
+
+</section>
+
+      <!-- ================================================================ -->
+      <!-- PAGE: MODEL PERFORMANCE                                         -->
+      <!-- ================================================================ -->
+      <section class="page" id="page-performance">
+<div class="tabbar">
+  <button class="tabbtn active" data-tab="perf-cls">Classification — Cost Overrun</button>
+  <button class="tabbtn" data-tab="perf-reg">Regression — Final Cost</button>
+  <button class="tabbtn" data-tab="perf-slice">Slice Analysis</button>
+</div>
+
+<!-- ===== TAB: CLASSIFICATION ===== -->
+<div class="tabpanel active" id="perf-cls">
+  <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));">
+    <div class="kpi-card"><div class="kpi-label">ROC-AUC</div><div class="kpi-value">0.863</div></div>
+    <div class="kpi-card"><div class="kpi-label">PR-AUC</div><div class="kpi-value">0.783</div></div>
+    <div class="kpi-card"><div class="kpi-label">Precision @ 0.16</div><div class="kpi-value">51.5%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Recall @ 0.16</div><div class="kpi-value">92.1%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Brier (calibrated)</div><div class="kpi-value">0.135</div></div>
+    <div class="kpi-card"><div class="kpi-label">Test set (n)</div><div class="kpi-value">1,000</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Model Comparison — Cost Overrun Classifier</div>
+        <div class="panel-sub">Evaluated once on the held-out chronological test split, prevalence 34%</div>
+      </div>
+      <span class="panel-tag">Section 15–16 — Baselines &amp; Candidates</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Model</th><th class="num">ROC-AUC</th><th class="num">PR-AUC</th><th class="num">Brier</th><th class="num">Recall @ 0.50</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Dummy (majority class)</td><td class="num mono">0.500</td><td class="num mono">0.340</td><td class="num mono">0.224</td><td class="num mono">0.000</td><td class="text-soft">predicts training prevalence</td></tr>
+          <tr><td>Domain rule — CPI &lt; 0.90</td><td class="num mono">0.681</td><td class="num mono">0.501</td><td class="num mono">0.211</td><td class="num mono">0.420</td><td class="text-soft">single-feature EVM heuristic, must-beat baseline</td></tr>
+          <tr><td>Logistic Regression</td><td class="num mono">0.734</td><td class="num mono">0.583</td><td class="num mono">0.192</td><td class="num mono">0.550</td><td class="text-soft">L2-regularized, linear baseline</td></tr>
+          <tr><td>Random Forest</td><td class="num mono">0.801</td><td class="num mono">0.671</td><td class="num mono">0.171</td><td class="num mono">0.640</td><td class="text-soft">300 trees, depth-tuned via CV</td></tr>
+          <tr><td>LightGBM (raw)</td><td class="num mono">0.863</td><td class="num mono">0.783</td><td class="num mono">0.150</td><td class="num mono">0.709</td><td class="text-soft">uncalibrated output</td></tr>
+          <tr style="font-weight:700;background:var(--accent-soft);"><td>LightGBM (calibrated) — selected</td><td class="num mono">0.863</td><td class="num mono">0.783</td><td class="num mono">0.135</td><td class="num mono">0.709</td><td class="text-soft">isotonic regression on validation split</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:11.8px;color:var(--ink-soft);margin-top:12px;">
+      Calibration is a rank-preserving transform, so ROC-AUC / PR-AUC are unchanged — only the Brier score improves
+      (0.150 → 0.135). LightGBM was selected for the best AUC/PR-AUC trade-off against inference latency and
+      interpretability via SHAP; see <span class="mono">docs/adr/0006-model-selection.md</span>.
+    </p>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-header">
+        <div><div class="panel-title">Calibration Curve</div><div class="panel-sub">Predicted probability vs. observed frequency, 9 bins</div></div>
+      </div>
+      <div class="chart-box"><canvas id="chartCalibration"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <div><div class="panel-title">Confusion Matrix</div><div class="panel-sub">At the business-optimized threshold (0.16), n = 1,000</div></div>
+      </div>
+      <table style="margin-top:4px;">
+        <thead><tr><th></th><th class="num">Predicted: No Overrun</th><th class="num">Predicted: Overrun</th></tr></thead>
+        <tbody>
+          <tr><td><b>Actual: No Overrun</b></td><td class="num mono">365 (TN)</td><td class="num mono" style="color:var(--risk-high);">295 (FP)</td></tr>
+          <tr><td><b>Actual: Overrun</b></td><td class="num mono" style="color:var(--risk-critical);">27 (FN)</td><td class="num mono">313 (TP)</td></tr>
+        </tbody>
+      </table>
+      <div class="legend-row" style="margin-top:12px;">
+        <span>Precision <b class="mono">51.5%</b></span>
+        <span>Recall <b class="mono">92.1%</b></span>
+        <span>F1 <b class="mono">0.660</b></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Business-Cost Threshold Optimization</div>
+        <div class="panel-sub">Cost matrix: false_negative_cost = 10 · false_positive_cost = 2 — see <span class="mono">configs/business.yaml</span></div>
+      </div>
+      <span class="panel-tag">Never defaults to 0.50</span>
+    </div>
+    <div class="chart-box"><canvas id="chartThreshold"></canvas></div>
+    <div class="table-wrap" style="margin-top:14px;">
+      <table>
+        <thead><tr><th>Threshold</th><th class="num">Recall</th><th class="num">Precision</th><th class="num">FN</th><th class="num">FP</th><th class="num">Expected Cost / 1,000</th></tr></thead>
+        <tbody id="thresholdTableBody"></tbody>
+      </table>
+    </div>
+    <div class="note note-info" style="margin-top:12px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+      <span>Selected operating threshold <b>0.16</b> minimizes expected business cost (860 / 1,000 projects) — about
+      <b>27% lower</b> than the conventional 0.50 default (1,182). Because false negatives cost 5× more than false
+      positives here, the optimum favors high recall (92.1%) over high precision (51.5%): more projects get flagged
+      for human review, but far fewer real overruns slip through.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB: REGRESSION ===== -->
+<div class="tabpanel" id="perf-reg">
+  <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));">
+    <div class="kpi-card"><div class="kpi-label">MAE</div><div class="kpi-value">$612K</div></div>
+    <div class="kpi-card"><div class="kpi-label">RMSE</div><div class="kpi-value">$891K</div></div>
+    <div class="kpi-card"><div class="kpi-label">R²</div><div class="kpi-value">0.81</div></div>
+    <div class="kpi-card"><div class="kpi-label">MAPE</div><div class="kpi-value">4.7%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Median abs. error</div><div class="kpi-value">$498K</div></div>
+    <div class="kpi-card"><div class="kpi-label">Median % error</div><div class="kpi-value">3.9%</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-header">
+        <div><div class="panel-title">Model Comparison — Final Cost Regression</div><div class="panel-sub">Target: <span class="mono">final_cost</span> ($M), justified vs. ratio targets in ADR 0006</div></div>
+      </div>
+      <table>
+        <thead><tr><th>Model</th><th class="num">MAE</th><th class="num">RMSE</th><th class="num">R²</th></tr></thead>
+        <tbody>
+          <tr><td>Mean / median predictor</td><td class="num mono">$2.41M</td><td class="num mono">$3.05M</td><td class="num mono">0.00</td></tr>
+          <tr><td>EVM deterministic — EAC = BAC/CPI</td><td class="num mono">$1.18M</td><td class="num mono">$1.64M</td><td class="num mono">0.44</td></tr>
+          <tr><td>Linear Regression</td><td class="num mono">$0.94M</td><td class="num mono">$1.27M</td><td class="num mono">0.63</td></tr>
+          <tr><td>Random Forest Regressor</td><td class="num mono">$0.74M</td><td class="num mono">$1.02M</td><td class="num mono">0.74</td></tr>
+          <tr style="font-weight:700;background:var(--accent-soft);"><td>LightGBM Regressor — selected</td><td class="num mono">$0.61M</td><td class="num mono">$0.89M</td><td class="num mono">0.81</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:11.8px;color:var(--ink-soft);margin-top:12px;">
+        The EAC = BAC/CPI deterministic formula is the meaningful construction-management baseline the ML model
+        must beat — not only the naive mean predictor (Section 15).
+      </p>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <div><div class="panel-title">Prediction Interval Coverage</div><div class="panel-sub">Conformal prediction, 80% nominal interval</div></div>
+      </div>
+      <div class="chart-box short"><canvas id="chartCoverage"></canvas></div>
+      <div class="note note-neutral" style="margin-top:12px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        <span>Empirical coverage on the test split: <b>79.4%</b> vs. an 80% nominal target — within expected sampling
+        variation. Intervals are re-validated at every scheduled retraining.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB: SLICE ANALYSIS ===== -->
+<div class="tabpanel" id="perf-slice">
+  <div class="panel">
+    <div class="panel-header">
+      <div><div class="panel-title">Cost-Overrun Classifier — by Project Type</div><div class="panel-sub">A strong global metric can still hide weak subgroup behavior</div></div>
+    </div>
+    <table>
+      <thead><tr><th>Project type</th><th class="num">n (test)</th><th class="num">ROC-AUC</th><th class="num">Brier</th><th></th></tr></thead>
+      <tbody>
+        <tr><td>Residential</td><td class="num mono">118</td><td class="num mono">0.87</td><td class="num mono">0.128</td><td></td></tr>
+        <tr><td>Commercial</td><td class="num mono">64</td><td class="num mono">0.85</td><td class="num mono">0.141</td><td></td></tr>
+        <tr><td>Industrial</td><td class="num mono">52</td><td class="num mono">0.79</td><td class="num mono">0.163</td><td></td></tr>
+        <tr style="background:var(--risk-high-soft);"><td>Infrastructure</td><td class="num mono">21</td><td class="num mono">0.71</td><td class="num mono">0.198</td><td><span class="status-chip status-watch">Weak slice</span></td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:11.8px;color:var(--ink-soft);margin-top:10px;">
+      Infrastructure projects show the lowest AUC and the smallest sample (n=21) — predictions for this segment
+      carry materially wider uncertainty and are flagged for mandatory human review regardless of score. Documented in
+      <span class="mono">docs/LIMITATIONS.md</span>.
+    </p>
+  </div>
+  <div class="panel">
+    <div class="panel-header">
+      <div><div class="panel-title">Final-Cost Regressor — by Budget Segment</div></div>
+    </div>
+    <table>
+      <thead><tr><th>Segment</th><th class="num">n (test)</th><th class="num">MAE</th><th class="num">MAPE</th><th></th></tr></thead>
+      <tbody>
+        <tr><td>Small (&lt; $15M)</td><td class="num mono">97</td><td class="num mono">$310K</td><td class="num mono">3.8%</td><td></td></tr>
+        <tr><td>Medium ($15M – $40M)</td><td class="num mono">112</td><td class="num mono">$580K</td><td class="num mono">4.4%</td><td></td></tr>
+        <tr style="background:var(--risk-high-soft);"><td>Large (&gt; $40M)</td><td class="num mono">46</td><td class="num mono">$1,140K</td><td class="num mono">6.1%</td><td><span class="status-chip status-watch">Weak slice</span></td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:11.8px;color:var(--ink-soft);margin-top:10px;">
+      Large projects carry the highest absolute and relative forecast error and the smallest sample — treat
+      point forecasts for this segment as directional, and lean on the prediction interval.
+    </p>
+  </div>
+</div>
+
+<footer class="page-footer">
+  <span>Section 20 — Evaluation Requirements</span>
+  <span>Full run metadata: <span class="mono">reports/experiments/</span></span>
+</footer>
+
+</section>
+
+      <!-- ================================================================ -->
+      <!-- PAGE: MODEL HEALTH                                              -->
+      <!-- ================================================================ -->
+      <section class="page" id="page-health">
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-label">Data Quality</div>
+    <div class="kpi-value" style="font-size:19px;"><span class="status-chip status-ok">Passing</span></div>
+    <div class="kpi-sub">1 category flagged for review</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Feature Drift</div>
+    <div class="kpi-value" style="font-size:19px;"><span class="status-chip status-bad">Action needed</span></div>
+    <div class="kpi-sub">procurement_delay_days over critical PSI</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Champion Model</div>
+    <div class="kpi-value" style="font-size:17px;">v1.0.0</div>
+    <div class="kpi-sub">trained 2026-07-14 · data v3.2</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Predictions (30d)</div>
+    <div class="kpi-value">4,812</div>
+    <div class="kpi-sub">p95 latency 214 ms</div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <div><div class="panel-title">Data Quality Checks</div><div class="panel-sub">Run on every ingested snapshot batch — see <span class="mono">src/buildguard/monitoring/data_quality.py</span></div></div>
+  </div>
+  <table>
+    <thead><tr><th>Check</th><th class="num">Observed</th><th>Tolerance</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Missing values</td><td class="num mono">0.3%</td><td class="text-soft">≤ 2.0%</td><td><span class="status-chip status-ok">OK</span></td></tr>
+      <tr><td>Schema violations</td><td class="num mono">0</td><td class="text-soft">= 0</td><td><span class="status-chip status-ok">OK</span></td></tr>
+      <tr><td>Unexpected categories</td><td class="num mono">2</td><td class="text-soft">= 0</td><td><span class="status-chip status-watch">Watch</span></td></tr>
+      <tr><td>Range violations</td><td class="num mono">0</td><td class="text-soft">= 0</td><td><span class="status-chip status-ok">OK</span></td></tr>
+      <tr><td>Duplicate keys (project_id + snapshot_date)</td><td class="num mono">0</td><td class="text-soft">= 0</td><td><span class="status-chip status-ok">OK</span></td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:11.8px;color:var(--ink-soft);margin-top:10px;">
+    2 new <span class="mono">supplier_category</span> values appeared this cycle — logged, not silently coerced,
+    pending taxonomy update. Contract validation failures always fail loudly; see <span class="mono">docs/LEAKAGE_POLICY.md</span> and <span class="mono">tests/contracts/</span>.
+  </p>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="panel-header">
+      <div><div class="panel-title">Feature Drift — PSI</div><div class="panel-sub">Warning ≥ 0.10 · Critical ≥ 0.25 — see <span class="mono">configs/monitoring.yaml</span></div></div>
+    </div>
+    <div class="chart-box"><canvas id="chartPsi"></canvas></div>
+    <table style="margin-top:8px;">
+      <thead><tr><th>Feature</th><th class="num">PSI</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>CPI</td><td class="num mono">0.06</td><td><span class="status-chip status-ok">Stable</span></td></tr>
+        <tr><td>SPI</td><td class="num mono">0.09</td><td><span class="status-chip status-ok">Stable</span></td></tr>
+        <tr><td>Change-order ratio</td><td class="num mono">0.14</td><td><span class="status-chip status-watch">Watch</span></td></tr>
+        <tr style="background:var(--risk-critical-soft);"><td>Procurement delay (days)</td><td class="num mono">0.27</td><td><span class="status-chip status-bad">Drift detected</span></td></tr>
+        <tr><td>Financial vs physical progress gap</td><td class="num mono">0.08</td><td><span class="status-chip status-ok">Stable</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="panel">
+    <div class="panel-header">
+      <div><div class="panel-title">Prediction Drift</div><div class="panel-sub">Risk-band proportions — training baseline vs. last 30 days</div></div>
+    </div>
+    <div class="chart-box"><canvas id="chartPredDrift"></canvas></div>
+    <p style="font-size:11.8px;color:var(--ink-soft);margin-top:10px;">
+      High/Critical share has grown from 27% at training time to 36% currently — directionally consistent with the
+      procurement-delay drift flagged above, and under active investigation before any retraining decision.
+    </p>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <div><div class="panel-title">Retraining Workflow</div><div class="panel-sub">Detect → Investigate → Validate → Retrain candidate → Compare vs. champion → Approve → Release</div></div>
+    <span class="panel-tag">Currently: Investigate</span>
+  </div>
+  <div class="stepper">
+    <div class="step done"><span class="step-num">01</span>Detect</div>
+    <div class="step active"><span class="step-num">02</span>Investigate</div>
+    <div class="step"><span class="step-num">03</span>Validate data</div>
+    <div class="step"><span class="step-num">04</span>Retrain candidate</div>
+    <div class="step"><span class="step-num">05</span>Compare vs. champion</div>
+    <div class="step"><span class="step-num">06</span>Approve</div>
+    <div class="step"><span class="step-num">07</span>Release</div>
+  </div>
+  <div class="table-wrap" style="margin-top:18px;">
+    <table>
+      <thead><tr><th>Trigger</th><th>Threshold</th><th>Current</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr style="background:var(--risk-critical-soft);"><td>PSI, any monitored feature</td><td class="text-soft mono">&gt; 0.25</td><td class="num mono">0.27</td><td><span class="status-chip status-bad">Triggered</span></td></tr>
+        <tr><td>Performance drop (relative ROC-AUC)</td><td class="text-soft mono">&gt; 5%</td><td class="num mono">1.2%</td><td><span class="status-chip status-ok">OK</span></td></tr>
+        <tr><td>Calibration deterioration (Brier)</td><td class="text-soft mono">&gt; +0.03</td><td class="num mono">+0.008</td><td><span class="status-chip status-ok">OK</span></td></tr>
+        <tr><td>New labeled snapshots</td><td class="text-soft mono">&gt; 500</td><td class="num mono">340</td><td><span class="status-chip status-ok">OK</span></td></tr>
+        <tr><td>Scheduled quarterly evaluation</td><td class="text-soft mono">next: 2026-11-01</td><td class="num mono">—</td><td><span class="status-chip status-watch">Scheduled</span></td></tr>
+        <tr><td>Schema changes</td><td class="text-soft mono">any breaking change</td><td class="num mono">0</td><td><span class="status-chip status-ok">OK</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note note-caution" style="margin-top:14px;">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3l9-16z"/><path d="M12 10v4M12 17h.01"/></svg>
+    <span>Drift alone does not trigger automatic retraining. The procurement-delay PSI breach opens an
+    <b>investigation</b>, not a retrain — see <span class="mono">docs/MONITORING.md</span> for the full policy.</span>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header"><div class="panel-title">Model Metadata</div></div>
+  <table>
+    <tbody>
+      <tr><td>Model name</td><td class="num mono">cost-risk-lightgbm</td></tr>
+      <tr><td>Semantic version</td><td class="num mono">v1.0.0</td></tr>
+      <tr><td>Training date</td><td class="num mono">2026-07-14</td></tr>
+      <tr><td>Data version</td><td class="num mono">v3.2</td></tr>
+      <tr><td>Git commit SHA</td><td class="num mono">a1b2c3d</td></tr>
+      <tr><td>Champion since</td><td class="num mono">2026-07-15</td></tr>
+      <tr><td>Next scheduled review</td><td class="num mono">2026-11-01</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<footer class="page-footer">
+  <span>Section 25–26 — Monitoring &amp; Retraining Policy</span>
+  <span>Tracking: <span class="mono">MLflow (local, file-based)</span></span>
+</footer>
+
+</section>
+
+      <!-- ================================================================ -->
+      <!-- PAGE: ABOUT & GOVERNANCE                                        -->
+      <!-- ================================================================ -->
+      <section class="page" id="page-governance">
+<div class="note note-info" style="margin-bottom:18px;">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+  <span>BuildGuard AI is positioned as <b>Decision Support for Construction Cost and Schedule Risk</b>. It is never
+  marketed as infallible, autonomous, or guaranteed — outputs are estimated risk, not certainty, and every
+  high/critical flag requires human review before action.</span>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="panel-title" style="margin-bottom:12px;">Intended Use</div>
+    <ul style="margin:0;padding-left:18px;font-size:12.8px;color:var(--ink-soft);line-height:1.9;">
+      <li>Portfolio-level triage and prioritization support for cost and schedule risk review meetings</li>
+      <li>Early-warning signal to route projects to Planning &amp; Cost Control for deeper investigation</li>
+      <li>Transparent, explainable input into executive risk conversations — always alongside engineering judgment</li>
+    </ul>
+  </div>
+  <div class="panel">
+    <div class="panel-title" style="margin-bottom:12px;">Out-of-Scope Use</div>
+    <ul style="margin:0;padding-left:18px;font-size:12.8px;color:var(--ink-soft);line-height:1.9;">
+      <li>Automated contract, payment, or procurement decisions without human review</li>
+      <li>Evaluating the performance of individual staff, crews, or suppliers</li>
+      <li>Projects far outside the training distribution (e.g., &lt; $1M budget, non-standard delivery models)</li>
+    </ul>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <div><div class="panel-title">Model Card Summary</div><div class="panel-sub">Full card at <span class="mono">docs/MODEL_CARD.md</span></div></div>
+  </div>
+  <div class="grid-2">
+    <table>
+      <tbody>
+        <tr><td>Model name</td><td class="num mono">cost-risk-lightgbm</td></tr>
+        <tr><td>Version</td><td class="num mono">v1.0.0</td></tr>
+        <tr><td>Owner</td><td class="num mono">BuildGuard DS Team</td></tr>
+        <tr><td>Training data</td><td class="num mono">Synthetic portfolio, 9k snapshots</td></tr>
+        <tr><td>Evaluation data</td><td class="num mono">Chronological hold-out, newest 20%</td></tr>
+      </tbody>
+    </table>
+    <table>
+      <tbody>
+        <tr><td>Features</td><td class="num mono">42 engineered</td></tr>
+        <tr><td>Metrics</td><td class="num mono">ROC-AUC 0.863 · Brier 0.135</td></tr>
+        <tr><td>Calibration</td><td class="num mono">Isotonic regression</td></tr>
+        <tr><td>Drift policy</td><td class="num mono">PSI weekly · warn 0.10 / crit 0.25</td></tr>
+        <tr><td>Human oversight</td><td class="num mono">Required for High/Critical flags</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <div><div class="panel-title">Data Provenance &amp; Privacy</div></div>
+  </div>
+  <p style="font-size:12.8px;color:var(--ink-soft);line-height:1.7;">
+    Every figure in this public prototype comes from a <b>fully synthetic</b> construction portfolio, generated
+    with a documented, seeded process that preserves realistic statistical relationships (e.g., CPI deterioration
+    raising overrun risk, financial progress outpacing physical progress) without exposing any real employer,
+    client, contractor, or supplier data. No confidential dataset is present anywhere in the public repository or
+    its Git history.
+  </p>
+  <div class="btn-row" style="margin-top:12px;">
+    <span class="pill pill-version">docs/DATA_PRIVACY.md</span>
+    <span class="pill pill-version">src/buildguard/data/synthetic.py</span>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header"><div class="panel-title">Known Limitations</div></div>
+  <ul style="margin:0;padding-left:18px;font-size:12.8px;color:var(--ink-soft);line-height:1.9;">
+    <li>Trained and evaluated on synthetic data — transfer to a real portfolio requires recalibration before production use</li>
+    <li>Procurement-delay drift (PSI 0.27) is currently above the critical threshold and under investigation</li>
+    <li>Infrastructure-type and large-budget (&gt;$40M) projects carry wider, less reliable uncertainty due to smaller sample sizes</li>
+    <li>Feature attributions are correlational explanations of the model, not causal claims about the project</li>
+    <li>Probabilities are decision support only — they do not account for information outside the tracked feature set (e.g., undocumented site conditions)</li>
+  </ul>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <div><div class="panel-title">Zero-Cost Public Architecture</div><div class="panel-sub">This prototype's target deployment path — vs. an enterprise reference design</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="formula-card" style="font-size:11.6px;line-height:1.85;">GitHub (public repo)
+   │
+   ├─▶ GitHub Actions — lint / test / type-check
+   │
+   └─▶ Streamlit Community Cloud
+          ├─ BuildGuard UI
+          ├─ packaged model artifact
+          ├─ in-process prediction service
+          └─ demo (synthetic) dataset
+
+<span class="fc">USD 0.00 recurring cost — no paid DB, model
+endpoint, LLM, or monitoring SaaS required.</span></div>
+    <div class="formula-card" style="font-size:11.6px;line-height:1.85;color:#9FB3C2;"><span class="fk">REFERENCE ARCHITECTURE — NOT DEPLOYED</span>
+Sources
+   ↓
+Lakehouse / Object Storage
+   ↓
+Feature Store
+   ↓
+Distributed Training + Registry
+   ↓
+Batch / Online Serving
+   ↓
+Monitoring + Alerts
+
+<span class="fc">Shown for scale discussion only — see
+docs/architecture/aws-reference.md</span></div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header"><div class="panel-title">Documentation Set</div></div>
+  <div class="doc-grid">
+    <div class="doc-item"><span class="doc-name">README.md</span><span class="doc-desc">Executive project story and quick start</span></div>
+    <div class="doc-item"><span class="doc-name">ARCHITECTURE.md</span><span class="doc-desc">System components and data flow</span></div>
+    <div class="doc-item"><span class="doc-name">DATA_DICTIONARY.md</span><span class="doc-desc">All fields, types, and units</span></div>
+    <div class="doc-item"><span class="doc-name">DATA_PRIVACY.md</span><span class="doc-desc">Provenance and confidentiality policy</span></div>
+    <div class="doc-item"><span class="doc-name">LEAKAGE_POLICY.md</span><span class="doc-desc">Temporal and target leakage controls</span></div>
+    <div class="doc-item"><span class="doc-name">MODEL_CARD.md</span><span class="doc-desc">Full model governance record</span></div>
+    <div class="doc-item"><span class="doc-name">MONITORING.md</span><span class="doc-desc">Drift and retraining policy</span></div>
+    <div class="doc-item"><span class="doc-name">LIMITATIONS.md</span><span class="doc-desc">Known failure modes</span></div>
+    <div class="doc-item"><span class="doc-name">RUNBOOK.md</span><span class="doc-desc">Operate and recover the application</span></div>
+    <div class="doc-item"><span class="doc-name">INTERVIEW_GUIDE.md</span><span class="doc-desc">Questions the author can answer live</span></div>
+    <div class="doc-item"><span class="doc-name">adr/0001–0012</span><span class="doc-desc">Architectural decision records</span></div>
+  </div>
+</div>
+
+<footer class="page-footer">
+  <span>BuildGuard AI · Production-oriented ML for construction cost, schedule risk, and project forecasting</span>
+  <span>github.com/&lt;author&gt;/buildguard-ai</span>
+</footer>
+
+</section>
+
+    </div></main>
+  </div>
+</div>
+
+<script>
+/* ======================================================================
+   DATA — deterministically generated synthetic portfolio (see
+   src/buildguard/data/synthetic.py in the full project). Embedded here
+   as static JSON so this prototype has no backend dependency.
+   ====================================================================== */
+const DATA = {"projects":[{"id":"PRJ-014","name":"Residential Tower A","ptype":"Residential","city":"Sao Paulo","state":"SP","budget":24.8,"finalCost":27.1,"variancePct":9.3,"costOverrunProb":0.73,"scheduleDelayProb":0.61,"riskBand":"High","priorityScore":62.8,"delayLow":18,"delayHigh":34,"piLow":25.9,"piHigh":28.7,"confidence":0.86,"drivers":[["CPI deterioration",0.18],["Change-order ratio",0.12],["Financial > physical progress",0.08],["Strong supplier performance",-0.05]]},{"id":"PRJ-027","name":"North Industrial Park","ptype":"Industrial","city":"Belo Horizonte","state":"MG","budget":41.2,"finalCost":43.0,"variancePct":4.4,"costOverrunProb":0.38,"scheduleDelayProb":0.44,"riskBand":"Medium","priorityScore":35.8,"delayLow":16,"delayHigh":34,"piLow":39.4,"piHigh":46.6,"confidence":0.81,"drivers":[["Schedule compression",0.1],["CPI deterioration",0.08],["Rework cost ratio",0.07],["Stable change-order history",-0.03]]},{"id":"PRJ-033","name":"Harborview Residences","ptype":"Residential","city":"Recife","state":"PE","budget":18.5,"finalCost":19.9,"variancePct":7.6,"costOverrunProb":0.58,"scheduleDelayProb":0.52,"riskBand":"High","priorityScore":51.2,"delayLow":17,"delayHigh":36,"piLow":18.2,"piHigh":21.6,"confidence":0.87,"drivers":[["Financial vs physical progress gap",0.17],["Accelerated cost burn",0.17],["Procurement delay",0.16],["Experienced crew allocation",-0.07]]},{"id":"PRJ-041","name":"Metro Logistics Hub","ptype":"Infrastructure","city":"Curitiba","state":"PR","budget":63.4,"finalCost":67.8,"variancePct":6.9,"costOverrunProb":0.81,"scheduleDelayProb":0.68,"riskBand":"Critical","priorityScore":65.5,"delayLow":21,"delayHigh":43,"piLow":62.7,"piHigh":72.9,"confidence":0.86,"drivers":[["Rework cost ratio",0.19],["Accelerated cost burn",0.18],["Change-order ratio",0.14],["Experienced crew allocation",-0.04]]},{"id":"PRJ-052","name":"Sunset Ridge Condominiums","ptype":"Residential","city":"Porto Alegre","state":"RS","budget":12.1,"finalCost":12.4,"variancePct":2.5,"costOverrunProb":0.22,"scheduleDelayProb":0.19,"riskBand":"Low","priorityScore":18.7,"delayLow":10,"delayHigh":23,"piLow":11.5,"piHigh":13.3,"confidence":0.89,"drivers":[["Rework cost ratio",0.07],["Schedule compression",0.04],["Change-order ratio",0.04],["Strong supplier performance",-0.05]]},{"id":"PRJ-063","name":"Central Business Tower","ptype":"Commercial","city":"Sao Paulo","state":"SP","budget":55.0,"finalCost":58.9,"variancePct":7.1,"costOverrunProb":0.64,"scheduleDelayProb":0.55,"riskBand":"High","priorityScore":54.2,"delayLow":18,"delayHigh":38,"piLow":54.0,"piHigh":63.8,"confidence":0.87,"drivers":[["Supplier concentration",0.17],["Financial vs physical progress gap",0.16],["Procurement delay",0.15],["Favorable inflation trend",-0.06]]},{"id":"PRJ-071","name":"Lakeside Medical Center","ptype":"Institutional","city":"Salvador","state":"BA","budget":29.7,"finalCost":30.5,"variancePct":2.7,"costOverrunProb":0.34,"scheduleDelayProb":0.29,"riskBand":"Medium","priorityScore":27.4,"delayLow":12,"delayHigh":27,"piLow":28.0,"piHigh":33.0,"confidence":0.83,"drivers":[["Schedule compression",0.09],["Rework cost ratio",0.09],["Change-order ratio",0.06],["Strong supplier performance",-0.05]]},{"id":"PRJ-084","name":"Greenfield Logistics Center","ptype":"Industrial","city":"Campinas","state":"SP","budget":21.0,"finalCost":21.3,"variancePct":1.4,"costOverrunProb":0.19,"scheduleDelayProb":0.15,"riskBand":"Low","priorityScore":14.8,"delayLow":9,"delayHigh":22,"piLow":19.7,"piHigh":22.9,"confidence":0.87,"drivers":[["CPI deterioration",0.04],["Financial vs physical progress gap",0.04],["Rework cost ratio",0.04],["Stable change-order history",-0.03]]},{"id":"PRJ-096","name":"Riverside Corporate Plaza","ptype":"Commercial","city":"Fortaleza","state":"CE","budget":37.6,"finalCost":41.5,"variancePct":10.4,"costOverrunProb":0.69,"scheduleDelayProb":0.58,"riskBand":"High","priorityScore":61.4,"delayLow":19,"delayHigh":39,"piLow":38.2,"piHigh":44.8,"confidence":0.88,"drivers":[["Rework cost ratio",0.19],["Accelerated cost burn",0.16],["Change-order ratio",0.13],["Stable change-order history",-0.07]]}],"series":{"PRJ-014":{"months":["M1","M2","M3","M4","M5","M6","M7","M8","M9","M10","M11","M12","M13","M14"],"currentMonth":10,"cpi":[1.01,0.993,0.977,0.956,0.937,0.923,0.902,0.881,0.868,0.849,0.834,0.813,0.794,0.78],"spi":[0.994,0.98,0.967,0.951,0.935,0.924,0.908,0.891,0.88,0.866,0.853,0.837,0.821,0.807],"plannedCost":[0.65,1.58,2.88,4.63,6.86,9.51,12.4,15.29,17.94,20.17,21.92,23.22,24.15,24.8],"actualCost":[0.66,1.65,3.07,5.04,7.61,10.76,14.3,17.97,21.48,24.59],"forecastCost":[24.59,24.98,25.84,26.71,27.1],"plannedProgress":[2.6,6.4,11.6,18.7,27.7,38.3,50.0,61.7,72.3,81.3,88.4,93.6,97.4,100.0],"actualProgress":[2.6,6.2,11.2,17.8,25.9,35.4,45.4,54.9,63.6,70.4],"financialProgress":[2.7,6.6,12.4,20.3,30.7,43.4,57.7,72.5,86.6,99.1]},"PRJ-027":{"months":["M1","M2","M3","M4","M5","M6","M7","M8","M9","M10","M11","M12","M13","M14"],"currentMonth":10,"cpi":[1.023,1.011,0.999,0.987,0.981,0.968,0.962,0.954,0.943,0.933,0.921,0.916,0.904,0.895],"spi":[1.004,0.995,0.985,0.975,0.971,0.96,0.955,0.949,0.94,0.932,0.923,0.919,0.909,0.902],"plannedCost":[1.07,2.62,4.79,7.7,11.4,15.8,20.6,25.4,29.8,33.5,36.41,38.58,40.13,41.2],"actualCost":[1.08,2.68,4.95,8.05,12.05,16.88,22.24,27.72,32.86,37.32],"forecastCost":[37.32,38.21,40.16,42.11,43.0],"plannedProgress":[2.6,6.4,11.6,18.7,27.7,38.3,50.0,61.7,72.3,81.3,88.4,93.6,97.4,100.0],"actualProgress":[2.6,6.3,11.4,18.2,26.9,36.8,47.7,58.5,68.0,75.8],"financialProgress":[2.6,6.5,12.0,19.5,29.3,41.0,54.0,67.3,79.7,90.6]},"PRJ-033":{"months":["M1","M2","M3","M4","M5","M6","M7","M8","M9","M10","M11","M12","M13","M14"],"currentMonth":10,"cpi":[1.02,1.009,0.992,0.978,0.966,0.949,0.933,0.922,0.904,0.887,0.869,0.858,0.846,0.837],"spi":[1.002,0.993,0.979,0.968,0.958,0.945,0.932,0.923,0.909,0.896,0.882,0.872,0.863,0.855],"plannedCost":[0.48,1.18,2.15,3.46,5.12,7.09,9.25,11.41,13.38,15.04,16.35,17.32,18.02,18.5],"actualCost":[0.49,1.22,2.26,3.7,5.57,7.83,10.38,13.0,15.48,17.66],"forecastCost":[17.66,18.01,18.78,19.55,19.9],"plannedProgress":[2.6,6.4,11.6,18.7,27.7,38.3,50.0,61.7,72.3,81.3,88.4,93.6,97.4,100.0],"actualProgress":[2.6,6.3,11.4,18.1,26.5,36.2,46.6,56.9,65.7,72.9],"financialProgress":[2.6,6.6,12.2,20.0,30.1,42.3,56.1,70.2,83.6,95.5]},"PRJ-041":{"months":["M1","M2","M3","M4","M5","M6","M7","M8","M9","M10","M11","M12","M13","M14"],"currentMonth":10,"cpi":[1.011,0.991,0.974,0.953,0.93,0.909,0.894,0.878,0.861,0.844,0.825,0.808,0.786,0.78],"spi":[0.994,0.978,0.966,0.949,0.93,0.913,0.901,0.889,0.875,0.861,0.846,0.832,0.815,0.802],"plannedCost":[1.65,4.03,7.37,11.85,17.55,24.31,31.7,39.09,45.85,51.55,56.03,59.37,61.75,63.4],"actualCost":[1.69,4.23,7.91,13.0,19.68,27.85,37.09,46.69,55.88,64.08],"forecastCost":[64.08,64.66,65.94,67.22,67.8],"plannedProgress":[2.6,6.4,11.6,18.7,27.7,38.3,50.0,61.7,72.3,81.3,88.4,93.6,97.4,100.0],"actualProgress":[2.6,6.2,11.2,17.7,25.7,35.0,45.0,54.8,63.3,70.0],"financialProgress":[2.7,6.7,12.5,20.5,31.0,43.9,58.5,73.6,88.1,99.9]},"PRJ-052":{"months":["M1","M2","M3","M4","M5","M6","M7","M8","M9","M10","M11","M12","M13","M14"],"currentMonth":10,"cpi":[1.028,1.026,1.022,1.019,1.015,1.007,1.004,0.999,0.99,0.984,0.982,0.979,0.968,0.961],"spi":[1.008,1.007,1.004,1.001,0.998,0.991,0.989,0.986,0.978,0.973,0.971,0.969,0.96,0.954],"plannedCost":[0.32,0.77,1.41,2.26,3.35,4.64,6.05,7.46,8.75,9.84,10.69,11.33,11.78,12.1],"actualCost":[0.32,0.78,1.44,2.32,3.46,4.82,6.33,7.85,9.27,10.49],"forecastCost":[10.49,10.79,11.45,12.1,12.4],"plannedProgress":[2.6,6.4,11.6,18.7,27.7,38.3,50.0,61.7,72.3,81.3,88.4,93.6,97.4,100.0],"actualProgress":[2.6,6.4,11.7,18.7,27.6,38.0,49.4,60.8,70.7,79.1],"financialProgress":[2.6,6.4,11.9,19.2,28.6,39.9,52.3,64.9,76.6,86.7]},"PRJ-063":{"months":["M1","M2","M3","M4","M5","M6","M7","M8","M9","M10","M11","M12","M13","M14"],"currentMonth":10,"cpi":[1.019,1.009,0.995,0.984,0.965,0.951,0.932,0.919,0.901,0.887,0.873,0.859,0.844,0.831],"spi":[1.001,0.993,0.982,0.973,0.958,0.947,0.932,0.921,0.906,0.895,0.884,0.873,0.861,0.851],"plannedCost":[1.43,3.5,6.39,10.28,15.22,21.09,27.5,33.91,39.78,44.72,48.61,51.5,53.57,55.0],"actualCost":[1.46,3.63,6.76,11.07,16.68,23.52,31.2,39.12,46.65,53.31],"forecastCost":[53.31,54.18,56.11,58.03,58.9],"plannedProgress":[2.6,6.4,11.6,18.7,27.7,38.3,50.0,61.7,72.3,81.3,88.4,93.6,97.4,100.0],"actualProgress":[2.6,6.3,11.4,18.2,26.5,36.3,46.6,56.8,65.5,72.8],"financialProgress":[2.7,6.6,12.3,20.1,30.3,42.8,56.7,71.1,84.8,96.9]},"PRJ-071":{"months":["M1","M2","M3","M4","M5","M6","M7","M8","M9","M10","M11","M12","M13","M14"],"currentMonth":10,"cpi":[1.021,1.013,1.007,1.003,0.992,0.979,0.97,0.966,0.954,0.941,0.934,0.926,0.916,0.905],"spi":[1.003,0.996,0.992,0.988,0.979,0.969,0.962,0.959,0.949,0.939,0.933,0.927,0.919,0.91],"plannedCost":[0.77,1.89,3.45,5.55,8.22,11.39,14.85,18.31,21.48,24.15,26.25,27.81,28.93,29.7],"actualCost":[0.78,1.93,3.56,5.78,8.64,12.09,15.91,19.8,23.45,26.61],"forecastCost":[26.61,27.22,28.55,29.89,30.5],"plannedProgress":[2.6,6.4,11.6,18.7,27.7,38.3,50.0,61.7,72.3,81.3,88.4,93.6,97.4,100.0],"actualProgress":[2.6,6.3,11.5,18.5,27.1,37.2,48.1,59.1,68.6,76.4],"financialProgress":[2.6,6.5,12.0,19.5,29.1,40.7,53.6,66.7,79.0,89.6]},"PRJ-084":{"months":["M1","M2","M3","M4","M5","M6","M7","M8","M9","M10","M11","M12","M13","M14"],"currentMonth":10,"cpi":[1.02,1.013,1.009,1.004,0.997,0.996,0.992,0.991,0.986,0.985,0.977,0.971,0.964,0.961],"spi":[1.002,0.996,0.993,0.989,0.984,0.983,0.98,0.979,0.975,0.974,0.968,0.962,0.957,0.955],"plannedCost":[0.55,1.34,2.44,3.92,5.81,8.05,10.5,12.95,15.19,17.08,18.56,19.66,20.45,21.0],"actualCost":[0.55,1.36,2.48,4.01,5.98,8.33,10.92,13.54,15.97,18.05],"forecastCost":[18.05,18.56,19.68,20.79,21.3],"plannedProgress":[2.6,6.4,11.6,18.7,27.7,38.3,50.0,61.7,72.3,81.3,88.4,93.6,97.4,100.0],"actualProgress":[2.6,6.3,11.5,18.5,27.2,37.7,49.0,60.4,70.5,79.2],"financialProgress":[2.6,6.4,11.8,19.1,28.5,39.7,52.0,64.5,76.0,85.9]},"PRJ-096":{"months":["M1","M2","M3","M4","M5","M6","M7","M8","M9","M10","M11","M12","M13","M14"],"currentMonth":10,"cpi":[1.014,0.996,0.981,0.962,0.942,0.927,0.91,0.896,0.883,0.865,0.853,0.842,0.83,0.811],"spi":[0.997,0.983,0.971,0.956,0.939,0.928,0.914,0.903,0.892,0.878,0.869,0.859,0.85,0.835],"plannedCost":[0.98,2.39,4.37,7.03,10.41,14.42,18.8,23.18,27.19,30.57,33.23,35.21,36.62,37.6],"actualCost":[1.0,2.49,4.64,7.61,11.49,16.21,21.52,27.02,32.26,36.9],"forecastCost":[36.9,37.62,39.2,40.78,41.5],"plannedProgress":[2.6,6.4,11.6,18.7,27.7,38.3,50.0,61.7,72.3,81.3,88.4,93.6,97.4,100.0],"actualProgress":[2.6,6.3,11.3,17.9,26.0,35.6,45.7,55.7,64.5,71.4],"financialProgress":[2.7,6.6,12.3,20.2,30.5,43.1,57.2,71.9,85.8,98.1]}},"priorityOrder":["PRJ-041","PRJ-014","PRJ-096","PRJ-063","PRJ-033","PRJ-027","PRJ-071","PRJ-052","PRJ-084"]};
+const PERF = {"n":1000,"n_pos":340,"n_neg":660,"prevalence":0.34,"auc":0.863,"pr_auc":0.783,"brier_raw":0.15,"brier_cal":0.135,"best_threshold":{"threshold":0.16,"recall":0.921,"precision":0.515,"tp":313,"fp":295,"fn":27,"tn":365,"cost":860},"sweep_display":[{"threshold":0.1,"recall":0.976,"precision":0.439,"tp":332,"fp":424,"fn":8,"tn":236,"cost":928},{"threshold":0.2,"recall":0.885,"precision":0.562,"tp":301,"fp":235,"fn":39,"tn":425,"cost":860},{"threshold":0.3,"recall":0.774,"precision":0.651,"tp":263,"fp":141,"fn":77,"tn":519,"cost":1052},{"threshold":0.4,"recall":0.709,"precision":0.715,"tp":241,"fp":96,"fn":99,"tn":564,"cost":1182},{"threshold":0.5,"recall":0.709,"precision":0.715,"tp":241,"fp":96,"fn":99,"tn":564,"cost":1182},{"threshold":0.6,"recall":0.538,"precision":0.81,"tp":183,"fp":43,"fn":157,"tn":617,"cost":1656},{"threshold":0.7,"recall":0.468,"precision":0.846,"tp":159,"fp":29,"fn":181,"tn":631,"cost":1868},{"threshold":0.8,"recall":0.315,"precision":0.915,"tp":107,"fp":10,"fn":233,"tn":650,"cost":2350},{"threshold":0.9,"recall":0.218,"precision":0.961,"tp":74,"fp":3,"fn":266,"tn":657,"cost":2666}]};
+</script>
+<script>
+/* ======================================================================
+   BuildGuard AI — prototype application logic
+   Pure client-side. No network calls beyond the CDN font/Chart.js load.
+   ====================================================================== */
+(function(){
+
+  var RISK = { Low:'#25794F', Medium:'#A9700A', High:'#B14A1E', Critical:'#A32620' };
+  var ACCENT = '#1F5C8B';
+  var ACCENT_BRIGHT = '#4FA3D9';
+  var GRID = '#E3E8EC';
+
+  if (typeof Chart !== 'undefined') {
+    Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
+    Chart.defaults.font.size = 11.5;
+    Chart.defaults.color = '#51606E';
+    Chart.defaults.borderColor = GRID;
+    Chart.defaults.responsive = true;
+    Chart.defaults.maintainAspectRatio = false;
+    Chart.defaults.plugins.legend.labels.usePointStyle = true;
+    Chart.defaults.plugins.legend.labels.boxWidth = 8;
+    Chart.defaults.plugins.legend.labels.padding = 14;
+  }
+
+  var chartRegistry = {};
+  function mkChart(key, canvasId, config){
+    if (typeof Chart === 'undefined') return null;
+    if (chartRegistry[key]) { chartRegistry[key].destroy(); }
+    var el = document.getElementById(canvasId);
+    if (!el) return null;
+    chartRegistry[key] = new Chart(el, config);
+    return chartRegistry[key];
+  }
+  function resizeAllCharts(){
+    Object.keys(chartRegistry).forEach(function(k){
+      if (chartRegistry[k]) { try { chartRegistry[k].resize(); } catch(e){} }
+    });
+  }
+
+  function $(id){ return document.getElementById(id); }
+  function riskBadgeHTML(band){
+    return '<span class="risk-badge risk-' + band.toLowerCase() + '">' + band + '</span>';
+  }
+  function pct(x){ return Math.round(x*100) + '%'; }
+  function fmtM(x){ return '$' + x.toFixed(1) + 'M'; }
+  function projectById(id){ return DATA.projects.filter(function(p){ return p.id===id; })[0]; }
+
+  /* ================= NAVIGATION ================= */
+  var pageMeta = {
+    overview:   { title:'Executive Overview', sub:'Portfolio-level cost & schedule risk, ranked by explainable priority score.' },
+    diagnostic: { title:'Project Diagnostic', sub:'EVM trends, forecast, and prediction drivers for a single project.' },
+    simulator:  { title:'Scenario Simulator', sub:'What-if re-scoring under hypothetical inputs — not a causal estimate.' },
+    performance:{ title:'Model Performance', sub:'Baselines, calibration, threshold optimization, and slice evaluation.' },
+    health:     { title:'Model Health', sub:'Data quality, drift, and the retraining decision workflow.' },
+    governance: { title:'About & Governance', sub:'Intended use, limitations, provenance, and documentation set.' }
+  };
+
+  var initializers = {
+    overview: initOverview,
+    diagnostic: initDiagnostic,
+    simulator: initSimulator,
+    performance: initPerformance,
+    health: initHealth,
+    governance: null
+  };
+  var initialized = {};
+
+  function showPage(name){
+    document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+    var target = $('page-' + name);
+    if (target) target.classList.add('active');
+
+    document.querySelectorAll('.nav-item').forEach(function(n){
+      n.classList.toggle('active', n.dataset.page === name);
+    });
+
+    var meta = pageMeta[name];
+    if (meta) { $('pageTitle').textContent = meta.title; $('pageSubtitle').textContent = meta.sub; }
+
+    if (!initialized[name] && initializers[name]) {
+      initializers[name]();
+      initialized[name] = true;
+    }
+    resizeAllCharts();
+
+    if (window.innerWidth <= 840) closeSidebar();
+    window.scrollTo({top:0, behavior:'auto'});
+  }
+
+  function setupNav(){
+    document.querySelectorAll('.nav-item').forEach(function(btn){
+      btn.addEventListener('click', function(){ showPage(btn.dataset.page); });
+    });
+  }
+
+  function openSidebar(){ $('sidebar').classList.add('open'); $('scrim').classList.add('show'); }
+  function closeSidebar(){ $('sidebar').classList.remove('open'); $('scrim').classList.remove('show'); }
+  function setupMobileNav(){
+    $('menuToggle').addEventListener('click', function(){
+      $('sidebar').classList.contains('open') ? closeSidebar() : openSidebar();
+    });
+    $('scrim').addEventListener('click', closeSidebar);
+  }
+
+  /* generic tab switching, scoped to nearest .page */
+  function setupTabs(){
+    document.querySelectorAll('.tabbtn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var scope = btn.closest('section.page') || document;
+        scope.querySelectorAll('.tabbtn').forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+        scope.querySelectorAll('.tabpanel').forEach(function(p){ p.classList.remove('active'); });
+        var panel = scope.querySelector('#' + btn.dataset.tab);
+        if (panel) panel.classList.add('active');
+        resizeAllCharts();
+      });
+    });
+  }
+
+  /* ================= OVERVIEW ================= */
+  function initOverview(){
+    var tbody = $('watchlistBody');
+    var rows = '';
+    DATA.priorityOrder.forEach(function(id, idx){
+      var p = projectById(id);
+      rows += '<tr class="clickable" data-project-id="' + p.id + '">' +
+        '<td class="mono text-soft">' + (idx+1) + '</td>' +
+        '<td><b>' + p.name + '</b><div class="text-soft" style="font-size:11px;">' + p.id + '</div></td>' +
+        '<td>' + p.ptype + '</td>' +
+        '<td>' + p.city + ', ' + p.state + '</td>' +
+        '<td class="num mono">' + fmtM(p.budget) + '</td>' +
+        '<td class="num mono">' + fmtM(p.finalCost) + '</td>' +
+        '<td class="num mono">' + pct(p.costOverrunProb) + '</td>' +
+        '<td class="num mono">' + pct(p.scheduleDelayProb) + '</td>' +
+        '<td>' + riskBadgeHTML(p.riskBand) + '</td>' +
+        '<td class="num mono">' + p.priorityScore.toFixed(1) + '</td>' +
+        '<td><button class="btn-ghost" style="font-size:11.5px;">View →</button></td>' +
+      '</tr>';
+    });
+    tbody.innerHTML = rows;
+    tbody.addEventListener('click', function(e){
+      var tr = e.target.closest('tr[data-project-id]');
+      if (!tr) return;
+      var id = tr.dataset.projectId;
+      showPage('diagnostic');
+      $('projectSelect').value = id;
+      renderDiagnostic(id);
+    });
+
+    var counts = {Critical:0, High:0, Medium:0, Low:0};
+    DATA.projects.forEach(function(p){ counts[p.riskBand]++; });
+    mkChart('riskDist', 'chartRiskDist', {
+      type:'doughnut',
+      data:{ labels:['Critical','High','Medium','Low'],
+        datasets:[{ data:[counts.Critical,counts.High,counts.Medium,counts.Low],
+          backgroundColor:[RISK.Critical,RISK.High,RISK.Medium,RISK.Low], borderWidth:3, borderColor:'#fff' }] },
+      options:{ cutout:'62%', plugins:{ legend:{ display:false },
+        tooltip:{ callbacks:{ label:function(ctx){ return ctx.label + ': ' + ctx.parsed + ' project(s)'; } } } } }
+    });
+
+    var top5 = DATA.priorityOrder.slice(0,5).map(projectById);
+    mkChart('budgetFc', 'chartBudgetVsForecast', {
+      type:'bar',
+      data:{ labels: top5.map(function(p){ return p.name.length>18 ? p.name.slice(0,17)+'…' : p.name; }),
+        datasets:[
+          { label:'Approved Budget', data: top5.map(function(p){return p.budget;}), backgroundColor:'#B7C6D2', borderRadius:2 },
+          { label:'Expected Final Cost', data: top5.map(function(p){return p.finalCost;}), backgroundColor:ACCENT, borderRadius:2 }
+        ] },
+      options:{ indexAxis:'y', scales:{ x:{ ticks:{ callback:function(v){ return '$'+v+'M'; } }, grid:{color:GRID} }, y:{ grid:{display:false} } },
+        plugins:{ legend:{ position:'bottom' } } }
+    });
+  }
+
+  /* ================= DIAGNOSTIC ================= */
+  function populateSelect(el, selectedId){
+    el.innerHTML = DATA.projects.map(function(p){
+      return '<option value="'+p.id+'"' + (p.id===selectedId?' selected':'') + '>' + p.name + ' — ' + p.riskBand + '</option>';
+    }).join('');
+  }
+
+  function baseLineOpts(extra){
+    var o = { scales:{ x:{ grid:{display:false} }, y:{ grid:{color:GRID} } },
+      plugins:{ legend:{ position:'bottom' } }, interaction:{ intersect:false, mode:'index' } };
+    if (extra && extra.y) o.scales.y = Object.assign(o.scales.y, extra.y);
+    return o;
+  }
+
+  function initDiagnostic(){
+    var sel = $('projectSelect');
+    populateSelect(sel, 'PRJ-014');
+    sel.addEventListener('change', function(){ renderDiagnostic(sel.value); });
+    renderDiagnostic('PRJ-014');
+  }
+
+  function renderDiagnostic(id){
+    var p = projectById(id);
+    var s = DATA.series[id];
+    $('diagName').textContent = p.name;
+    $('diagMeta').textContent = p.ptype + ' · ' + p.city + ', ' + p.state + ' · Approved budget ' + fmtM(p.budget);
+    $('diagBadgeWrap').innerHTML = riskBadgeHTML(p.riskBand);
+    $('diagCostProb').textContent = pct(p.costOverrunProb);
+    $('diagCostBand').textContent = 'Risk Band: ' + p.riskBand;
+    $('diagDelayProb').textContent = pct(p.scheduleDelayProb);
+    $('diagDelayRange').textContent = 'Expected delay: ' + p.delayLow + '–' + p.delayHigh + ' days';
+    $('diagFinalCost').textContent = fmtM(p.finalCost);
+    $('diagVariance').textContent = (p.variancePct>=0?'+':'') + p.variancePct + '% expected variance';
+    $('diagPI').textContent = fmtM(p.piLow) + ' – ' + fmtM(p.piHigh);
+    $('diagConfidence').textContent = 'Model confidence: ' + pct(p.confidence);
+    $('diagCurrentMonth').textContent = 'Month ' + s.currentMonth;
+
+    var lastFin = s.financialProgress[s.financialProgress.length-1];
+    var lastAct = s.actualProgress[s.actualProgress.length-1];
+    var noteSpan = document.querySelector('#progressNote span');
+    noteSpan.textContent = (lastFin - lastAct > 8)
+      ? 'Financial progress is running well ahead of physical progress (' + lastFin.toFixed(0) + '% vs ' + lastAct.toFixed(0) + '%) — cost is being spent faster than work is being completed, a leading indicator of overrun risk.'
+      : 'Financial progress (' + lastFin.toFixed(0) + '%) and physical progress (' + lastAct.toFixed(0) + '%) are broadly aligned — no unusual burn-rate pattern detected.';
+
+    mkChart('cpiSpi', 'chartCpiSpi', {
+      type:'line',
+      data:{ labels:s.months, datasets:[
+        { label:'CPI', data:s.cpi, borderColor:ACCENT, backgroundColor:'transparent', tension:0.3, pointRadius:0, borderWidth:2.2 },
+        { label:'SPI', data:s.spi, borderColor:'#B14A1E', backgroundColor:'transparent', tension:0.3, pointRadius:0, borderWidth:2.2 },
+        { label:'Reference (1.00)', data:s.months.map(function(){return 1;}), borderColor:'#B9C3CB', borderDash:[4,4], pointRadius:0, borderWidth:1 }
+      ] },
+      options: baseLineOpts({ y:{ suggestedMin:0.7, suggestedMax:1.1 } })
+    });
+
+    var cm = s.currentMonth;
+    var actualFull = s.months.map(function(){ return null; });
+    for (var i=0;i<s.actualCost.length;i++) actualFull[i] = s.actualCost[i];
+    var forecastFull = s.months.map(function(){ return null; });
+    for (var j=0;j<s.forecastCost.length;j++) forecastFull[cm-1+j] = s.forecastCost[j];
+
+    mkChart('costTrend', 'chartCostTrend', {
+      type:'line',
+      data:{ labels:s.months, datasets:[
+        { label:'Planned', data:s.plannedCost, borderColor:'#8FA0AD', backgroundColor:'transparent', pointRadius:0, borderWidth:2 },
+        { label:'Actual', data:actualFull, borderColor:ACCENT, backgroundColor:'transparent', pointRadius:0, borderWidth:2.4 },
+        { label:'Forecast', data:forecastFull, borderColor:'#B14A1E', backgroundColor:'transparent', pointRadius:0, borderWidth:2.4, borderDash:[5,4] }
+      ] },
+      options: baseLineOpts({ y:{ ticks:{ callback:function(v){return '$'+v+'M';} } } })
+    });
+
+    var actualProgFull = s.months.map(function(){ return null; });
+    var finProgFull = s.months.map(function(){ return null; });
+    for (var k=0;k<s.actualProgress.length;k++){ actualProgFull[k]=s.actualProgress[k]; finProgFull[k]=s.financialProgress[k]; }
+
+    mkChart('progress', 'chartProgress', {
+      type:'line',
+      data:{ labels:s.months, datasets:[
+        { label:'Planned progress', data:s.plannedProgress, borderColor:'#8FA0AD', backgroundColor:'transparent', pointRadius:0, borderWidth:2 },
+        { label:'Actual (physical)', data:actualProgFull, borderColor:'#25794F', backgroundColor:'transparent', pointRadius:0, borderWidth:2.4 },
+        { label:'Financial progress', data:finProgFull, borderColor:'#B14A1E', backgroundColor:'transparent', pointRadius:0, borderWidth:2.4 }
+      ] },
+      options: baseLineOpts({ y:{ suggestedMin:0, suggestedMax:100, ticks:{ callback:function(v){return v+'%';} } } })
+    });
+
+    mkChart('drivers', 'chartDrivers', {
+      type:'bar',
+      data:{ labels: p.drivers.map(function(d){return d[0];}),
+        datasets:[{ data: p.drivers.map(function(d){return d[1];}),
+          backgroundColor: p.drivers.map(function(d){ return d[1]>=0 ? RISK.High : RISK.Low; }),
+          borderRadius:2 }] },
+      options:{ indexAxis:'y', scales:{ x:{ grid:{color:GRID} }, y:{ grid:{display:false} } },
+        plugins:{ legend:{ display:false },
+          tooltip:{ callbacks:{ label:function(ctx){ return (ctx.parsed.x>=0?'+':'') + ctx.parsed.x.toFixed(2); } } } } }
+    });
+  }
+
+  /* ================= SCENARIO SIMULATOR ================= */
+  var simState = { projectId:'PRJ-014', baseline:null };
+
+  function clamp(v,lo,hi){ return Math.max(lo, Math.min(hi, v)); }
+  function sigmoid(x){ return 1/(1+Math.exp(-x)); }
+  function logit(p){ p = clamp(p, 0.02, 0.98); return Math.log(p/(1-p)); }
+  function bandFromProb(prob){
+    if (prob>=0.75) return 'Critical';
+    if (prob>=0.55) return 'High';
+    if (prob>=0.30) return 'Medium';
+    return 'Low';
+  }
+
+  function computeBaseline(p, s){
+    var lastIdx = s.actualProgress.length - 1;
+    return {
+      changeOrder: Math.round((4 + p.costOverrunProb*16) * 10) / 10,
+      procurementDelay: Math.round(3 + p.scheduleDelayProb*55),
+      physicalProgress: Math.round(s.actualProgress[lastIdx]),
+      costBurn: Math.round(100 * s.actualCost[s.actualCost.length-1] / s.plannedCost[s.currentMonth-1])
+    };
+  }
+
+  function computeScenario(p, baseline, sliders){
+    var dCO = (sliders.changeOrder - baseline.changeOrder) / 10;
+    var dPD = (sliders.procurementDelay - baseline.procurementDelay) / 30;
+    var dProg = (baseline.physicalProgress - sliders.physicalProgress) / 30;
+    var dBurn = (sliders.costBurn - baseline.costBurn) / 25;
+
+    var adjCost = 0.9*dCO + 0.7*dBurn + 0.6*dPD + 0.5*dProg;
+    var newCostProb = sigmoid(logit(p.costOverrunProb) + adjCost);
+
+    var adjSched = 0.5*dCO + 0.3*dBurn + 0.9*dPD + 0.7*dProg;
+    var newDelayProb = sigmoid(logit(p.scheduleDelayProb) + adjSched);
+
+    var scaleFactor = newCostProb / Math.max(0.05, p.costOverrunProb);
+    var newVariance = clamp(p.variancePct * scaleFactor, -5, 45);
+    var newFinalCost = p.budget * (1 + newVariance/100);
+
+    return { costProb:newCostProb, delayProb:newDelayProb, variance:newVariance, finalCost:newFinalCost };
+  }
+
+  function deltaSpan(delta, fmt, goodIsDown){
+    if (Math.abs(delta) < (fmt==='pp'?0.5:0.05)) return '<span class="text-soft mono">—</span>';
+    var up = delta > 0;
+    var bad = goodIsDown ? up : !up;
+    var arrow = up ? '▲' : '▼';
+    var cls = bad ? 'up' : 'down';
+    var text = fmt==='pp' ? (up?'+':'') + Math.round(delta) + 'pp'
+             : fmt==='money' ? (up?'+':'') + '$' + Math.abs(delta).toFixed(1) + 'M'
+             : (up?'+':'') + delta.toFixed(1) + 'pp';
+    return '<span class="kpi-sub ' + cls + '" style="margin:0;">' + arrow + ' ' + text + '</span>';
+  }
+
+  function renderSimulatorResult(){
+    var p = projectById(simState.projectId);
+    var baseline = simState.baseline;
+    var sliders = {
+      changeOrder: parseFloat($('simChangeOrder').value),
+      procurementDelay: parseFloat($('simProcurement').value),
+      physicalProgress: parseFloat($('simProgress').value),
+      costBurn: parseFloat($('simBurn').value)
+    };
+    $('valChangeOrder').textContent = sliders.changeOrder + '%';
+    $('valProcurement').textContent = sliders.procurementDelay + ' d';
+    $('valProgress').textContent = sliders.physicalProgress + '%';
+    $('valBurn').textContent = sliders.costBurn + '%';
+
+    var r = computeScenario(p, baseline, sliders);
+    var band = bandFromProb(r.costProb);
+
+    $('gaugeValue').textContent = pct(r.costProb);
+    $('simBadgeWrap').innerHTML = riskBadgeHTML(band);
+    $('simDelayProb').textContent = pct(r.delayProb);
+    $('simFinalCost').textContent = fmtM(r.finalCost);
+    $('simVariance').textContent = (r.variance>=0?'+':'') + r.variance.toFixed(1) + '%';
+
+    $('simDelayDelta').innerHTML = deltaSpan((r.delayProb - p.scheduleDelayProb)*100, 'pp', true);
+    $('simFinalDelta').innerHTML = deltaSpan(r.finalCost - p.finalCost, 'money', true);
+    $('simVarianceDelta').innerHTML = deltaSpan(r.variance - p.variancePct, 'pp2', true);
+
+    mkChart('gauge', 'chartGauge', {
+      type:'doughnut',
+      data:{ datasets:[{ data:[r.costProb*100, 100-r.costProb*100],
+        backgroundColor:[RISK[band], '#E4E9ED'], borderWidth:0 }] },
+      options:{ rotation:-90, circumference:180, cutout:'75%',
+        plugins:{ legend:{display:false}, tooltip:{enabled:false} } }
+    });
+  }
+
+  function resetSliders(){
+    var p = projectById(simState.projectId);
+    var s = DATA.series[simState.projectId];
+    simState.baseline = computeBaseline(p, s);
+    $('simChangeOrder').value = simState.baseline.changeOrder;
+    $('simProcurement').value = simState.baseline.procurementDelay;
+    $('simProgress').value = simState.baseline.physicalProgress;
+    $('simBurn').value = simState.baseline.costBurn;
+    renderSimulatorResult();
+  }
+
+  function initSimulator(){
+    var sel = $('simProjectSelect');
+    populateSelect(sel, 'PRJ-014');
+    sel.addEventListener('change', function(){
+      simState.projectId = sel.value;
+      resetSliders();
+    });
+    ['simChangeOrder','simProcurement','simProgress','simBurn'].forEach(function(id){
+      $(id).addEventListener('input', renderSimulatorResult);
+    });
+    $('btnResetScenario').addEventListener('click', resetSliders);
+    $('btnCopyScenario').addEventListener('click', function(){
+      var p = projectById(simState.projectId);
+      var text = 'BuildGuard AI — Scenario Summary (illustrative, not a production prediction)\n' +
+        'Project: ' + p.name + ' (' + p.id + ')\n' +
+        'Cost overrun probability: ' + $('gaugeValue').textContent + '\n' +
+        'Schedule delay probability: ' + $('simDelayProb').textContent + '\n' +
+        'Expected final cost: ' + $('simFinalCost').textContent + '\n' +
+        'Expected variance: ' + $('simVariance').textContent + '\n' +
+        'Inputs — change-order ratio: ' + $('valChangeOrder').textContent +
+        ', procurement delay: ' + $('valProcurement').textContent +
+        ', physical progress: ' + $('valProgress').textContent +
+        ', cost burn: ' + $('valBurn').textContent;
+      var status = $('copyStatus');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function(){
+          status.textContent = 'Copied scenario summary to clipboard.';
+          setTimeout(function(){ status.textContent=''; }, 3000);
+        }).catch(function(){
+          status.textContent = 'Could not access the clipboard in this preview.';
+        });
+      } else {
+        status.textContent = 'Clipboard API not available in this preview.';
+      }
+    });
+    resetSliders();
+  }
+
+  /* ================= MODEL PERFORMANCE ================= */
+  function initPerformance(){
+    mkChart('calibration', 'chartCalibration', {
+      type:'line',
+      data:{ labels:[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9],
+        datasets:[
+          { label:'Perfect calibration', data:[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9], borderColor:'#B9C3CB', borderDash:[4,4], pointRadius:0, borderWidth:1.4 },
+          { label:'Raw model', data:[0.18,0.27,0.31,0.34,0.46,0.52,0.68,0.71,0.84], borderColor:'#B14A1E', backgroundColor:'transparent', pointRadius:3, borderWidth:2 },
+          { label:'Calibrated (isotonic)', data:[0.11,0.19,0.32,0.38,0.49,0.58,0.69,0.79,0.88], borderColor:ACCENT, backgroundColor:'transparent', pointRadius:3, borderWidth:2 }
+        ] },
+      options:{ scales:{ x:{ title:{display:true,text:'Predicted probability'}, grid:{display:false} },
+        y:{ title:{display:true,text:'Observed frequency'}, min:0, max:1, grid:{color:GRID} } },
+        plugins:{ legend:{ position:'bottom' } } }
+    });
+
+    var sweep = PERF.sweep_display;
+    mkChart('threshold', 'chartThreshold', {
+      data:{ datasets:[
+        { type:'line', label:'Expected cost / 1,000 projects', data: sweep.map(function(r){return {x:r.threshold,y:r.cost};}),
+          borderColor:ACCENT, backgroundColor:'transparent', borderWidth:2.2, pointRadius:3, tension:0.25 },
+        { type:'line', label:'Selected threshold (' + PERF.best_threshold.threshold + ')',
+          data:[{x:PERF.best_threshold.threshold, y:PERF.best_threshold.cost}],
+          showLine:false, pointRadius:7, pointBackgroundColor:ACCENT_BRIGHT, pointBorderColor:'#0E3652', pointBorderWidth:1.5 }
+      ] },
+      options:{ scales:{ x:{ type:'linear', min:0, max:1, title:{display:true,text:'Decision threshold'}, grid:{display:false} },
+        y:{ title:{display:true,text:'Expected business cost (index)'}, grid:{color:GRID} } },
+        plugins:{ legend:{ position:'bottom' } } }
+    });
+
+    var tbody = $('thresholdTableBody');
+    tbody.innerHTML = sweep.map(function(r){
+      var isBestNear = Math.abs(r.threshold - PERF.best_threshold.threshold) < 0.06;
+      return '<tr' + (isBestNear ? ' style="background:var(--accent-soft);"' : '') + '>' +
+        '<td class="mono">' + r.threshold.toFixed(2) + '</td>' +
+        '<td class="num mono">' + (r.recall*100).toFixed(1) + '%</td>' +
+        '<td class="num mono">' + (r.precision*100).toFixed(1) + '%</td>' +
+        '<td class="num mono">' + r.fn + '</td>' +
+        '<td class="num mono">' + r.fp + '</td>' +
+        '<td class="num mono">' + r.cost + '</td>' +
+      '</tr>';
+    }).join('') +
+      '<tr style="background:var(--accent-soft);font-weight:700;">' +
+        '<td class="mono">' + PERF.best_threshold.threshold.toFixed(2) + ' (selected)</td>' +
+        '<td class="num mono">' + (PERF.best_threshold.recall*100).toFixed(1) + '%</td>' +
+        '<td class="num mono">' + (PERF.best_threshold.precision*100).toFixed(1) + '%</td>' +
+        '<td class="num mono">' + PERF.best_threshold.fn + '</td>' +
+        '<td class="num mono">' + PERF.best_threshold.fp + '</td>' +
+        '<td class="num mono">' + PERF.best_threshold.cost + '</td>' +
+      '</tr>';
+
+    mkChart('coverage', 'chartCoverage', {
+      type:'bar',
+      data:{ labels:['Nominal (target)','Empirical (observed)'],
+        datasets:[{ data:[80, 79.4], backgroundColor:[ '#B7C6D2', ACCENT ], borderRadius:3 }] },
+      options:{ indexAxis:'y', scales:{ x:{ min:0, max:100, ticks:{callback:function(v){return v+'%';}} }, y:{ grid:{display:false} } },
+        plugins:{ legend:{ display:false } } }
+    });
+
+    setupTabs();
+  }
+
+  /* ================= MODEL HEALTH ================= */
+  function initHealth(){
+    var feats = ['CPI','SPI','Change-order ratio','Procurement delay','Progress gap'];
+    var psi = [0.06,0.09,0.14,0.27,0.08];
+    var colors = psi.map(function(v){ return v>=0.25?RISK.Critical : v>=0.10?RISK.Medium : RISK.Low; });
+
+    mkChart('psi', 'chartPsi', {
+      data:{ labels:feats,
+        datasets:[
+          { type:'bar', label:'PSI', data:psi, backgroundColor:colors, borderRadius:3, order:2 },
+          { type:'line', label:'Warning (0.10)', data:feats.map(function(){return 0.10;}), borderColor:'#A9700A', borderDash:[5,4], pointRadius:0, borderWidth:1.4, order:1 },
+          { type:'line', label:'Critical (0.25)', data:feats.map(function(){return 0.25;}), borderColor:'#A32620', borderDash:[5,4], pointRadius:0, borderWidth:1.4, order:1 }
+        ] },
+      options:{ scales:{ x:{ grid:{display:false} }, y:{ grid:{color:GRID}, suggestedMax:0.32 } },
+        plugins:{ legend:{ position:'bottom' } } }
+    });
+
+    mkChart('predDrift', 'chartPredDrift', {
+      type:'bar',
+      data:{ labels:['Low','Medium','High','Critical'],
+        datasets:[
+          { label:'Training baseline', data:[42,31,19,8], backgroundColor:'#B7C6D2', borderRadius:3 },
+          { label:'Last 30 days', data:[35,29,24,12], backgroundColor:ACCENT, borderRadius:3 }
+        ] },
+      options:{ scales:{ x:{ grid:{display:false} }, y:{ ticks:{callback:function(v){return v+'%';}}, grid:{color:GRID} } },
+        plugins:{ legend:{ position:'bottom' } } }
+    });
+  }
+
+  /* ================= INIT ================= */
+  document.addEventListener('DOMContentLoaded', function(){
+    setupNav();
+    setupMobileNav();
+    initOverview();
+    initialized.overview = true;
+  });
+
+  window.addEventListener('resize', resizeAllCharts);
+
+})();
+
+</script>
+</body>
+</html>
