@@ -1,0 +1,21 @@
+project_id,project_type,city,state,gross_floor_area_m2,number_of_towers,number_of_units,construction_standard,planned_start_date,planned_completion_date,approved_budget
+PRJ-0001,industrial,Recife,PE,4225.6,1,0,standard,2021-01-31,2024-08-31,10671973.3
+PRJ-0002,industrial,Rio de Janeiro,RJ,11954.9,1,0,economy,2021-03-10,2024-10-10,23459359.21
+PRJ-0003,commercial,Rio de Janeiro,RJ,3924.7,1,0,standard,2025-07-20,2028-03-20,9666565.36
+PRJ-0004,residential,Vitoria,ES,4554.8,1,70,luxury,2022-10-15,2025-02-15,28492484.96
+PRJ-0005,residential,Goiania,GO,4204.4,1,65,economy,2021-05-15,2024-06-15,7075176.35
+PRJ-0006,commercial,Belem,PA,2664.5,1,0,economy,2021-04-01,2023-09-01,5045662.54
+PRJ-0007,commercial,Campinas,SP,4519.2,1,0,high_standard,2021-10-09,2024-11-09,17333100.78
+PRJ-0008,residential,Vitoria,ES,5618.3,1,86,high_standard,2021-03-05,2024-02-05,21843457.32
+PRJ-0009,industrial,Porto Alegre,RS,7061.6,1,0,high_standard,2021-05-04,2024-09-04,24975425.96
+PRJ-0010,commercial,Brasilia,DF,5394.4,1,0,standard,2023-09-05,2024-11-05,14253249.86
+PRJ-0011,residential,Salvador,BA,2870.3,1,44,economy,2021-07-22,2023-11-22,4698055.66
+PRJ-0012,residential,Recife,PE,4386.9,1,67,standard,2021-01-18,2024-10-18,11106300.36
+PRJ-0013,industrial,Recife,PE,6695.1,2,0,standard,2021-03-02,2024-09-02,16109208.6
+PRJ-0014,commercial,Sao Paulo,SP,3830.5,1,0,economy,2022-03-21,2024-09-21,6661456.24
+PRJ-0015,commercial,Belem,PA,4914.2,1,0,standard,2025-02-22,2026-05-22,11395591.57
+PRJ-0016,residential,Belem,PA,3405.7,1,52,luxury,2023-02-21,2024-11-21,20098070.04
+PRJ-0017,residential,Rio de Janeiro,RJ,6117.2,1,94,luxury,2022-06-12,2024-10-12,32457465.12
+PRJ-0018,industrial,Porto Alegre,RS,18049.8,1,0,high_standard,2021-07-03,2024-07-03,62973139.22
+PRJ-0019,commercial,Belo Horizonte,MG,8363.7,1,0,economy,2022-02-27,2024-08-27,14284092.86
+PRJ-0020,mixed_use,Belo Horizonte,MG,5936.6,1,0,standard,2021-09-11,2024-01-11,13095140.28

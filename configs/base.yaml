@@ -8,6 +8,9 @@ seed: 42
 
 paths:
   data_sample: "data/sample"
+  # Full generated dataset -- gitignored (data/processed/), regenerated on
+  # demand by `make data`. data_sample/ is the small, committed subset.
+  data_processed: "data/processed"
   models_dir: "models"
   reports_dir: "reports"
   mlflow_tracking_uri: "file:./mlruns"
@@ -25,17 +28,37 @@ targets:
   schedule_delay_tolerance_days: 14
 
 synthetic_data:
-  # Target scale per Section 8.2 (range 100-500 projects). 220 chosen to stay
-  # comfortably inside Streamlit Community Cloud free-tier memory/CPU limits
-  # while still giving enough rows per project-type/size/geography slice for
-  # meaningful subgroup evaluation (Section 18).
-  n_projects: 220
+  # Target scale per Section 8.2 (range 100-500 projects). 400 gives, at an
+  # average project duration of ~30 months (see monthly_observations_*),
+  # roughly 400*30 = 12,000 snapshot rows -- comfortably inside the
+  # 10,000-100,000 snapshot target even after accounting for
+  # shorter-duration projects, while staying inside Streamlit Community
+  # Cloud free-tier memory/CPU limits.
+  n_projects: 400
   work_packages_per_project_min: 20
   work_packages_per_project_max: 80
-  suppliers_total_min: 100
-  suppliers_total_max: 1000
+  # Distinct supplier pool the portfolio draws from (Section 8.2: 100-1,000
+  # suppliers). A pool smaller than the project count creates realistic
+  # supplier concentration -- some suppliers serve many projects.
+  suppliers_pool_size: 400
+  suppliers_per_project_min: 3
+  suppliers_per_project_max: 12
   monthly_observations_min: 12
   monthly_observations_max: 48
+  # "Today" in the synthetic universe: fixed, never datetime.now(), so
+  # `make data` is byte-identical across runs and machines (Section 26).
+  reference_date: "2026-01-01"
+  # How far back planned_start_date can be sampled from reference_date --
+  # gives a realistic mix of completed and in-flight projects.
+  history_years: 5
+  # A project must start at least this many months before reference_date,
+  # so every generated project has at least one snapshot.
+  min_start_lead_months: 1
+  # Fraction of projects still in-flight (not yet actually completed) as of
+  # reference_date -- enough to demo "live" prediction on ongoing projects
+  # later (Project Diagnostic / Scenario Simulator), while the rest are
+  # resolved and carry ground-truth labels for training.
+  in_flight_fraction: 0.12
 
 split:
   # Chronological split, oldest-first. See docs/adr/0003-temporal-validation.md.

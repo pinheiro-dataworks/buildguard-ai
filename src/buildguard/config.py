@@ -8,6 +8,7 @@ rather than being hard-coded at the call site (Section 27/37 of
 
 from __future__ import annotations
 
+import datetime as dt
 from functools import cache
 from pathlib import Path
 
@@ -20,6 +21,7 @@ CONFIGS_DIR = PROJECT_ROOT / "configs"
 
 class PathsConfig(BaseModel):
     data_sample: Path
+    data_processed: Path
     models_dir: Path
     reports_dir: Path
     mlflow_tracking_uri: str
@@ -34,19 +36,28 @@ class SyntheticDataConfig(BaseModel):
     n_projects: int = Field(ge=1)
     work_packages_per_project_min: int = Field(ge=1)
     work_packages_per_project_max: int = Field(ge=1)
-    suppliers_total_min: int = Field(ge=1)
-    suppliers_total_max: int = Field(ge=1)
+    suppliers_pool_size: int = Field(ge=1)
+    suppliers_per_project_min: int = Field(ge=1)
+    suppliers_per_project_max: int = Field(ge=1)
     monthly_observations_min: int = Field(ge=1)
     monthly_observations_max: int = Field(ge=1)
+    reference_date: dt.date
+    history_years: int = Field(ge=1)
+    min_start_lead_months: int = Field(ge=1)
+    in_flight_fraction: float = Field(ge=0, le=1)
 
     @model_validator(mode="after")
     def _check_ranges(self) -> SyntheticDataConfig:
         if self.work_packages_per_project_min > self.work_packages_per_project_max:
             raise ValueError("work_packages_per_project_min must be <= _max")
-        if self.suppliers_total_min > self.suppliers_total_max:
-            raise ValueError("suppliers_total_min must be <= suppliers_total_max")
+        if self.suppliers_per_project_min > self.suppliers_per_project_max:
+            raise ValueError("suppliers_per_project_min must be <= suppliers_per_project_max")
+        if self.suppliers_per_project_max > self.suppliers_pool_size:
+            raise ValueError("suppliers_per_project_max cannot exceed suppliers_pool_size")
         if self.monthly_observations_min > self.monthly_observations_max:
             raise ValueError("monthly_observations_min must be <= _max")
+        if self.min_start_lead_months > self.monthly_observations_min:
+            raise ValueError("min_start_lead_months must be <= monthly_observations_min")
         return self
 
 
