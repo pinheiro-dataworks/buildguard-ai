@@ -47,6 +47,11 @@ def _base_config_dict(**synthetic_data_overrides: Any) -> dict[str, Any]:
         "targets": {"cost_overrun_tolerance": 0.1, "schedule_delay_tolerance_days": 14},
         "synthetic_data": synthetic_data,
         "split": {"train_fraction": 0.6, "calibration_fraction": 0.2, "test_fraction": 0.2},
+        "features": {
+            "lifecycle_early_threshold": 0.33,
+            "lifecycle_late_threshold": 0.66,
+            "trend_window_months": 3,
+        },
     }
 
 
@@ -114,3 +119,16 @@ def test_min_start_lead_months_cannot_exceed_min_duration(tmp_path: Path) -> Non
 def test_missing_config_file_raises(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError):
         load_base_config(tmp_path / "does_not_exist.yaml")
+
+
+def test_lifecycle_thresholds_must_be_ordered(tmp_path: Path) -> None:
+    data = _base_config_dict()
+    data["features"] = {
+        "lifecycle_early_threshold": 0.7,
+        "lifecycle_late_threshold": 0.3,
+        "trend_window_months": 3,
+    }
+    bad_path = _write_config(tmp_path, "bad_lifecycle.yaml", data)
+
+    with pytest.raises(ValidationError):
+        load_base_config(bad_path)

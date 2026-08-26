@@ -61,6 +61,18 @@ class SyntheticDataConfig(BaseModel):
         return self
 
 
+class FeaturesConfig(BaseModel):
+    lifecycle_early_threshold: float = Field(gt=0, lt=1)
+    lifecycle_late_threshold: float = Field(gt=0, lt=1)
+    trend_window_months: int = Field(ge=1)
+
+    @model_validator(mode="after")
+    def _check_thresholds_ordered(self) -> FeaturesConfig:
+        if self.lifecycle_early_threshold >= self.lifecycle_late_threshold:
+            raise ValueError("lifecycle_early_threshold must be < lifecycle_late_threshold")
+        return self
+
+
 class SplitConfig(BaseModel):
     train_fraction: float = Field(gt=0, lt=1)
     calibration_fraction: float = Field(gt=0, lt=1)
@@ -80,6 +92,7 @@ class BaseAppConfig(BaseModel):
     targets: TargetsConfig
     synthetic_data: SyntheticDataConfig
     split: SplitConfig
+    features: FeaturesConfig
 
 
 class CostMatrix(BaseModel):

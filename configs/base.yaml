@@ -65,3 +65,16 @@ split:
   train_fraction: 0.60
   calibration_fraction: 0.20
   test_fraction: 0.20
+
+features:
+  # Lifecycle position (elapsed / planned duration) boundaries used to
+  # bucket a snapshot into early/mid/late stage (Section 18 slice
+  # analysis dimension). Thirds, the simplest defensible default absent
+  # domain-specific phase-gate data.
+  lifecycle_early_threshold: 0.33
+  lifecycle_late_threshold: 0.66
+  # Trailing window (months) used for CPI/SPI trend features -- captures
+  # "persistent deterioration" (Section 8.2) without being so short that
+  # single-month noise dominates, or so long that it washes out real
+  # recent shifts.
+  trend_window_months: 3
