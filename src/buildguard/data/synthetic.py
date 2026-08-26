@@ -31,6 +31,7 @@ import numpy as np
 import pandas as pd
 
 from buildguard.config import BaseAppConfig, SyntheticDataConfig
+from buildguard.data.economic_index import DemoIndexProvider, EconomicIndexProvider
 from buildguard.data.enums import (
     ChangeOrderCategory,
     ChangeOrderStatus,
@@ -39,8 +40,6 @@ from buildguard.data.enums import (
     SupplierCategory,
 )
 from buildguard.features import evm
-
-ECONOMIC_INDEX_NAME = "INCC-DEMO"
 
 _CITIES: tuple[tuple[str, str], ...] = (
     ("Sao Paulo", "SP"),
@@ -163,48 +162,6 @@ def _weighted_choice(rng: np.random.Generator, weights: dict[str, float]) -> str
     probs = np.array(list(weights.values()), dtype=float)
     probs = probs / probs.sum()
     return str(rng.choice(keys, p=probs))
-
-
-def _generate_economic_index(cfg: SyntheticDataConfig) -> pd.DataFrame:
-    """Deterministic, monotonically non-decreasing demo construction index.
-
-    Not a real economic series (Section 8.3: the public app always defaults
-    to a demo index, never an unverified external one). Monthly growth is a
-    smooth, seeded sine-modulated ramp -- deterministic, no per-call RNG
-    draws needed, so it's stable independent of how many random draws the
-    rest of the generator happens to make.
-    """
-    start = pd.Timestamp(cfg.reference_date) - pd.DateOffset(years=cfg.history_years, months=1)
-    end = pd.Timestamp(cfg.reference_date)
-    months = pd.date_range(start=start, end=end, freq="ME")
-
-    base_monthly_growth = 0.005  # ~6%/year illustrative demo drift
-    seasonal_amplitude = 0.0015
-    values = [100.0]
-    for i in range(1, len(months)):
-        growth = base_monthly_growth + seasonal_amplitude * math.sin(2 * math.pi * i / 12)
-        values.append(values[-1] * (1.0 + max(growth, 0.0)))
-
-    return pd.DataFrame(
-        {
-            "reference_month": months,
-            "index_name": ECONOMIC_INDEX_NAME,
-            "index_value": values,
-        }
-    )
-
-
-def _index_value_at(economic_index: pd.DataFrame, date: pd.Timestamp) -> float:
-    month_end = date + pd.offsets.MonthEnd(0)
-    exact = economic_index.loc[economic_index["reference_month"] == month_end, "index_value"]
-    if len(exact) > 0:
-        return float(exact.iloc[0])
-    # Fall back to the nearest available month (edge dates outside the
-    # generated index range) rather than raising -- this is an internal
-    # helper the generator controls, so this only triggers on inclusive
-    # date-boundary rounding, never on missing real-world data.
-    idx = (economic_index["reference_month"] - month_end).abs().idxmin()
-    return float(economic_index.loc[idx, "index_value"])  # type: ignore[arg-type]
 
 
 def _sample_projects(rng: np.random.Generator, cfg: SyntheticDataConfig) -> pd.DataFrame:
@@ -347,7 +304,7 @@ def _simulate_snapshots(
     projects: pd.DataFrame,
     risk_profiles: dict[str, _RiskProfile],
     change_orders: pd.DataFrame,
-    economic_index: pd.DataFrame,
+    index_provider: EconomicIndexProvider,
     rng: np.random.Generator,
     reference_date: pd.Timestamp,
 ) -> pd.DataFrame:
@@ -419,8 +376,8 @@ def _simulate_snapshots(
             )
             actual_cost_real_total = actual_cost_real + cumulative_co_real
 
-            inflation_multiplier = _index_value_at(economic_index, snapshot_date) / _index_value_at(
-                economic_index, planned_start
+            inflation_multiplier = index_provider.value_at(snapshot_date) / index_provider.value_at(
+                planned_start
             )
             actual_cost_nominal = actual_cost_real_total * inflation_multiplier
 
@@ -574,12 +531,15 @@ def generate_portfolio(config: BaseAppConfig) -> PortfolioDataset:
     reference_date = pd.Timestamp(cfg.reference_date)
     rng = np.random.default_rng(config.seed)
 
-    economic_index = _generate_economic_index(cfg)
+    index_provider = DemoIndexProvider(
+        reference_date=cfg.reference_date, history_years=cfg.history_years
+    )
+    economic_index = index_provider.get_series()
     projects_internal = _sample_projects(rng, cfg)
     risk_profiles = _sample_risk_profiles(rng, projects_internal)
     change_orders = _generate_change_orders(rng, projects_internal, risk_profiles)
     snapshots = _simulate_snapshots(
-        projects_internal, risk_profiles, change_orders, economic_index, rng, reference_date
+        projects_internal, risk_profiles, change_orders, index_provider, rng, reference_date
     )
     work_packages = _generate_work_packages(rng, projects_internal, risk_profiles, snapshots, cfg)
     suppliers = _generate_suppliers(rng, projects_internal, risk_profiles, cfg)

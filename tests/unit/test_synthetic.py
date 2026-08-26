@@ -8,7 +8,8 @@ import pytest
 
 from buildguard.config import BaseAppConfig, load_base_config
 from buildguard.data import contracts
-from buildguard.data.synthetic import PortfolioDataset, _index_value_at, generate_portfolio
+from buildguard.data.economic_index import DemoIndexProvider
+from buildguard.data.synthetic import PortfolioDataset, generate_portfolio
 
 pytestmark = pytest.mark.unit
 
@@ -139,9 +140,14 @@ class TestRealism:
         if len(completed) == 0:
             pytest.skip("no completed projects in this small sample")
 
+        cfg = _small_config().synthetic_data
+        provider = DemoIndexProvider(
+            reference_date=cfg.reference_date, history_years=cfg.history_years
+        )
+
         def _real_cost(row: pd.Series) -> float:
-            index_at_start = _index_value_at(dataset.economic_index, row["planned_start_date"])
-            index_at_end = _index_value_at(dataset.economic_index, row["snapshot_date"])
+            index_at_start = provider.value_at(row["planned_start_date"])
+            index_at_end = provider.value_at(row["snapshot_date"])
             return float(row["actual_cost"] * index_at_start / index_at_end)
 
         completed["real_actual_cost"] = completed.apply(_real_cost, axis=1)
