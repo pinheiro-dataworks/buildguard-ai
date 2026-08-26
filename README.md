@@ -61,15 +61,32 @@ project data is used anywhere in this repository. See
 [`docs/DATA_PRIVACY.md`](docs/DATA_PRIVACY.md) for the full data policy.
 
 ## 5. Data Architecture
-*(To be documented as the data layer lands — see
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).)*
+
+Six core tables (Projects, Project Snapshots, Work Packages, Change
+Orders, Suppliers, Economic Index), each enforced by a `pandera` data
+contract (`src/buildguard/data/contracts.py`), generated deterministically
+by `src/buildguard/data/synthetic.py`. Full details, including the EVM and
+inflation-normalization methodology, in
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and
+[`docs/DATA_DICTIONARY.md`](docs/DATA_DICTIONARY.md).
 
 ## 6. Exploratory Data Analysis
 *(Notebooks under `notebooks/` — to be added.)*
 
 ## 7. Feature Engineering
-*(EVM metrics, inflation-adjusted cost normalization, temporal feature
-pipeline — to be documented as they land.)*
+
+- **EVM** (`features/evm.py`): CV, SV, CPI, SPI, two independent EAC
+  baselines, ETC, VAC.
+- **Inflation normalization** (`features/inflation.py`): decomposes nominal
+  cost variance into an operational (execution) component and an inflation
+  component — see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) Section 5.
+- **Temporal / lifecycle** (`features/temporal.py`): lifecycle position and
+  stage, plus trend/persistence signals (e.g. consecutive months of SPI
+  decline).
+
+The leakage-safe assembly of these into a single training/serving feature
+pipeline (`features/pipeline.py`) lands in Phase 3, alongside the temporal
+train/calibration/test split.
 
 ## 8. Modeling
 *(Baselines and candidate models — to be documented as they land.)*

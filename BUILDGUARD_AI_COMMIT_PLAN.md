@@ -14,9 +14,9 @@ match reality — this document follows the work, not the other way around.
 Check off an item (`- [x]`) once it is actually committed. Update the
 **Progress** line at the top after every session.
 
-**Progress:** 8 / 55 planned commits actually committed (C09–C13 code is
+**Progress:** 13 / 55 planned commits actually committed (C17–C20 code is
 written and tested, ready to commit) · 0 / 12 PRs opened · Phase 0 complete,
-Phase 1 ~55% complete.
+Phase 1 complete, Phase 2 ~85% complete.
 
 ---
 
@@ -30,9 +30,9 @@ earlier ones (e.g. no modeling before the temporal split exists).
 |---|---|---|---|
 | A — Repository foundation | 0 | #1 Project foundation | ✅ Committed (C01–C05) |
 | B — Data foundation core | 1 | #1 / #2 | ✅ Committed (C06–C08) |
-| C — Synthetic portfolio generator | 1 | #2 Synthetic portfolio generator | ✅ Done (uncommitted, ready to commit) |
-| D — EDA & data understanding | 1–2 | #2 (docs) | ⬜ Not started |
-| E — Inflation & temporal features | 2 | #3 EVM feature engine (cont'd) | ⬜ Not started |
+| C — Synthetic portfolio generator | 1 | #2 Synthetic portfolio generator | ✅ Committed (C09–C13) |
+| D — EDA & data understanding | 1–2 | #2 (docs) | ⬜ Not started (skipped ahead to E; notebooks are documentation-only and don't block anything) |
+| E — Inflation & temporal features | 2 | #3 EVM feature engine (cont'd) | ✅ Done (uncommitted, ready to commit) |
 | F — Anti-leakage & split | 3 | #4 Temporal anti-leakage split | ⬜ Not started |
 | G — Baselines | 3 | #5 Baseline models | ⬜ Not started |
 | H — Advanced modeling | 4 | #6/#7/#8 Cost/schedule/final-cost models | ⬜ Not started |
@@ -109,10 +109,22 @@ file to match."
 
 ## Session E — Inflation & Temporal Features (Phase 2)
 
-- [ ] **C17** `feat: add inflation-adjusted cost normalization layer`
-- [ ] **C18** `feat: add temporal snapshot feature pipeline`
-- [ ] **C19** `test: add inflation and temporal feature edge-case tests`
-- [ ] **C20** `docs: add EVM and inflation methodology notes to ARCHITECTURE.md`
+Done (uncommitted, ready to commit). Revised from the original C17-C20:
+building `inflation.py` surfaced that the economic-index generation logic
+living privately inside `synthetic.py` needed to become the real
+`EconomicIndexProvider` interface (Section 8.3) first, since `inflation.py`
+needs the same index both for historical (generator) and future
+(inference-time) dates -- so that refactor became its own commit ahead of
+the feature work it unblocks.
+
+- [x] **C17** `refactor: extract EconomicIndexProvider from the synthetic generator`
+  `src/buildguard/data/economic_index.py` (new: `EconomicIndexProvider`, `DemoIndexProvider`, `ExternalLicensedProvider` placeholder), `src/buildguard/data/synthetic.py` (now consumes the provider instead of a private duplicate), `tests/unit/test_synthetic.py`, `tests/unit/test_economic_index.py`
+- [x] **C18** `feat: add inflation-adjusted cost normalization layer`
+  `src/buildguard/features/inflation.py`, `tests/unit/test_inflation.py` -- `real_actual_cost`, `real_budget`, `operational_variance`, `inflation_component`; decomposition identity tested against `evm.cost_variance`
+- [x] **C19** `feat: add temporal lifecycle and trend features`
+  `src/buildguard/features/temporal.py`, `tests/unit/test_temporal.py`, `configs/base.yaml` (+`features:` section), `src/buildguard/config.py` (+`FeaturesConfig`), `tests/unit/test_config.py`
+- [x] **C20** `docs: add architecture doc and update README for data/feature layers`
+  `docs/ARCHITECTURE.md` (new), `README.md`, `CHANGELOG.md`, `BUILDGUARD_AI_COMMIT_PLAN.md`
 
 **→ PR #3 "EVM & feature engine" (extends C08)**
 
@@ -220,6 +232,7 @@ This is where [`docs/design/UI_DESIGN_SPEC.md`](docs/design/UI_DESIGN_SPEC.md)
 
 ## Next action
 
-Commit **C09–C13** now (Session C), open PR #2, then start Session D (EDA
-notebooks) or jump straight to Session E (inflation & temporal features) --
-either order is fine since D is documentation-only and doesn't block E.
+Commit **C17–C20** now (Session E), open PR #3, then either backfill
+Session D (EDA notebooks, documentation-only, low priority) or move on to
+Session F (anti-leakage temporal split) -- the next piece that actually
+blocks modeling.

@@ -42,5 +42,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `data/processed/` (gitignored) and a small 20-project sample to
   `data/sample/` (committed) from the same run.
 - `docs/DATA_DICTIONARY.md`: column-level reference for all six tables.
+- `EconomicIndexProvider` interface (`src/buildguard/data/economic_index.py`,
+  Section 8.3): `DemoIndexProvider` (deterministic illustrative index, used
+  by the generator and, by default, everywhere else) and an intentionally
+  unimplemented `ExternalLicensedProvider` placeholder. The synthetic
+  generator was refactored to consume this instead of its own private copy
+  of the same logic.
+- Inflation-adjusted cost normalization
+  (`src/buildguard/features/inflation.py`, Section 10): decomposes nominal
+  cost variance into an operational (execution) component and an inflation
+  component, with the identity `nominal = operational + inflation` tested
+  directly against `evm.cost_variance` and validated against real generated
+  data (exact decomposition, zero error).
+- Temporal / lifecycle features (`src/buildguard/features/temporal.py`):
+  lifecycle position/stage and trend/persistence signals (e.g. consecutive
+  months of SPI decline) — captures "persistent deterioration" (Section
+  8.2) that a single snapshot's ratios can't express alone.
+- `docs/ARCHITECTURE.md`: system overview, package layout, EVM and
+  inflation-normalization methodology.
 - 98% test coverage on everything shipped so far (`tests/unit/`,
   `tests/contracts/`); Ruff, Ruff format, and Mypy (`--strict`) all clean.
