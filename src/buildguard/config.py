@@ -73,6 +73,10 @@ class FeaturesConfig(BaseModel):
         return self
 
 
+class BaselinesConfig(BaseModel):
+    cpi_risk_threshold: float = Field(gt=0)
+
+
 class SplitConfig(BaseModel):
     train_fraction: float = Field(gt=0, lt=1)
     calibration_fraction: float = Field(gt=0, lt=1)
@@ -93,6 +97,7 @@ class BaseAppConfig(BaseModel):
     synthetic_data: SyntheticDataConfig
     split: SplitConfig
     features: FeaturesConfig
+    baselines: BaselinesConfig
 
 
 class CostMatrix(BaseModel):

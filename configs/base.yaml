@@ -78,3 +78,11 @@ features:
   # single-month noise dominates, or so long that it washes out real
   # recent shifts.
   trend_window_months: 3
+
+baselines:
+  # Domain-rule classification baseline (Section 13's own example):
+  # "CPI < 0.90 -> High Cost Risk." 0.90 is a common informal
+  # project-controls rule of thumb (>10% adverse cost variance is worth
+  # flagging), kept distinct from targets.cost_overrun_tolerance, which
+  # governs the *label* (final outcome), not this real-time heuristic.
+  cpi_risk_threshold: 0.90

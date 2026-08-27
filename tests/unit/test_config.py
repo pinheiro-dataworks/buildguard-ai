@@ -52,6 +52,7 @@ def _base_config_dict(**synthetic_data_overrides: Any) -> dict[str, Any]:
             "lifecycle_late_threshold": 0.66,
             "trend_window_months": 3,
         },
+        "baselines": {"cpi_risk_threshold": 0.90},
     }
 
 
