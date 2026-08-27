@@ -114,8 +114,22 @@ rationale and trade-offs in [ADR-0006](docs/adr/0006-model-selection.md).
 Calibration, thresholding, and uncertainty land in the next phase.
 
 ## 9. Evaluation
-*(Classification/regression metrics, calibration, slice analysis — to be
-documented as they land.)*
+
+**Calibration** (`models/calibration.py`, `make calibrate`): isotonic
+calibration improves both classifiers' Brier score (cost-overrun 0.133 →
+0.122; schedule-delay 0.072 → 0.059) and becomes the production artifact.
+
+**Threshold** (`models/thresholds.py`): optimized against
+`configs/business.yaml`'s cost matrix, never a silent 0.50 default —
+cost-overrun risk at 0.080 (98% recall / 68% precision), schedule-delay
+risk at 0.140 (98% recall / 86% precision).
+
+**Uncertainty** (`models/uncertainty.py`): split-conformal 80% interval
+around the final-cost estimate — ±$3.09M, empirically achieving 0.801
+coverage. Full rationale in [ADR-0007](docs/adr/0007-calibration-strategy.md),
+[ADR-0008](docs/adr/0008-threshold-policy.md), [ADR-0009](docs/adr/0009-uncertainty-method.md).
+
+Slice analysis and explainability land in the next phase.
 
 ## 10. Results
 *(Final metrics — populated after the test-set evaluation, once.)*
@@ -135,11 +149,12 @@ prediction service against the synthetic demo dataset. See
 ```bash
 git clone <repo-url>
 cd buildguard-ai
-make setup   # uv-managed environment
-make data    # generate the synthetic demo dataset
-make train   # train and evaluate models (once modeling lands)
-make test    # unit, integration, leakage, contract tests
-make app     # run the Streamlit app locally
+make setup     # uv-managed environment
+make data      # generate the synthetic demo dataset
+make train     # train and select the three core champion models
+make calibrate # calibrate probabilities, optimize thresholds, quantify uncertainty
+make test      # unit, integration, leakage, contract tests
+make app       # run the Streamlit app locally (once built)
 ```
 
 Requires Python 3.11 and [`uv`](https://docs.astral.sh/uv/).

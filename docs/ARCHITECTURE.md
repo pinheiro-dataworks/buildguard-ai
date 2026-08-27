@@ -58,6 +58,9 @@ computation, so the whole chain is independently unit-testable without I/O.
 | `src/buildguard/models/classification.py` | Candidate classifiers + Optuna tuning (Section 14/15) |
 | `src/buildguard/models/regression.py` | Candidate regressors + Optuna tuning (Section 14/15) |
 | `src/buildguard/models/tracking.py` | MLflow experiment tracking helpers (Section 25) |
+| `src/buildguard/models/calibration.py` | Probability calibration comparison (Section 16) |
+| `src/buildguard/models/thresholds.py` | Business-cost threshold optimization (Section 17) |
+| `src/buildguard/models/uncertainty.py` | Split-conformal prediction intervals (Section 19) |
 
 See [ADR-0001](adr/0001-project-architecture.md) for why this layout was
 chosen over alternatives.
@@ -226,10 +229,48 @@ model, and every downstream document (model card, UI copy) must say so.
 Full trade-off discussion (interpretability, latency, why LightGBM over
 XGBoost/CatBoost) in [ADR-0006](adr/0006-model-selection.md).
 
-## 10. What's not built yet
+## 10. Calibration, threshold, and uncertainty (Section 16/17/19)
 
-Calibration/threshold/uncertainty, explainability, monitoring, the FastAPI
-service, and the Streamlit app are all still pending -- see
+`scripts/calibrate.py` (`make calibrate`) is the post-training pass: it
+loads the champions saved by `scripts/train.py`, and on the
+**calibration** split only (test stays untouched):
+
+- **Calibration** (`src/buildguard/models/calibration.py`): compares raw
+  vs. sigmoid vs. isotonic calibration by Brier score. Isotonic won both
+  classification tasks -- `cost_overrun` 0.133 -> 0.122, `schedule_delay`
+  0.072 -> 0.059 -- and the calibrated model replaces the raw champion as
+  the saved artifact. Fit directly on `(raw_probability, label)` pairs
+  (Platt scaling via a one-feature `LogisticRegression`, isotonic via
+  `IsotonicRegression`) rather than through
+  `CalibratedClassifierCV`/`FrozenEstimator`, which requires a full
+  sklearn estimator interface that BuildGuard's own baselines don't
+  implement -- the same class of problem hit with MLflow's model logging
+  in Session H. Full rationale: [ADR-0007](adr/0007-calibration-strategy.md).
+- **Threshold optimization** (`src/buildguard/models/thresholds.py`):
+  sweeps 199 candidate thresholds against `configs/business.yaml`'s
+  asymmetric cost matrix (a missed real overrun/delay costs 10x/8x a
+  false alarm). Both tasks land well below the forbidden 0.50 default --
+  `cost_overrun` at 0.080 (98% recall, 68% precision), `schedule_delay`
+  at 0.140 (98% recall, 86% precision). Full rationale:
+  [ADR-0008](adr/0008-threshold-policy.md).
+- **Uncertainty** (`src/buildguard/models/uncertainty.py`): split
+  conformal prediction around `final_cost`'s point forecast -- model-
+  agnostic, so it works around a formula baseline exactly as it would
+  around a fitted regressor. At 80% target coverage: quantile
+  $3.09M (interval width $6.17M), empirical coverage 0.801 -- confirms
+  the implementation is statistically correct. Full rationale:
+  [ADR-0009](adr/0009-uncertainty-method.md).
+
+**Known limitation, stated plainly:** all of the above is measured
+in-sample, on the same calibration-split rows used to fit the mapping
+(Section 12's CALIBRATION block is exactly where this fitting happens).
+Genuinely held-out performance is confirmed only at the one final test
+evaluation, a later phase.
+
+## 11. What's not built yet
+
+Explainability, monitoring, the FastAPI service, and the Streamlit app are
+all still pending -- see
 [`BUILDGUARD_AI_COMMIT_PLAN.md`](../BUILDGUARD_AI_COMMIT_PLAN.md) for the
 session-by-session plan and [`BUILDGUARD_AI_PROJECT_SCOPE.md`](../BUILDGUARD_AI_PROJECT_SCOPE.md)
 Section 45 for the full roadmap. This document will grow a section for

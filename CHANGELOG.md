@@ -119,6 +119,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   4.11M by more than 2x. Two tasks won by real models, one won decisively
   by a formula — reported honestly rather than forced. Full rationale in
   `docs/adr/0006-model-selection.md`.
-- 98% test coverage on everything shipped so far (`tests/unit/`,
+- Probability calibration (`src/buildguard/models/calibration.py`, Section
+  16): compares raw vs. sigmoid vs. isotonic by Brier score, fit directly
+  on `(raw_probability, label)` pairs rather than through
+  `CalibratedClassifierCV`/`FrozenEstimator` (which requires a full
+  sklearn estimator interface BuildGuard's baselines don't implement — see
+  `docs/adr/0007-calibration-strategy.md`). **Real results:** isotonic won
+  both classification tasks (cost-overrun Brier 0.133 → 0.122;
+  schedule-delay 0.072 → 0.059) and now ships as the production artifact.
+- Business-cost threshold optimization (`src/buildguard/models/thresholds.py`,
+  Section 17): never a silent 0.50 default — sweeps 199 candidates against
+  `configs/business.yaml`'s asymmetric cost matrix. **Real results:**
+  cost-overrun risk at 0.080 (98% recall / 68% precision), schedule-delay
+  risk at 0.140 (98% recall / 86% precision). Rationale in
+  `docs/adr/0008-threshold-policy.md`.
+- Split-conformal prediction intervals
+  (`src/buildguard/models/uncertainty.py`, Section 19): model-agnostic, so
+  it works around the `final_cost` champion (a deterministic formula, not
+  a fitted regressor) exactly as it would around a real model. **Real
+  result:** 80% target coverage → ±$3.09M interval, 0.801 empirical
+  coverage. Rationale in `docs/adr/0009-uncertainty-method.md`.
+- `scripts/calibrate.py` (`make calibrate`): the post-training pass —
+  loads the champions from `scripts/train.py`, applies calibration/
+  threshold/uncertainty on the calibration split (test untouched), updates
+  the saved champion artifacts, and writes
+  `reports/experiments/calibration_summary.json`.
+- `scripts/_common.py`: dataset-assembly helper shared by `train.py` and
+  `calibrate.py` (generate portfolio → build features → resolve labels →
+  split), extracted once it was needed identically in both scripts.
+- `docs/adr/0005-feature-pipeline.md`: retroactive ADR documenting the
+  Session F leakage-safe pipeline design, completing the Section 39
+  minimum ADR set alongside 0007-0009.
+- 99% test coverage on everything shipped so far (`tests/unit/`,
   `tests/contracts/`, `tests/leakage/`); Ruff, Ruff format, and Mypy
   (`--strict`) all clean.
