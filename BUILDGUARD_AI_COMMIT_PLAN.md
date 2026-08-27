@@ -14,9 +14,9 @@ match reality — this document follows the work, not the other way around.
 Check off an item (`- [x]`) once it is actually committed. Update the
 **Progress** line at the top after every session.
 
-**Progress:** 20 / 57 planned commits actually committed (C21–C25 code is
+**Progress:** 25 / 57 planned commits actually committed (C26–C27 code is
 written and tested, ready to commit) · 0 / 12 PRs opened · Phase 0-2
-complete, Phase 3 ~70% complete.
+complete, Phase 3 complete.
 
 ---
 
@@ -33,8 +33,8 @@ earlier ones (e.g. no modeling before the temporal split exists).
 | C — Synthetic portfolio generator | 1 | #2 Synthetic portfolio generator | ✅ Committed (C09–C13) |
 | D — EDA & data understanding | 1–2 | #2 (docs) | ⬜ Not started (skipped ahead to E; notebooks are documentation-only and don't block anything) |
 | E — Inflation & temporal features | 2 | #3 EVM feature engine (cont'd) | ✅ Committed (C17–C20) |
-| F — Anti-leakage & split | 3 | #4 Temporal anti-leakage split | ✅ Done (uncommitted, ready to commit) |
-| G — Baselines | 3 | #5 Baseline models | ⬜ Not started |
+| F — Anti-leakage & split | 3 | #4 Temporal anti-leakage split | ✅ Committed (C21–C25) |
+| G — Baselines | 3 | #5 Baseline models | ✅ Done (uncommitted, ready to commit) |
 | H — Advanced modeling | 4 | #6/#7/#8 Cost/schedule/final-cost models | ⬜ Not started |
 | I — Calibration, threshold, uncertainty | 5 | #9 Calibration & threshold optimization | ⬜ Not started |
 | J — Explainability & error analysis | 6 | #9 (cont'd) | ⬜ Not started |
@@ -154,8 +154,15 @@ tests and the leakage-specific test suite.
 
 ## Session G — Baselines (Phase 3)
 
-- [ ] **C26** `feat: add classification baselines (dummy, logistic regression, CPI rule)`
-- [ ] **C27** `feat: add regression baselines (mean/median, deterministic EAC, linear regression)`
+Done (uncommitted, ready to commit). Revised from the original C26/C27
+split: classification and regression baselines share one preprocessing
+helper and one fit/predict interface convention, so they were built and
+tested as a single cohesive module rather than two.
+
+- [x] **C26** `feat: add baseline models for classification and regression`
+  `src/buildguard/models/__init__.py`, `src/buildguard/models/baselines.py`, `tests/unit/test_baselines.py`, `configs/base.yaml` (+`baselines:` section), `src/buildguard/config.py` (+`BaselinesConfig`), `tests/unit/test_config.py`, `pyproject.toml` (mypy `sklearn.*` override) -- `DummyClassifierBaseline`/`LogisticRegressionBaseline`/`CpiRuleBaseline`, `MeanRegressionBaseline`/`MedianRegressionBaseline`/`DeterministicEacBaseline`/`LinearRegressionBaseline`
+- [x] **C27** `docs: document baseline validation results`
+  `docs/ARCHITECTURE.md`, `README.md`, `CHANGELOG.md`, `BUILDGUARD_AI_COMMIT_PLAN.md` -- records the validated end-to-end finding: deterministic EAC (~1.6M MAE) beats fitted linear regression (~3.8M MAE); CPI rule alone reaches ~0.83 AUC
 
 **→ PR #5 "Baseline models"**
 
@@ -248,7 +255,7 @@ This is where [`docs/design/UI_DESIGN_SPEC.md`](docs/design/UI_DESIGN_SPEC.md)
 
 ## Next action
 
-Commit **C21–C25** now (Session F), open PR #4, then start Session G
-(baselines) -- the first piece of actual modeling, and the point where
-`docs/adr/0006-model-selection.md` (already referenced from
-`configs/base.yaml`) should get written alongside it.
+Commit **C26–C27** now (Session G), open PR #5, then start Session H
+(advanced modeling) -- MLflow scaffolding plus the three core models,
+which is also where `docs/adr/0006-model-selection.md` (already referenced
+from `configs/base.yaml`) should get written.

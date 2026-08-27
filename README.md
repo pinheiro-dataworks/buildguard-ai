@@ -91,7 +91,16 @@ pipeline (`features/pipeline.py`) lands in Phase 3, alongside the temporal
 train/calibration/test split.
 
 ## 8. Modeling
-*(Baselines and candidate models — to be documented as they land.)*
+
+**Baselines** (`models/baselines.py`) are built and validated first, per
+Section 13 — every candidate model must beat them, not just a naive one.
+On the full synthetic portfolio: a domain-formula regression baseline
+(deterministic EVM Estimate at Completion) reaches ~1.6M MAE on final
+cost, beating even a real fitted linear regression (~3.8M MAE); a
+domain-rule classification baseline (`CPI < 0.90`) alone reaches ~0.83
+AUC. Details in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) Section 8.
+Candidate models (LightGBM, calibration, thresholding) land in a later
+phase — see [`BUILDGUARD_AI_COMMIT_PLAN.md`](BUILDGUARD_AI_COMMIT_PLAN.md).
 
 ## 9. Evaluation
 *(Classification/regression metrics, calibration, slice analysis — to be

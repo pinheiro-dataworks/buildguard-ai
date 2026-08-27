@@ -83,6 +83,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   automated leakage tests — a future-dated change order injected into the
   test fixtures never contributes to an earlier snapshot's features,
   verified directly rather than assumed.
-- 99% test coverage on everything shipped so far (`tests/unit/`,
+- Baseline models (`src/buildguard/models/baselines.py`, Section 13):
+  `DummyClassifierBaseline` / `LogisticRegressionBaseline` / `CpiRuleBaseline`
+  for classification, `MeanRegressionBaseline` / `MedianRegressionBaseline`
+  / `DeterministicEacBaseline` / `LinearRegressionBaseline` for regression
+  — the mandatory floors every model trained later (Session H) must beat.
+  Validated end-to-end on the full synthetic portfolio: the deterministic
+  EVM EAC baseline (~1.6M MAE) beats even a real fitted linear regression
+  (~3.8M MAE), and the domain-rule `CPI < 0.90` classifier alone reaches
+  ~0.83 AUC — confirming Section 13's "beat a meaningful
+  construction-management baseline" bar is a real one on this data, not a
+  trivial strawman. Details in `docs/ARCHITECTURE.md` Section 8.
+- 98% test coverage on everything shipped so far (`tests/unit/`,
   `tests/contracts/`, `tests/leakage/`); Ruff, Ruff format, and Mypy
   (`--strict`) all clean.

@@ -53,6 +53,7 @@ computation, so the whole chain is independently unit-testable without I/O.
 | `src/buildguard/features/inflation.py` | Nominal/real cost decomposition (Section 10) |
 | `src/buildguard/features/temporal.py` | Lifecycle position and trend/persistence features |
 | `src/buildguard/features/pipeline.py` | Leakage-safe feature table assembly (Section 11/28) |
+| `src/buildguard/models/baselines.py` | Mandatory pre-modeling baselines (Section 13) |
 
 See [ADR-0001](adr/0001-project-architecture.md) for why this layout was
 chosen over alternatives.
@@ -162,9 +163,39 @@ contamination Section 12 warns about. Rationale for chronological +
 grouped over the alternatives (random split, K-fold, walk-forward) is in
 [ADR-0003](adr/0003-temporal-validation.md).
 
-## 8. What's not built yet
+## 8. Baselines (Section 13)
 
-Baselines, the three core ML models, calibration/threshold/uncertainty,
+`src/buildguard/models/baselines.py` -- mandatory floors every model
+trained later (Session H) must beat, not just a naive statistical one:
+
+| Task | Baseline | Nature |
+|---|---|---|
+| Classification | `DummyClassifierBaseline` | Uninformative: training class prior, ignores features |
+| Classification | `LogisticRegressionBaseline` | Real, simple statistical model |
+| Classification | `CpiRuleBaseline` | Domain rule (Section 13's own example: `CPI < 0.90 -> High Cost Risk`) |
+| Regression | `MeanRegressionBaseline` / `MedianRegressionBaseline` | Uninformative: training constant, ignores features |
+| Regression | `DeterministicEacBaseline` | Domain formula: the EVM CPI-based EAC already on each row, zero-parameter |
+| Regression | `LinearRegressionBaseline` | Real, simple statistical model |
+
+All six share the feature table from `build_feature_table` -- a
+baseline-vs-model comparison is never confounded by different inputs.
+
+**A validated finding, not a guess:** evaluated end-to-end on the full
+synthetic portfolio (chronological test split), `DeterministicEacBaseline`
+reaches ~1.6M MAE on final cost, while `LinearRegressionBaseline` -- a real
+fitted statistical model -- only reaches ~3.8M MAE (both far ahead of
+`MeanRegressionBaseline`'s ~11.1M). On the classification side,
+`CpiRuleBaseline` alone reaches ~0.83 AUC against `LogisticRegressionBaseline`'s
+~0.93 (`DummyClassifierBaseline` sits at exactly 0.5, as it must). This is
+exactly the point of Section 13's "beat a meaningful construction-management
+baseline, not only a naive statistical one" requirement: on this data, a
+domain-informed formula is a genuinely strong baseline, and Session H's
+advanced models have real work to do to clear it, not just an easy
+strawman.
+
+## 9. What's not built yet
+
+The three core ML models, calibration/threshold/uncertainty,
 explainability, monitoring, the FastAPI service, and the Streamlit app are
 all still pending -- see
 [`BUILDGUARD_AI_COMMIT_PLAN.md`](../BUILDGUARD_AI_COMMIT_PLAN.md) for the
