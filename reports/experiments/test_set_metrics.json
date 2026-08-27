@@ -1,0 +1,800 @@
+{
+  "git_sha": "c599c52",
+  "tasks": {
+    "cost_overrun": {
+      "task": "cost_overrun",
+      "threshold": 0.08,
+      "calibration_method": "isotonic",
+      "test_metrics": {
+        "roc_auc": 0.9494840496302485,
+        "pr_auc": 0.9007734550042608,
+        "precision": 0.551063829787234,
+        "recall": 0.9736842105263158,
+        "f1": 0.7038043478260869,
+        "brier_score": 0.11289018549150891,
+        "confusion": {
+          "true_positives": 259,
+          "false_positives": 211,
+          "true_negatives": 275,
+          "false_negatives": 7
+        },
+        "threshold": 0.08,
+        "n_rows": 752,
+        "positive_rate": 0.3537234042553192
+      },
+      "holdout_calibration": {
+        "brier_score": 0.11289018549150891,
+        "mean_predicted_value": [
+          0.03430825921771215,
+          0.19230769230769237,
+          0.28493211334598145,
+          0.3169090930469733,
+          0.4150943396226417,
+          0.5580720820725837,
+          0.6481408315038193,
+          0.8333333333333333,
+          0.989119499428451
+        ],
+        "fraction_of_positives": [
+          0.024822695035460994,
+          0.0,
+          0.0,
+          0.03125,
+          0.1,
+          0.13924050632911392,
+          0.5882352941176471,
+          0.813953488372093,
+          0.9420289855072463
+        ]
+      },
+      "slices": {
+        "project_type": [
+          {
+            "slice_value": "commercial",
+            "n_rows": 191,
+            "auc": 0.8997994652406417
+          },
+          {
+            "slice_value": "industrial",
+            "n_rows": 122,
+            "auc": 0.9957315278186636
+          },
+          {
+            "slice_value": "infrastructure",
+            "n_rows": 87,
+            "auc": 0.9795212765957447
+          },
+          {
+            "slice_value": "mixed_use",
+            "n_rows": 61,
+            "auc": 0.9999999999999999
+          },
+          {
+            "slice_value": "residential",
+            "n_rows": 291,
+            "auc": 0.9567787310454908
+          }
+        ],
+        "construction_standard": [
+          {
+            "slice_value": "economy",
+            "n_rows": 120,
+            "auc": 0.9997202797202798
+          },
+          {
+            "slice_value": "high_standard",
+            "n_rows": 176,
+            "auc": 0.9186813186813186
+          },
+          {
+            "slice_value": "luxury",
+            "n_rows": 96,
+            "auc": 0.9995462794918331
+          },
+          {
+            "slice_value": "standard",
+            "n_rows": 360,
+            "auc": 0.9033687943262412
+          }
+        ],
+        "lifecycle_stage": [
+          {
+            "slice_value": "early",
+            "n_rows": 249,
+            "auc": 0.8497942386831275
+          },
+          {
+            "slice_value": "late",
+            "n_rows": 272,
+            "auc": 0.9955333683657384
+          },
+          {
+            "slice_value": "mid",
+            "n_rows": 231,
+            "auc": 0.9663907284768213
+          }
+        ],
+        "geography_state": [
+          {
+            "slice_value": "AM",
+            "n_rows": 12,
+            "auc": null
+          },
+          {
+            "slice_value": "BA",
+            "n_rows": 58,
+            "auc": 0.8547077922077922
+          },
+          {
+            "slice_value": "CE",
+            "n_rows": 37,
+            "auc": null
+          },
+          {
+            "slice_value": "DF",
+            "n_rows": 46,
+            "auc": 0.9759615384615384
+          },
+          {
+            "slice_value": "ES",
+            "n_rows": 76,
+            "auc": 0.5973958333333333
+          },
+          {
+            "slice_value": "GO",
+            "n_rows": 53,
+            "auc": 1.0
+          },
+          {
+            "slice_value": "MG",
+            "n_rows": 74,
+            "auc": 1.0
+          },
+          {
+            "slice_value": "PA",
+            "n_rows": 23,
+            "auc": null
+          },
+          {
+            "slice_value": "PE",
+            "n_rows": 39,
+            "auc": null
+          },
+          {
+            "slice_value": "PR",
+            "n_rows": 13,
+            "auc": null
+          },
+          {
+            "slice_value": "RJ",
+            "n_rows": 122,
+            "auc": 0.9957000806234884
+          },
+          {
+            "slice_value": "SC",
+            "n_rows": 83,
+            "auc": 1.0
+          },
+          {
+            "slice_value": "SP",
+            "n_rows": 116,
+            "auc": 0.9984917043740573
+          }
+        ],
+        "project_size": [
+          {
+            "slice_value": "small",
+            "n_rows": 258,
+            "auc": 0.944117289946576
+          },
+          {
+            "slice_value": "medium",
+            "n_rows": 250,
+            "auc": 0.9306944444444445
+          },
+          {
+            "slice_value": "large",
+            "n_rows": 244,
+            "auc": 0.9795289855072464
+          }
+        ],
+        "budget_segment": [
+          {
+            "slice_value": "low_budget",
+            "n_rows": 265,
+            "auc": 0.9003056454512766
+          },
+          {
+            "slice_value": "mid_budget",
+            "n_rows": 239,
+            "auc": 0.9591981132075471
+          },
+          {
+            "slice_value": "high_budget",
+            "n_rows": 248,
+            "auc": 0.9847389558232932
+          }
+        ],
+        "inflation_regime": [
+          {
+            "slice_value": "low_inflation",
+            "n_rows": 254,
+            "auc": 0.8316223832528181
+          },
+          {
+            "slice_value": "mid_inflation",
+            "n_rows": 276,
+            "auc": 0.9815646220326617
+          },
+          {
+            "slice_value": "high_inflation",
+            "n_rows": 222,
+            "auc": 0.9975748530920623
+          }
+        ]
+      },
+      "out_of_distribution_rows": 3,
+      "top_shap_features": [
+        [
+          "numeric__operational_variance",
+          0.12887914645697088
+        ],
+        [
+          "numeric__cpi",
+          0.10731179923939659
+        ],
+        [
+          "numeric__cost_variance",
+          0.0541944191572537
+        ],
+        [
+          "numeric__lifecycle_fraction",
+          0.024820947879087833
+        ],
+        [
+          "numeric__inflation_component",
+          0.021314218572534415
+        ]
+      ],
+      "top_permutation_features": [
+        [
+          "cpi",
+          0.10884491978609626
+        ],
+        [
+          "operational_variance",
+          0.08645811051693401
+        ],
+        [
+          "cost_variance",
+          0.010313725490196046
+        ],
+        [
+          "inflation_component",
+          0.006080213903743281
+        ],
+        [
+          "gross_floor_area_m2",
+          0.004527629233511554
+        ]
+      ]
+    },
+    "schedule_delay": {
+      "task": "schedule_delay",
+      "threshold": 0.14,
+      "calibration_method": "isotonic",
+      "test_metrics": {
+        "roc_auc": 0.9002198347693506,
+        "pr_auc": 0.8948556775253073,
+        "precision": 0.7252964426877471,
+        "recall": 0.9291139240506329,
+        "f1": 0.8146503884572697,
+        "brier_score": 0.1452058855617748,
+        "confusion": {
+          "true_positives": 367,
+          "false_positives": 139,
+          "true_negatives": 218,
+          "false_negatives": 28
+        },
+        "threshold": 0.14,
+        "n_rows": 752,
+        "positive_rate": 0.5252659574468085
+      },
+      "holdout_calibration": {
+        "brier_score": 0.1452058855617748,
+        "mean_predicted_value": [
+          0.0,
+          0.13453407745645185,
+          0.22311417573843664,
+          0.3055555555555554,
+          0.5679510155316606,
+          0.6602229690210374,
+          0.7713112123264445,
+          0.8400346787546416,
+          0.9884289681178886
+        ],
+        "fraction_of_positives": [
+          0.06467661691542288,
+          0.3333333333333333,
+          0.4,
+          0.40625,
+          0.3548387096774194,
+          0.3191489361702128,
+          0.39473684210526316,
+          0.5416666666666666,
+          0.9135802469135802
+        ]
+      },
+      "slices": {
+        "project_type": [
+          {
+            "slice_value": "commercial",
+            "n_rows": 191,
+            "auc": 0.8717582417582418
+          },
+          {
+            "slice_value": "industrial",
+            "n_rows": 122,
+            "auc": 0.9165983046212742
+          },
+          {
+            "slice_value": "infrastructure",
+            "n_rows": 87,
+            "auc": 0.9817653276955602
+          },
+          {
+            "slice_value": "mixed_use",
+            "n_rows": 61,
+            "auc": 0.9548611111111112
+          },
+          {
+            "slice_value": "residential",
+            "n_rows": 291,
+            "auc": 0.8800795680591078
+          }
+        ],
+        "construction_standard": [
+          {
+            "slice_value": "economy",
+            "n_rows": 120,
+            "auc": 0.9637888707037643
+          },
+          {
+            "slice_value": "high_standard",
+            "n_rows": 176,
+            "auc": 0.9310030395136779
+          },
+          {
+            "slice_value": "luxury",
+            "n_rows": 96,
+            "auc": 0.9911955514365153
+          },
+          {
+            "slice_value": "standard",
+            "n_rows": 360,
+            "auc": 0.9331194867682437
+          }
+        ],
+        "lifecycle_stage": [
+          {
+            "slice_value": "early",
+            "n_rows": 249,
+            "auc": 0.7613710201429499
+          },
+          {
+            "slice_value": "late",
+            "n_rows": 272,
+            "auc": 0.9292458362655407
+          },
+          {
+            "slice_value": "mid",
+            "n_rows": 231,
+            "auc": 0.9312631896291831
+          }
+        ],
+        "geography_state": [
+          {
+            "slice_value": "AM",
+            "n_rows": 12,
+            "auc": null
+          },
+          {
+            "slice_value": "BA",
+            "n_rows": 58,
+            "auc": 0.838474025974026
+          },
+          {
+            "slice_value": "CE",
+            "n_rows": 37,
+            "auc": null
+          },
+          {
+            "slice_value": "DF",
+            "n_rows": 46,
+            "auc": 0.9980769230769231
+          },
+          {
+            "slice_value": "ES",
+            "n_rows": 76,
+            "auc": 0.9629244629244629
+          },
+          {
+            "slice_value": "GO",
+            "n_rows": 53,
+            "auc": 0.9428571428571428
+          },
+          {
+            "slice_value": "MG",
+            "n_rows": 74,
+            "auc": 0.9873469387755103
+          },
+          {
+            "slice_value": "PA",
+            "n_rows": 23,
+            "auc": null
+          },
+          {
+            "slice_value": "PE",
+            "n_rows": 39,
+            "auc": null
+          },
+          {
+            "slice_value": "PR",
+            "n_rows": 13,
+            "auc": null
+          },
+          {
+            "slice_value": "RJ",
+            "n_rows": 122,
+            "auc": 0.9802476415094339
+          },
+          {
+            "slice_value": "SC",
+            "n_rows": 83,
+            "auc": 0.8611111111111112
+          },
+          {
+            "slice_value": "SP",
+            "n_rows": 116,
+            "auc": 0.9814315663372268
+          }
+        ],
+        "project_size": [
+          {
+            "slice_value": "small",
+            "n_rows": 258,
+            "auc": 0.804604815250356
+          },
+          {
+            "slice_value": "medium",
+            "n_rows": 250,
+            "auc": 0.950499487704918
+          },
+          {
+            "slice_value": "large",
+            "n_rows": 244,
+            "auc": 0.9349744073275862
+          }
+        ],
+        "budget_segment": [
+          {
+            "slice_value": "low_budget",
+            "n_rows": 265,
+            "auc": 0.8395703395703396
+          },
+          {
+            "slice_value": "mid_budget",
+            "n_rows": 239,
+            "auc": 0.9112619222303742
+          },
+          {
+            "slice_value": "high_budget",
+            "n_rows": 248,
+            "auc": 0.9425629290617847
+          }
+        ],
+        "inflation_regime": [
+          {
+            "slice_value": "low_inflation",
+            "n_rows": 254,
+            "auc": 0.7714232488822653
+          },
+          {
+            "slice_value": "mid_inflation",
+            "n_rows": 276,
+            "auc": 0.94
+          },
+          {
+            "slice_value": "high_inflation",
+            "n_rows": 222,
+            "auc": 0.9238495252008765
+          }
+        ]
+      },
+      "out_of_distribution_rows": 3,
+      "top_shap_features": [
+        [
+          "numeric__spi",
+          0.20383231009798705
+        ],
+        [
+          "numeric__lifecycle_fraction",
+          0.16451057444713854
+        ],
+        [
+          "numeric__schedule_variance",
+          0.05848582622357543
+        ],
+        [
+          "numeric__months_to_planned_completion",
+          0.03600902096498219
+        ],
+        [
+          "numeric__inflation_component",
+          0.012878751701394948
+        ]
+      ],
+      "top_permutation_features": [
+        [
+          "spi",
+          0.32296410930784536
+        ],
+        [
+          "lifecycle_fraction",
+          0.12707437937006869
+        ],
+        [
+          "months_to_planned_completion",
+          0.0342340753095131
+        ],
+        [
+          "schedule_variance",
+          0.024574219000577335
+        ],
+        [
+          "number_of_units",
+          0.0018795304381295063
+        ]
+      ]
+    },
+    "final_cost": {
+      "task": "final_cost",
+      "test_metrics": {
+        "mae": 1607528.1122704658,
+        "rmse": 3032636.1347020003,
+        "r2": 0.9594107167862098,
+        "mape": 0.07036506125078072,
+        "smape": 0.07020745035481536,
+        "median_dollar_error": 896209.7499284949,
+        "median_percent_error": 0.05986335192602051,
+        "n_rows": 752
+      },
+      "conformal": {
+        "target_coverage": 0.8,
+        "quantile": 3085624.898811631,
+        "test_empirical_coverage": 0.898936170212766
+      },
+      "slices": {
+        "project_type": [
+          {
+            "slice_value": "commercial",
+            "n_rows": 191,
+            "mae": 1045909.715983832,
+            "bias": 412038.90456896194
+          },
+          {
+            "slice_value": "industrial",
+            "n_rows": 122,
+            "mae": 1682268.8645914304,
+            "bias": 489462.2168643393
+          },
+          {
+            "slice_value": "infrastructure",
+            "n_rows": 87,
+            "mae": 3457031.649910141,
+            "bias": -1415255.1287864607
+          },
+          {
+            "slice_value": "mixed_use",
+            "n_rows": 61,
+            "mae": 954584.531166312,
+            "bias": 205376.07671400945
+          },
+          {
+            "slice_value": "residential",
+            "n_rows": 291,
+            "mae": 1528742.8634054863,
+            "bias": -167867.55727592175
+          }
+        ],
+        "construction_standard": [
+          {
+            "slice_value": "economy",
+            "n_rows": 120,
+            "mae": 1179060.148629252,
+            "bias": -131844.28325768703
+          },
+          {
+            "slice_value": "high_standard",
+            "n_rows": 176,
+            "mae": 1497139.7518549827,
+            "bias": 297292.6077202313
+          },
+          {
+            "slice_value": "luxury",
+            "n_rows": 96,
+            "mae": 2988422.046021369,
+            "bias": -1155223.4642656322
+          },
+          {
+            "slice_value": "standard",
+            "n_rows": 360,
+            "mae": 1436080.0273537547,
+            "bias": 148234.37261006335
+          }
+        ],
+        "lifecycle_stage": [
+          {
+            "slice_value": "early",
+            "n_rows": 249,
+            "mae": 2029492.0479906495,
+            "bias": -1210984.654282354
+          },
+          {
+            "slice_value": "late",
+            "n_rows": 272,
+            "mae": 1521534.8916834474,
+            "bias": 1224167.5627145574
+          },
+          {
+            "slice_value": "mid",
+            "n_rows": 231,
+            "mae": 1253939.9564494411,
+            "bias": -227157.1065112258
+          }
+        ],
+        "geography_state": [
+          {
+            "slice_value": "AM",
+            "n_rows": 12,
+            "mae": null,
+            "bias": null
+          },
+          {
+            "slice_value": "BA",
+            "n_rows": 58,
+            "mae": 898859.3022367954,
+            "bias": 825071.0835870284
+          },
+          {
+            "slice_value": "CE",
+            "n_rows": 37,
+            "mae": 1010320.7162481908,
+            "bias": 236541.0373156847
+          },
+          {
+            "slice_value": "DF",
+            "n_rows": 46,
+            "mae": 4979496.162000796,
+            "bias": -1895713.4334294705
+          },
+          {
+            "slice_value": "ES",
+            "n_rows": 76,
+            "mae": 667534.019779738,
+            "bias": 386972.72917986976
+          },
+          {
+            "slice_value": "GO",
+            "n_rows": 53,
+            "mae": 997859.2564144705,
+            "bias": -82871.96622407099
+          },
+          {
+            "slice_value": "MG",
+            "n_rows": 74,
+            "mae": 768623.9129786958,
+            "bias": 172017.27657919965
+          },
+          {
+            "slice_value": "PA",
+            "n_rows": 23,
+            "mae": 1272208.0299942805,
+            "bias": 659600.301625864
+          },
+          {
+            "slice_value": "PE",
+            "n_rows": 39,
+            "mae": 1941990.1510686916,
+            "bias": 1547548.6639982637
+          },
+          {
+            "slice_value": "PR",
+            "n_rows": 13,
+            "mae": null,
+            "bias": null
+          },
+          {
+            "slice_value": "RJ",
+            "n_rows": 122,
+            "mae": 2610018.4550418695,
+            "bias": -785074.154281951
+          },
+          {
+            "slice_value": "SC",
+            "n_rows": 83,
+            "mae": 1496535.191633619,
+            "bias": 236684.98494302732
+          },
+          {
+            "slice_value": "SP",
+            "n_rows": 116,
+            "mae": 1394072.463511624,
+            "bias": -413983.24750050955
+          }
+        ],
+        "project_size": [
+          {
+            "slice_value": "small",
+            "n_rows": 258,
+            "mae": 783330.4883546442,
+            "bias": 159006.96512287756
+          },
+          {
+            "slice_value": "medium",
+            "n_rows": 250,
+            "mae": 1361652.2281277347,
+            "bias": 397732.3457391226
+          },
+          {
+            "slice_value": "large",
+            "n_rows": 244,
+            "mae": 2730937.7762293383,
+            "bias": -661851.5446660764
+          }
+        ],
+        "budget_segment": [
+          {
+            "slice_value": "low_budget",
+            "n_rows": 265,
+            "mae": 742827.3498078645,
+            "bias": 281078.9391783408
+          },
+          {
+            "slice_value": "mid_budget",
+            "n_rows": 239,
+            "mae": 1258083.6651153108,
+            "bias": 138607.2308545357
+          },
+          {
+            "slice_value": "high_budget",
+            "n_rows": 248,
+            "mae": 2868265.7127651093,
+            "bias": -518741.6956392497
+          }
+        ],
+        "inflation_regime": [
+          {
+            "slice_value": "low_inflation",
+            "n_rows": 254,
+            "mae": 2076511.4642639558,
+            "bias": -1202562.748516761
+          },
+          {
+            "slice_value": "mid_inflation",
+            "n_rows": 276,
+            "mae": 1178215.6447307048,
+            "bias": -151220.0292544197
+          },
+          {
+            "slice_value": "high_inflation",
+            "n_rows": 222,
+            "mae": 1604683.3808949145,
+            "bias": 1469156.6339434122
+          }
+        ]
+      },
+      "out_of_distribution_rows": 3
+    }
+  }
+}
