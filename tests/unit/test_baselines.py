@@ -15,8 +15,6 @@ import pytest
 from sklearn.metrics import mean_absolute_error, roc_auc_score
 
 from buildguard.models.baselines import (
-    CATEGORICAL_FEATURE_COLUMNS,
-    NUMERIC_FEATURE_COLUMNS,
     CpiRuleBaseline,
     DeterministicEacBaseline,
     DummyClassifierBaseline,
@@ -25,6 +23,7 @@ from buildguard.models.baselines import (
     MeanRegressionBaseline,
     MedianRegressionBaseline,
 )
+from buildguard.models.preprocessing import CATEGORICAL_FEATURE_COLUMNS, NUMERIC_FEATURE_COLUMNS
 
 pytestmark = pytest.mark.unit
 

@@ -21,40 +21,11 @@ from typing import Protocol
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
-from sklearn.compose import ColumnTransformer
 from sklearn.dummy import DummyClassifier
-from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
-NUMERIC_FEATURE_COLUMNS: tuple[str, ...] = (
-    "gross_floor_area_m2",
-    "number_of_towers",
-    "number_of_units",
-    "cpi",
-    "spi",
-    "cost_variance",
-    "schedule_variance",
-    "inflation_multiplier",
-    "operational_variance",
-    "inflation_component",
-    "months_since_start",
-    "months_to_planned_completion",
-    "lifecycle_fraction",
-    "cpi_trend",
-    "spi_trend",
-    "cpi_decline_streak",
-    "spi_decline_streak",
-    "change_order_count_to_date",
-    "change_order_amount_to_date",
-    "change_order_amount_ratio_to_date",
-)
-CATEGORICAL_FEATURE_COLUMNS: tuple[str, ...] = (
-    "project_type",
-    "construction_standard",
-    "lifecycle_stage",
-)
+from buildguard.models.preprocessing import build_preprocessor
 
 
 class ClassificationBaseline(Protocol):
@@ -65,33 +36,6 @@ class ClassificationBaseline(Protocol):
 class RegressionBaseline(Protocol):
     def fit(self, features: pd.DataFrame, labels: pd.Series) -> RegressionBaseline: ...
     def predict(self, features: pd.DataFrame) -> npt.NDArray[np.float64]: ...
-
-
-def _build_preprocessor() -> ColumnTransformer:
-    """Shared numeric/categorical preprocessing for the linear baselines.
-
-    Not reused elsewhere (yet) -- if Session H's advanced models need the
-    same preprocessing, promote this to a shared module then rather than
-    guessing its shape now.
-    """
-    numeric = Pipeline(
-        steps=[
-            ("impute", SimpleImputer(strategy="median")),
-            ("scale", StandardScaler()),
-        ]
-    )
-    categorical = Pipeline(
-        steps=[
-            ("impute", SimpleImputer(strategy="most_frequent")),
-            ("onehot", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),
-        ]
-    )
-    return ColumnTransformer(
-        transformers=[
-            ("numeric", numeric, list(NUMERIC_FEATURE_COLUMNS)),
-            ("categorical", categorical, list(CATEGORICAL_FEATURE_COLUMNS)),
-        ]
-    )
 
 
 class DummyClassifierBaseline:
@@ -121,7 +65,7 @@ class LogisticRegressionBaseline:
     def __init__(self) -> None:
         self._pipeline = Pipeline(
             steps=[
-                ("preprocess", _build_preprocessor()),
+                ("preprocess", build_preprocessor()),
                 ("model", LogisticRegression(max_iter=1000)),
             ]
         )
@@ -209,7 +153,7 @@ class LinearRegressionBaseline:
     def __init__(self) -> None:
         self._pipeline = Pipeline(
             steps=[
-                ("preprocess", _build_preprocessor()),
+                ("preprocess", build_preprocessor()),
                 ("model", LinearRegression()),
             ]
         )
