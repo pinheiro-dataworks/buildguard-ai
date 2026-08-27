@@ -83,6 +83,10 @@ class TrainingConfig(BaseModel):
     mlflow_experiment_name: str
 
 
+class UncertaintyConfig(BaseModel):
+    target_coverage: float = Field(gt=0, lt=1)
+
+
 class SplitConfig(BaseModel):
     train_fraction: float = Field(gt=0, lt=1)
     calibration_fraction: float = Field(gt=0, lt=1)
@@ -105,6 +109,7 @@ class BaseAppConfig(BaseModel):
     features: FeaturesConfig
     baselines: BaselinesConfig
     training: TrainingConfig
+    uncertainty: UncertaintyConfig
 
 
 class CostMatrix(BaseModel):

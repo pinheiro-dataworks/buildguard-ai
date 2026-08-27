@@ -95,6 +95,11 @@ training:
   cv_splits: 3
   mlflow_experiment_name: "buildguard-ai"
 
+uncertainty:
+  # Target coverage for the final-cost split-conformal interval (Section
+  # 19's own worked example reports an 80% interval).
+  target_coverage: 0.80
+
 baselines:
   # Domain-rule classification baseline (Section 13's own example):
   # "CPI < 0.90 -> High Cost Risk." 0.90 is a common informal

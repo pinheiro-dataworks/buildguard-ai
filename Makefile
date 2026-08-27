@@ -1,4 +1,4 @@
-.PHONY: setup data train evaluate test lint format type-check app api docker-build clean
+.PHONY: setup data train calibrate evaluate test lint format type-check app api docker-build clean
 
 UV := uv
 
@@ -8,8 +8,11 @@ setup: ## Create the uv-managed environment (core + dev + ml + api + app extras)
 data: ## Generate the deterministic synthetic demo dataset
 	$(UV) run python scripts/generate_data.py
 
-train: ## Train and evaluate the core models
+train: ## Train and select the three core champion models
 	$(UV) run python scripts/train.py
+
+calibrate: ## Calibrate probabilities, optimize thresholds, quantify uncertainty (requires make train first)
+	$(UV) run python scripts/calibrate.py
 
 evaluate: ## Re-run evaluation (metrics, slices, error analysis) for the current champion model
 	$(UV) run python scripts/evaluate.py

@@ -1,0 +1,50 @@
+{
+  "git_sha": "517447b",
+  "tasks": {
+    "cost_overrun": {
+      "task": "cost_overrun",
+      "calibration_method": "isotonic",
+      "brier_scores": {
+        "none": 0.13265736142320297,
+        "sigmoid": 0.1326994742966765,
+        "isotonic": 0.12233053006356898
+      },
+      "threshold": 0.08,
+      "expected_business_cost": 936.0,
+      "precision_at_threshold": 0.681740614334471,
+      "recall_at_threshold": 0.9767726161369193,
+      "confusion_at_threshold": {
+        "true_positives": 799,
+        "false_positives": 373,
+        "true_negatives": 588,
+        "false_negatives": 19
+      }
+    },
+    "schedule_delay": {
+      "task": "schedule_delay",
+      "calibration_method": "isotonic",
+      "brier_scores": {
+        "none": 0.07229562243895113,
+        "sigmoid": 0.06208954733420407,
+        "isotonic": 0.0592042921171248
+      },
+      "threshold": 0.14,
+      "expected_business_cost": 460.0,
+      "precision_at_threshold": 0.8638655462184874,
+      "recall_at_threshold": 0.9837320574162679,
+      "confusion_at_threshold": {
+        "true_positives": 1028,
+        "false_positives": 162,
+        "true_negatives": 572,
+        "false_negatives": 17
+      }
+    },
+    "final_cost": {
+      "task": "final_cost",
+      "target_coverage": 0.8,
+      "conformal_quantile": 3085624.898811631,
+      "in_sample_coverage": 0.8010118043844857,
+      "example_interval_width": 6171249.797623262
+    }
+  }
+}

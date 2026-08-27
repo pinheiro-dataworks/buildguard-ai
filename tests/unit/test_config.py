@@ -58,6 +58,7 @@ def _base_config_dict(**synthetic_data_overrides: Any) -> dict[str, Any]:
             "cv_splits": 4,
             "mlflow_experiment_name": "buildguard-ai",
         },
+        "uncertainty": {"target_coverage": 0.80},
     }
 
 
