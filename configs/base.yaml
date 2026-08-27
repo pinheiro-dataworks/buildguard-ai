@@ -13,7 +13,12 @@ paths:
   data_processed: "data/processed"
   models_dir: "models"
   reports_dir: "reports"
-  mlflow_tracking_uri: "file:./mlruns"
+  # SQLite, not the raw filesystem store ("file:./mlruns") -- MLflow's
+  # filesystem backend is now in maintenance mode (raises unless
+  # MLFLOW_ALLOW_FILE_STORE=true is set; discovered while wiring this up).
+  # SQLite is still a single local file, zero-cost, no server -- just the
+  # backend MLflow itself now recommends. See docs/adr/0006-model-selection.md.
+  mlflow_tracking_uri: "sqlite:///mlruns/mlflow.db"
 
 targets:
   # cost_overrun = final_cost > approved_budget * (1 + cost_overrun_tolerance)
@@ -78,6 +83,17 @@ features:
   # single-month noise dominates, or so long that it washes out real
   # recent shifts.
   trend_window_months: 3
+
+training:
+  # Optuna trials per (task, model family) -- Section 15: "avoid
+  # unjustified exhaustive grids." 15 is a modest budget (not a grid) that
+  # converges well in practice for a 3-4 hyperparameter space at this
+  # dataset size, while keeping `make train`'s runtime reasonable (3
+  # tasks x 2 families x 15 trials x 3 folds = 270 fits, not 600+).
+  optuna_n_trials: 15
+  # GroupKFold splits (grouped by project_id) used to score each trial.
+  cv_splits: 3
+  mlflow_experiment_name: "buildguard-ai"
 
 baselines:
   # Domain-rule classification baseline (Section 13's own example):

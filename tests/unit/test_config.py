@@ -53,6 +53,11 @@ def _base_config_dict(**synthetic_data_overrides: Any) -> dict[str, Any]:
             "trend_window_months": 3,
         },
         "baselines": {"cpi_risk_threshold": 0.90},
+        "training": {
+            "optuna_n_trials": 25,
+            "cv_splits": 4,
+            "mlflow_experiment_name": "buildguard-ai",
+        },
     }
 
 

@@ -77,6 +77,12 @@ class BaselinesConfig(BaseModel):
     cpi_risk_threshold: float = Field(gt=0)
 
 
+class TrainingConfig(BaseModel):
+    optuna_n_trials: int = Field(ge=1)
+    cv_splits: int = Field(ge=2)
+    mlflow_experiment_name: str
+
+
 class SplitConfig(BaseModel):
     train_fraction: float = Field(gt=0, lt=1)
     calibration_fraction: float = Field(gt=0, lt=1)
@@ -98,6 +104,7 @@ class BaseAppConfig(BaseModel):
     split: SplitConfig
     features: FeaturesConfig
     baselines: BaselinesConfig
+    training: TrainingConfig
 
 
 class CostMatrix(BaseModel):
