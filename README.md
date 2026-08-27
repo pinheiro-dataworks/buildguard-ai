@@ -68,7 +68,9 @@ contract (`src/buildguard/data/contracts.py`), generated deterministically
 by `src/buildguard/data/synthetic.py`. Full details, including the EVM and
 inflation-normalization methodology, in
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and
-[`docs/DATA_DICTIONARY.md`](docs/DATA_DICTIONARY.md).
+[`docs/DATA_DICTIONARY.md`](docs/DATA_DICTIONARY.md). Anti-leakage rules
+and the temporal train/calibration/test split are documented in
+[`docs/LEAKAGE_POLICY.md`](docs/LEAKAGE_POLICY.md).
 
 ## 6. Exploratory Data Analysis
 *(Notebooks under `notebooks/` — to be added.)*

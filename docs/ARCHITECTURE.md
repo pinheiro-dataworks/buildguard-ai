@@ -1,10 +1,11 @@
 # Architecture
 
 Living document -- expanded as each phase of `BUILDGUARD_AI_PROJECT_SCOPE.md`
-lands. This version covers the data and domain-analytics layers (Phases
-0-2); modeling, API, UI, and monitoring sections are added as those phases
-are built (see [`BUILDGUARD_AI_COMMIT_PLAN.md`](../BUILDGUARD_AI_COMMIT_PLAN.md)
-for what's done vs. planned).
+lands. This version covers the data, domain-analytics, and anti-leakage
+layers (Phases 0-3); modeling, API, UI, and monitoring sections are added
+as those phases are built (see
+[`BUILDGUARD_AI_COMMIT_PLAN.md`](../BUILDGUARD_AI_COMMIT_PLAN.md) for
+what's done vs. planned).
 
 ## 1. System overview
 
@@ -21,8 +22,15 @@ src/buildguard/data/economic_index.py              Orders, Suppliers,
         v
 src/buildguard/data/contracts.py  --validates-->  every table, every time
         |
-        v
-src/buildguard/features/{evm,inflation,temporal}.py  --derive-->  features
+        +--------------------------+
+        v                          v
+src/buildguard/features/       src/buildguard/data/split.py
+  pipeline.py (+ evm,           (chronological, project-grouped
+  inflation, temporal)           train/calibration/test)
+  --leakage-safe-->
+  feature table                 src/buildguard/data/labels.py
+                                 --derives-->  cost_overrun /
+                                               schedule_delay
 ```
 
 `scripts/generate_data.py` (`make data`) is the only entry point that
@@ -39,9 +47,12 @@ computation, so the whole chain is independently unit-testable without I/O.
 | `src/buildguard/data/enums.py` | Controlled vocabularies shared by contracts and the generator |
 | `src/buildguard/data/economic_index.py` | `EconomicIndexProvider` interface (Section 8.3) |
 | `src/buildguard/data/synthetic.py` | Deterministic synthetic portfolio generator (Section 8.2) |
+| `src/buildguard/data/labels.py` | Ground-truth `cost_overrun`/`schedule_delay` derivation (Section 6/11) |
+| `src/buildguard/data/split.py` | Chronological, project-grouped train/calibration/test split (Section 12) |
 | `src/buildguard/features/evm.py` | Earned Value Management formulas (Section 9) |
 | `src/buildguard/features/inflation.py` | Nominal/real cost decomposition (Section 10) |
 | `src/buildguard/features/temporal.py` | Lifecycle position and trend/persistence features |
+| `src/buildguard/features/pipeline.py` | Leakage-safe feature table assembly (Section 11/28) |
 
 See [ADR-0001](adr/0001-project-architecture.md) for why this layout was
 chosen over alternatives.
@@ -123,11 +134,39 @@ single snapshot's EVM ratios cannot express on their own:
   SPI deterioration" (Section 8.2), which a single point-in-time SPI value
   cannot distinguish from one noisy bad month.
 
-## 7. What's not built yet
+## 7. Leakage-safe feature pipeline and temporal split (Section 11 / 12)
 
-Anti-leakage temporal split, baselines, the three core ML models,
-calibration/threshold/uncertainty, explainability, monitoring, the FastAPI
-service, and the Streamlit app are all still pending -- see
+`src/buildguard/features/pipeline.py: build_feature_table()` is the single
+function that assembles EVM, inflation, and temporal features into one
+model-ready table -- shared by training, batch scoring, and (Phase 8) the
+FastAPI service, so features are computed identically everywhere (Section
+28). Full leakage guarantees and the forbidden-feature list are in
+[`LEAKAGE_POLICY.md`](LEAKAGE_POLICY.md); in short, every feature's
+availability timestamp is enforced `<= snapshot_date` (that row's
+prediction timestamp), change orders are joined with a `merge_asof`
+as-of join that cannot see future rows, and Work Packages/Suppliers are
+excluded entirely rather than included unsafely (both tables only carry
+"as of latest snapshot" status, not per-date history).
+
+`src/buildguard/data/labels.py: resolve_outcomes()` derives
+`cost_overrun`/`schedule_delay` ground truth from the snapshot history --
+against the **inflation-adjusted (real)** final cost, not raw nominal
+`actual_cost` (see [ADR-0004](adr/0004-synthetic-data-design.md)'s
+nominal-vs-real overrun-rate finding for why). In-flight projects get no
+resolved label (`pd.NA`), never a coerced negative.
+
+`src/buildguard/data/split.py: chronological_project_split()` assigns
+whole projects (never individual snapshot rows) to train (60%, oldest) /
+calibration (20%) / test (20%, newest), preventing the project-level
+contamination Section 12 warns about. Rationale for chronological +
+grouped over the alternatives (random split, K-fold, walk-forward) is in
+[ADR-0003](adr/0003-temporal-validation.md).
+
+## 8. What's not built yet
+
+Baselines, the three core ML models, calibration/threshold/uncertainty,
+explainability, monitoring, the FastAPI service, and the Streamlit app are
+all still pending -- see
 [`BUILDGUARD_AI_COMMIT_PLAN.md`](../BUILDGUARD_AI_COMMIT_PLAN.md) for the
 session-by-session plan and [`BUILDGUARD_AI_PROJECT_SCOPE.md`](../BUILDGUARD_AI_PROJECT_SCOPE.md)
 Section 45 for the full roadmap. This document will grow a section for

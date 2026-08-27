@@ -60,5 +60,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   8.2) that a single snapshot's ratios can't express alone.
 - `docs/ARCHITECTURE.md`: system overview, package layout, EVM and
   inflation-normalization methodology.
-- 98% test coverage on everything shipped so far (`tests/unit/`,
-  `tests/contracts/`); Ruff, Ruff format, and Mypy (`--strict`) all clean.
+- Ground-truth label derivation (`src/buildguard/data/labels.py`, Section
+  6/11): `cost_overrun`/`schedule_delay` resolved from the snapshot
+  history against the **inflation-adjusted (real)** final cost, per the
+  open question recorded in ADR-0004. In-flight projects get `pd.NA`, never
+  a coerced negative.
+- Chronological, project-grouped train/calibration/test split
+  (`src/buildguard/data/split.py`, Section 12): whole projects, ordered by
+  `planned_start_date`, assigned to exactly one split — no project's
+  history can appear in more than one. Rationale in
+  `docs/adr/0003-temporal-validation.md`.
+- Leakage-safe feature pipeline (`src/buildguard/features/pipeline.py`,
+  Section 11/28): the single function assembling EVM, inflation, temporal,
+  and leakage-safe cumulative change-order features (via
+  `pandas.merge_asof(..., direction="backward")`) into one model-ready
+  table. Work Packages and Suppliers are deliberately excluded (documented
+  limitation: neither table carries a per-row date).
+- `docs/LEAKAGE_POLICY.md`: prediction timestamp, feature-availability
+  timestamps, label creation, forbidden features, and the automated tests
+  that enforce them.
+- `tests/leakage/test_pipeline_leakage.py`: the Section 11-mandated
+  automated leakage tests — a future-dated change order injected into the
+  test fixtures never contributes to an earlier snapshot's features,
+  verified directly rather than assumed.
+- 99% test coverage on everything shipped so far (`tests/unit/`,
+  `tests/contracts/`, `tests/leakage/`); Ruff, Ruff format, and Mypy
+  (`--strict`) all clean.

@@ -14,9 +14,9 @@ match reality — this document follows the work, not the other way around.
 Check off an item (`- [x]`) once it is actually committed. Update the
 **Progress** line at the top after every session.
 
-**Progress:** 13 / 55 planned commits actually committed (C17–C20 code is
-written and tested, ready to commit) · 0 / 12 PRs opened · Phase 0 complete,
-Phase 1 complete, Phase 2 ~85% complete.
+**Progress:** 20 / 57 planned commits actually committed (C21–C25 code is
+written and tested, ready to commit) · 0 / 12 PRs opened · Phase 0-2
+complete, Phase 3 ~70% complete.
 
 ---
 
@@ -32,8 +32,8 @@ earlier ones (e.g. no modeling before the temporal split exists).
 | B — Data foundation core | 1 | #1 / #2 | ✅ Committed (C06–C08) |
 | C — Synthetic portfolio generator | 1 | #2 Synthetic portfolio generator | ✅ Committed (C09–C13) |
 | D — EDA & data understanding | 1–2 | #2 (docs) | ⬜ Not started (skipped ahead to E; notebooks are documentation-only and don't block anything) |
-| E — Inflation & temporal features | 2 | #3 EVM feature engine (cont'd) | ✅ Done (uncommitted, ready to commit) |
-| F — Anti-leakage & split | 3 | #4 Temporal anti-leakage split | ⬜ Not started |
+| E — Inflation & temporal features | 2 | #3 EVM feature engine (cont'd) | ✅ Committed (C17–C20) |
+| F — Anti-leakage & split | 3 | #4 Temporal anti-leakage split | ✅ Done (uncommitted, ready to commit) |
 | G — Baselines | 3 | #5 Baseline models | ⬜ Not started |
 | H — Advanced modeling | 4 | #6/#7/#8 Cost/schedule/final-cost models | ⬜ Not started |
 | I — Calibration, threshold, uncertainty | 5 | #9 Calibration & threshold optimization | ⬜ Not started |
@@ -130,51 +130,67 @@ the feature work it unblocks.
 
 ## Session F — Anti-Leakage & Temporal Split (Phase 3)
 
-- [ ] **C21** `docs: add leakage policy document`
-- [ ] **C22** `feat: add chronological train/calibration/test split with project grouping`
-- [ ] **C23** `test: add automated leakage detection tests (feature vs. prediction timestamp)`
+Done (uncommitted, ready to commit). Revised from the original C21-C23:
+building the leakage-safe pipeline surfaced that ground-truth label
+derivation (`labels.py`) had to exist first and separately (nothing under
+`features/` may import it -- that's the actual enforcement mechanism for
+"no target-derived features"), and the pipeline itself
+(`pipeline.py` -- EVM + inflation + temporal + leakage-safe change-order
+joins) was substantial enough to warrant its own commit apart from its
+tests and the leakage-specific test suite.
+
+- [x] **C21** `feat: add ground-truth label derivation`
+  `src/buildguard/data/labels.py`, `tests/unit/test_labels.py` -- `cost_overrun`/`schedule_delay` resolved from the snapshot history against the inflation-adjusted (real) final cost, per the open question in ADR-0004; in-flight projects get `pd.NA`
+- [x] **C22** `feat: add chronological project-grouped train/calibration/test split`
+  `src/buildguard/data/split.py`, `tests/unit/test_split.py`
+- [x] **C23** `feat: add leakage-safe feature pipeline`
+  `src/buildguard/features/pipeline.py`, `tests/unit/test_pipeline.py` -- assembles EVM/inflation/temporal features plus a `merge_asof`-based leakage-safe change-order join; Work Packages/Suppliers deliberately excluded (no per-row date)
+- [x] **C24** `test: add automated leakage detection tests`
+  `tests/leakage/test_pipeline_leakage.py` -- the Section 11-mandated test: a future-dated change order injected into fixtures never contributes to an earlier snapshot's features
+- [x] **C25** `docs: add leakage policy and temporal-validation ADR`
+  `docs/LEAKAGE_POLICY.md`, `docs/adr/0003-temporal-validation.md`, `docs/ARCHITECTURE.md`, `README.md`, `CHANGELOG.md`, `BUILDGUARD_AI_COMMIT_PLAN.md`
 
 **→ PR #4 "Temporal anti-leakage split"**
 
 ## Session G — Baselines (Phase 3)
 
-- [ ] **C24** `feat: add classification baselines (dummy, logistic regression, CPI rule)`
-- [ ] **C25** `feat: add regression baselines (mean/median, deterministic EAC, linear regression)`
+- [ ] **C26** `feat: add classification baselines (dummy, logistic regression, CPI rule)`
+- [ ] **C27** `feat: add regression baselines (mean/median, deterministic EAC, linear regression)`
 
 **→ PR #5 "Baseline models"**
 
 ## Session H — Advanced Modeling (Phase 4)
 
-- [ ] **C26** `feat: add MLflow experiment tracking scaffolding`
-- [ ] **C27** `feat: train and tune cost-overrun risk model`
-- [ ] **C28** `feat: train and tune schedule-delay risk model`
-- [ ] **C29** `feat: train and tune final-cost regression model`
-- [ ] **C30** `docs: add model-selection ADR (families considered, trade-offs)`
+- [ ] **C28** `feat: add MLflow experiment tracking scaffolding`
+- [ ] **C29** `feat: train and tune cost-overrun risk model`
+- [ ] **C30** `feat: train and tune schedule-delay risk model`
+- [ ] **C31** `feat: train and tune final-cost regression model`
+- [ ] **C32** `docs: add model-selection ADR (families considered, trade-offs)`
 
 **→ PR #6 / #7 / #8 (one per model, or combined — your call at the time)**
 
 ## Session I — Calibration, Threshold, Uncertainty (Phase 5)
 
-- [ ] **C31** `feat: add probability calibration (Platt/isotonic comparison, Brier score)`
-- [ ] **C32** `feat: add business-cost threshold optimization`
-- [ ] **C33** `feat: add prediction uncertainty (conformal or quantile intervals)`
-- [ ] **C34** `docs: add calibration, threshold-policy, and uncertainty-method ADRs`
+- [ ] **C33** `feat: add probability calibration (Platt/isotonic comparison, Brier score)`
+- [ ] **C34** `feat: add business-cost threshold optimization`
+- [ ] **C35** `feat: add prediction uncertainty (conformal or quantile intervals)`
+- [ ] **C36** `docs: add calibration, threshold-policy, and uncertainty-method ADRs`
 
 **→ PR #9 "Calibration & threshold optimization"**
 
 ## Session J — Explainability & Error Analysis (Phase 6)
 
-- [ ] **C35** `feat: add global and local SHAP explainability`
-- [ ] **C36** `feat: add slice evaluation across project type/size/geography/lifecycle`
-- [ ] **C37** `docs: add senior-level failure analysis report`
+- [ ] **C37** `feat: add global and local SHAP explainability`
+- [ ] **C38** `feat: add slice evaluation across project type/size/geography/lifecycle`
+- [ ] **C39** `docs: add senior-level failure analysis report`
 
 **→ folds into PR #9 or its own small PR**
 
 ## Session K — Monitoring & Retraining Policy (Phase 7)
 
-- [ ] **C38** `feat: add data quality and drift monitoring`
-- [ ] **C39** `feat: add prediction and performance monitoring`
-- [ ] **C40** `docs: add monitoring documentation, retraining policy, and monitoring ADR`
+- [ ] **C40** `feat: add data quality and drift monitoring`
+- [ ] **C41** `feat: add prediction and performance monitoring`
+- [ ] **C42** `docs: add monitoring documentation, retraining policy, and monitoring ADR`
 
 **→ PR #10 "Monitoring"**
 
@@ -183,36 +199,36 @@ the feature work it unblocks.
 This is where [`docs/design/UI_DESIGN_SPEC.md`](docs/design/UI_DESIGN_SPEC.md)
 (the renan-standard sidebar/branding direction) finally gets implemented.
 
-- [ ] **C41** `feat: add FastAPI inference service and Pydantic schemas`
-- [ ] **C42** `test: add API contract tests`
-- [ ] **C43** `feat: add Streamlit app shell (sidebar, branding, navigation)`
-- [ ] **C44** `feat: add Executive Overview and Project Diagnostic pages`
-- [ ] **C45** `feat: add Scenario Simulator, Model Performance, and Model Health pages`
-- [ ] **C46** `docs: add streamlit-fastapi-boundary ADR`
+- [ ] **C43** `feat: add FastAPI inference service and Pydantic schemas`
+- [ ] **C44** `test: add API contract tests`
+- [ ] **C45** `feat: add Streamlit app shell (sidebar, branding, navigation)`
+- [ ] **C46** `feat: add Executive Overview and Project Diagnostic pages`
+- [ ] **C47** `feat: add Scenario Simulator, Model Performance, and Model Health pages`
+- [ ] **C48** `docs: add streamlit-fastapi-boundary ADR`
 
 **→ PR #11 "Public app"**
 
 ## Session M — Testing Hardening & CI/CD (Phase 9)
 
-- [ ] **C47** `test: add integration tests (raw → validation → features → prediction)`
-- [ ] **C48** `ci: add GitHub Actions pipeline (lint, format, type-check, test, coverage gate)`
-- [ ] **C49** `security: add dependency and secret scanning (pip-audit, Bandit)`
+- [ ] **C49** `test: add integration tests (raw → validation → features → prediction)`
+- [ ] **C50** `ci: add GitHub Actions pipeline (lint, format, type-check, test, coverage gate)`
+- [ ] **C51** `security: add dependency and secret scanning (pip-audit, Bandit)`
 
 **→ PR #12 "Release hardening" (part 1)**
 
 ## Session N — Documentation Completion (Phase 9)
 
-- [ ] **C50** `docs: add architecture, monitoring, and limitations docs`
-- [ ] **C51** `docs: complete model card and runbook`
-- [ ] **C52** `docs: add interview guide and remaining ADRs`
+- [ ] **C52** `docs: add architecture, monitoring, and limitations docs`
+- [ ] **C53** `docs: complete model card and runbook`
+- [ ] **C54** `docs: add interview guide and remaining ADRs`
 
 **→ folds into PR #12**
 
 ## Session O — Deployment & v1.0.0 Release (Phase 10–11)
 
-- [ ] **C53** `chore: add Dockerfile and package_model.py`
-- [ ] **C54** `chore: deploy to Streamlit Community Cloud and add smoke tests`
-- [ ] **C55** `chore: cut v1.0.0 release, update CHANGELOG and README with final results`
+- [ ] **C55** `chore: add Dockerfile and package_model.py`
+- [ ] **C56** `chore: deploy to Streamlit Community Cloud and add smoke tests`
+- [ ] **C57** `chore: cut v1.0.0 release, update CHANGELOG and README with final results`
 
 **→ PR #12 "Release hardening" (part 2), tag `v1.0.0`**
 
@@ -220,19 +236,19 @@ This is where [`docs/design/UI_DESIGN_SPEC.md`](docs/design/UI_DESIGN_SPEC.md)
 
 ## Running totals
 
-- **Commits:** 55 planned across 15 sessions — inside the 30 (minimum) to
+- **Commits:** 57 planned across 15 sessions — inside the 30 (minimum) to
   85 (stretch) range from Section 43, biased toward the upper-middle
-  because the foundation phase legitimately needed more setup than the
-  minimum plan assumed (governance files, ADRs, brand/UI spec captured
-  early). Expect the real number to drift ±10 as sessions actually happen —
-  that's fine; this is a guide, not a quota.
+  because the foundation and anti-leakage phases legitimately needed more
+  granularity than the minimum plan assumed. Expect the real number to
+  drift ±10 as sessions actually happen — that's fine; this is a guide,
+  not a quota.
 - **PRs:** 12, matching Section 43's suggested list almost exactly (the
   cost/schedule/final-cost models can be one PR or three, decide at
   Session H time based on how independent they end up being).
 
 ## Next action
 
-Commit **C17–C20** now (Session E), open PR #3, then either backfill
-Session D (EDA notebooks, documentation-only, low priority) or move on to
-Session F (anti-leakage temporal split) -- the next piece that actually
-blocks modeling.
+Commit **C21–C25** now (Session F), open PR #4, then start Session G
+(baselines) -- the first piece of actual modeling, and the point where
+`docs/adr/0006-model-selection.md` (already referenced from
+`configs/base.yaml`) should get written alongside it.
