@@ -61,6 +61,11 @@ computation, so the whole chain is independently unit-testable without I/O.
 | `src/buildguard/models/calibration.py` | Probability calibration comparison (Section 16) |
 | `src/buildguard/models/thresholds.py` | Business-cost threshold optimization (Section 17) |
 | `src/buildguard/models/uncertainty.py` | Split-conformal prediction intervals (Section 19) |
+| `src/buildguard/evaluation/classification.py` | Held-out classification metrics: ROC-AUC, PR-AUC, precision/recall/F1, Brier, confusion matrix (Section 18) |
+| `src/buildguard/evaluation/regression.py` | Held-out regression metrics: MAE, RMSE, R2, MAPE/SMAPE, business-terms error (Section 18) |
+| `src/buildguard/evaluation/calibration.py` | Out-of-sample calibration check, reusing `models/calibration.py`'s `CalibrationCurve` (Section 18) |
+| `src/buildguard/evaluation/slices.py` | Per-subgroup metric evaluation and quantile bucketing (Section 18) |
+| `src/buildguard/explainability/shap.py` | Global (SHAP + permutation) and local (SHAP) explanations for the tree-based classifiers (Section 20) |
 
 See [ADR-0001](adr/0001-project-architecture.md) for why this layout was
 chosen over alternatives.
@@ -264,14 +269,60 @@ loads the champions saved by `scripts/train.py`, and on the
 **Known limitation, stated plainly:** all of the above is measured
 in-sample, on the same calibration-split rows used to fit the mapping
 (Section 12's CALIBRATION block is exactly where this fitting happens).
-Genuinely held-out performance is confirmed only at the one final test
-evaluation, a later phase.
+Genuinely held-out performance is confirmed at the one final test
+evaluation -- see Section 11 below.
 
-## 11. What's not built yet
+## 11. Explainability, held-out evaluation, and failure analysis (Section 18/20/47)
 
-Explainability, monitoring, the FastAPI service, and the Streamlit app are
-all still pending -- see
-[`BUILDGUARD_AI_COMMIT_PLAN.md`](../BUILDGUARD_AI_COMMIT_PLAN.md) for the
-session-by-session plan and [`BUILDGUARD_AI_PROJECT_SCOPE.md`](../BUILDGUARD_AI_PROJECT_SCOPE.md)
+`scripts/evaluate.py` (`make evaluate`) is the one moment the **test**
+split gets used, applying every decision already frozen on the
+calibration split (threshold, calibration method, conformal quantile)
+unchanged, to data none of them ever saw:
+
+- **Explainability** (`src/buildguard/explainability/shap.py`): SHAP
+  `TreeExplainer` with `model_output="probability"` and an explicit
+  background sample, unifying `RandomForestClassifier` (natively
+  probability-space SHAP) and LightGBM (natively log-odds-space) into the
+  same additive identity `base_value + shap_values.sum() == predicted_probability`
+  for both model families. Global explanations report both mean |SHAP
+  value| and permutation importance (they are computed over different
+  feature spaces -- encoded vs. original -- and can disagree, so both are
+  kept rather than forced into one number). `final_cost`'s champion is a
+  formula (`BAC / CPI`, ADR-0006), not a fitted model -- explanations
+  don't apply; the formula is the explanation. Every explanation-bearing
+  surface carries the mandatory disclaimer: *"Feature attribution explains
+  the model prediction; it does not establish causality."*
+- **Held-out metrics** (`src/buildguard/evaluation/classification.py`,
+  `regression.py`, `calibration.py`): the Section 18 metric battery,
+  scored on test. **Real results:** `cost_overrun` ROC-AUC 0.9495 / PR-AUC
+  0.9008 / recall 97.4% at the frozen 0.080 threshold; `schedule_delay`
+  ROC-AUC 0.9002 / recall 92.9% at 0.140; `final_cost` MAE $1.61M / RMSE
+  $3.03M / R2 0.959 / MAPE 7.0%, conformal coverage 0.899 against an 0.80
+  target (conservative -- wider than strictly required).
+- **Slice evaluation** (`src/buildguard/evaluation/slices.py`): the six
+  Section 18 mandatory dimensions plus an inflation-regime dimension
+  answering Section 47's inflation question directly. **Real finding:**
+  `cost_overrun`'s global AUC (0.9495) hides a materially weaker subgroup
+  -- the `ES` state slice scores AUC 0.597 (n=76), close to random. This
+  is exactly the "high global metric, poor subgroup behavior" case
+  Section 18 requires surfacing rather than hiding.
+- **Failure analysis** (`reports/error_analysis/*.md`): generated
+  directly from the same computed arrays as
+  `reports/experiments/test_set_metrics.json`, per Section 47 -- worst
+  false negatives/positives with their top SHAP drivers, near-threshold
+  and out-of-distribution rows, hardest subgroups, and (for `final_cost`)
+  largest errors and systematic bias by subgroup. **Real finding:**
+  `schedule_delay`'s isotonic calibration, which won in-sample (Brier
+  0.059, ADR-0007), degrades to 0.145 out-of-sample -- a genuine
+  generalization gap, not a bug.
+
+Full design rationale, both findings above, and every alternative
+considered: [ADR-0010](adr/0010-evaluation-explainability-design.md).
+
+## 12. What's not built yet
+
+Monitoring, the FastAPI service, and the Streamlit app are all still
+pending -- see [`BUILDGUARD_AI_COMMIT_PLAN.md`](../BUILDGUARD_AI_COMMIT_PLAN.md)
+for the session-by-session plan and [`BUILDGUARD_AI_PROJECT_SCOPE.md`](../BUILDGUARD_AI_PROJECT_SCOPE.md)
 Section 45 for the full roadmap. This document will grow a section for
 each as it lands.

@@ -129,10 +129,45 @@ around the final-cost estimate — ±$3.09M, empirically achieving 0.801
 coverage. Full rationale in [ADR-0007](docs/adr/0007-calibration-strategy.md),
 [ADR-0008](docs/adr/0008-threshold-policy.md), [ADR-0009](docs/adr/0009-uncertainty-method.md).
 
-Slice analysis and explainability land in the next phase.
+**Slice analysis** (`evaluation/slices.py`): six mandatory dimensions
+(project type, size, construction standard, lifecycle stage, geography,
+budget segment) plus an inflation-regime dimension, scored on the held-out
+test split. **Real finding:** cost-overrun risk's global AUC (0.9495)
+hides a materially weaker subgroup — the `ES` state slice scores AUC
+0.597 (n=76), close to random. Documented, not hidden, per Section 18.
+
+**Explainability** (`explainability/shap.py`): SHAP `TreeExplainer`
+(`model_output="probability"`) plus permutation importance for both
+classifiers. Top global drivers: cost-overrun risk — `cpi` and
+`operational_variance`; schedule-delay risk — `spi` and
+`lifecycle_fraction`. Mandatory disclaimer on every explanation surface:
+*"Feature attribution explains the model prediction; it does not
+establish causality."* `final_cost`'s formula champion has no learned
+explanation to attach — the formula itself is the explanation.
+
+Full rationale, both real findings, and the failure-analysis methodology:
+[ADR-0010](docs/adr/0010-evaluation-explainability-design.md).
 
 ## 10. Results
-*(Final metrics — populated after the test-set evaluation, once.)*
+
+Final, one-shot evaluation on the **test split** (752 rows / 41 projects,
+untouched until this run — Section 12/ADR-0003):
+
+| Task | Test metric | At the frozen threshold |
+|---|---|---|
+| Cost-overrun risk | ROC-AUC 0.9495 · PR-AUC 0.9008 | recall 97.4% / precision 55.1% @ 0.080 |
+| Schedule-delay risk | ROC-AUC 0.9002 · PR-AUC 0.8949 | recall 92.9% / precision 72.5% @ 0.140 |
+| Final-cost estimate | MAE $1.61M · RMSE $3.03M · R² 0.959 · MAPE 7.0% | 80% interval, 89.9% empirical coverage |
+
+Two things worth being direct about: `schedule_delay`'s isotonic
+calibration, which won in-sample (Brier 0.059), degrades to 0.145
+out-of-sample — a genuine generalization gap. `final_cost`'s conformal
+interval over-covers (89.9% vs. an 80% target) — conservative, not wrong,
+but wider than strictly necessary. Full failure analysis (false
+negatives/positives with SHAP drivers, hardest subgroups,
+out-of-distribution rows, largest regression errors) in
+[`reports/error_analysis/`](reports/error_analysis/); full numbers in
+[`reports/experiments/test_set_metrics.json`](reports/experiments/test_set_metrics.json).
 
 ## 11. Business Impact
 *(Scenario-based estimated decision-support value — to be documented.)*
@@ -153,6 +188,7 @@ make setup     # uv-managed environment
 make data      # generate the synthetic demo dataset
 make train     # train and select the three core champion models
 make calibrate # calibrate probabilities, optimize thresholds, quantify uncertainty
+make evaluate  # final held-out test evaluation, explainability, failure analysis
 make test      # unit, integration, leakage, contract tests
 make app       # run the Streamlit app locally (once built)
 ```

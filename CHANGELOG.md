@@ -153,3 +153,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - 99% test coverage on everything shipped so far (`tests/unit/`,
   `tests/contracts/`, `tests/leakage/`); Ruff, Ruff format, and Mypy
   (`--strict`) all clean.
+- SHAP/permutation explainability (`src/buildguard/explainability/shap.py`,
+  Section 20): global (mean |SHAP value| + permutation importance) and
+  local (per-prediction SHAP) explanations for the tree-based classifiers.
+  `TreeExplainer` built with `model_output="probability"` and an explicit
+  background sample so RandomForest (natively probability-space) and
+  LightGBM (natively log-odds-space) land in the same additive identity
+  `base_value + shap_values.sum() == predicted_probability` for both
+  families. `final_cost`'s formula champion (ADR-0006) has no learned
+  explanation to attach. Mandatory disclaimer exported as
+  `CAUSALITY_DISCLAIMER`.
+- Slice evaluation (`src/buildguard/evaluation/slices.py`, Section 18):
+  per-subgroup metric evaluation with a `None` (not a misleading number)
+  result for slices below a minimum size or with an undefined metric (e.g.
+  a single-class ROC-AUC slice), and `bucket_by_quantile` for continuous
+  dimensions (size, budget, inflation exposure).
+- Held-out evaluation metrics (`src/buildguard/evaluation/classification.py`,
+  `regression.py`, `calibration.py`, Section 18): the full classification
+  (ROC-AUC, PR-AUC, precision/recall/F1, Brier, confusion matrix) and
+  regression (MAE, RMSE, R², MAPE/SMAPE, business-terms error) batteries,
+  plus an out-of-sample calibration check — deliberately separate from
+  `models/calibration.py`/`thresholds.py`, which *fit*/*select* on the
+  calibration split; these modules only *measure*, on whatever split the
+  caller passes in.
+- `scripts/evaluate.py` (`make evaluate`): the one script that touches the
+  **test** split — applies the frozen champion, threshold, calibration
+  method, and conformal quantile unchanged, computes held-out metrics
+  across all three tasks, runs slice evaluation across seven dimensions
+  (six mandatory + inflation regime), and generates
+  `reports/error_analysis/*_failure_analysis.md` (Section 47) directly
+  from the computed numbers — false negatives/positives with their top
+  SHAP drivers, near-threshold and out-of-distribution rows, hardest
+  subgroups, and (for `final_cost`) largest errors and systematic bias by
+  subgroup. **Real results:** cost-overrun risk ROC-AUC 0.9495 (recall
+  97.4% @ 0.080); schedule-delay risk ROC-AUC 0.9002 (recall 92.9% @
+  0.140); final-cost MAE $1.61M / R² 0.959, 89.9% empirical interval
+  coverage against an 80% target. **Two genuine findings:**
+  schedule-delay's isotonic calibration, which won in-sample (Brier
+  0.059), degrades to 0.145 out-of-sample; cost-overrun's global AUC
+  (0.9495) hides a materially weaker `ES`-state subgroup (AUC 0.597,
+  n=76). Both documented, not hidden, per Section 18. Full rationale:
+  `docs/adr/0010-evaluation-explainability-design.md`.

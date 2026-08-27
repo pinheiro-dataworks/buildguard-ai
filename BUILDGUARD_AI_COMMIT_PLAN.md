@@ -14,10 +14,12 @@ match reality — this document follows the work, not the other way around.
 Check off an item (`- [x]`) once it is actually committed. Update the
 **Progress** line at the top after every session.
 
-**Progress:** 32 / 59 planned commits actually committed (C33–C38 code is
-written, tested, and actually calibrated end-to-end, ready to commit) · 0 /
-14 PRs opened · Phase 0-4 complete, Phase 5 (calibration/threshold/
-uncertainty) complete.
+**Progress:** 40 / 61 planned commits actually committed (C39–C43 code is
+written, tested, and actually evaluated end-to-end against the real
+held-out test split, ready to commit) · 0 / 14 PRs opened · Phase 0-6
+complete (data, features, leakage-safe split, baselines, advanced
+modeling, calibration/threshold/uncertainty, explainability/evaluation/
+failure analysis).
 
 ---
 
@@ -38,7 +40,7 @@ earlier ones (e.g. no modeling before the temporal split exists).
 | G — Baselines | 3 | #5 Baseline models | ✅ Committed (C26–C27) |
 | H — Advanced modeling | 4 | #6 Advanced modeling (bundled) | ✅ Committed (C28–C32) |
 | I — Calibration, threshold, uncertainty | 5 | #9 Calibration & threshold optimization | ✅ Done (uncommitted, ready to commit) |
-| J — Explainability & error analysis | 6 | #10 Explainability & error analysis | ⬜ Not started |
+| J — Explainability & error analysis | 6 | #10 Explainability & error analysis | ✅ Done (uncommitted, ready to commit) |
 | K — Monitoring & MLflow | 7 | #11 Monitoring | ⬜ Not started |
 | L — API & Streamlit app | 8 | #7 FastAPI service + #8 Streamlit UI | ⬜ Not started |
 | M — Testing hardening & CI/CD | 9 | #12 Testing hardening & CI/CD | ⬜ Not started |
@@ -216,17 +218,35 @@ commit distinct from the three underlying modules.
 
 ## Session J — Explainability & Error Analysis (Phase 6)
 
-- [ ] **C39** `feat: add global and local SHAP explainability`
-- [ ] **C40** `feat: add slice evaluation across project type/size/geography/lifecycle`
-- [ ] **C41** `docs: add senior-level failure analysis report`
+Done, ready to commit. Grew from the original 3 items to 5: Section 18's
+metric battery (ROC-AUC/PR-AUC/precision/recall/F1/Brier for
+classification, MAE/RMSE/R²/MAPE/SMAPE for regression, plus an
+out-of-sample calibration check) needed its own dedicated module
+distinct from `models/calibration.py`/`thresholds.py` (which *fit*/
+*select* on the calibration split; `evaluation/` only *measures*), and
+actually running everything against the real trained champions on the
+**test** split (the one evaluation ADR-0003 reserves it for) turned out
+to be a real, independently meaningful commit of its own, not a footnote
+of the failure-analysis-report commit.
+
+- [x] **C39** `feat: add SHAP explainability (global and local)`
+  `src/buildguard/explainability/shap.py`, `tests/unit/test_shap.py` -- `TreeExplainer` with `model_output="probability"` + explicit background, unifying RandomForest/LightGBM into one additive identity
+- [x] **C40** `feat: add slice evaluation across project type/size/geography/lifecycle`
+  `src/buildguard/evaluation/__init__.py`, `slices.py`, `tests/unit/test_slices.py` -- per-subgroup metrics, `None` (not a misleading number) for undersized/undefined slices, quantile bucketing
+- [x] **C41** `feat: add held-out classification/regression/calibration evaluation metrics`
+  `src/buildguard/evaluation/classification.py`, `regression.py`, `calibration.py`, three matching test files -- the Section 18 metric battery, deliberately separate from the fitting/selection modules
+- [x] **C42** `feat: add test-set evaluation script and run the failure analysis`
+  `scripts/evaluate.py`, `reports/experiments/test_set_metrics.json`, `reports/error_analysis/*.md` -- **real results**: cost-overrun risk ROC-AUC 0.9495 (recall 97.4% @ 0.080); schedule-delay risk ROC-AUC 0.9002 (recall 92.9% @ 0.140); final-cost MAE $1.61M / R² 0.959, 89.9% empirical interval coverage (target 80%)
+- [x] **C43** `docs: add evaluation/explainability ADR and Section 18/20/47 documentation`
+  `docs/adr/0010-evaluation-explainability-design.md`, `docs/ARCHITECTURE.md`, `README.md`, `CHANGELOG.md`, `BUILDGUARD_AI_COMMIT_PLAN.md` -- **two genuine findings documented**: schedule-delay's isotonic calibration degrades from 0.059 (in-sample) to 0.145 Brier out-of-sample; cost-overrun's global AUC (0.9495) hides a materially weaker `ES`-state subgroup (AUC 0.597)
 
 **→ PR #10 "Explainability & error analysis"**
 
 ## Session K — Monitoring & Retraining Policy (Phase 7)
 
-- [ ] **C42** `feat: add data quality and drift monitoring`
-- [ ] **C43** `feat: add prediction and performance monitoring`
-- [ ] **C44** `docs: add monitoring documentation, retraining policy, and monitoring ADR`
+- [ ] **C44** `feat: add data quality and drift monitoring`
+- [ ] **C45** `feat: add prediction and performance monitoring`
+- [ ] **C46** `docs: add monitoring documentation, retraining policy, and monitoring ADR`
 
 **→ PR #11 "Monitoring"**
 
@@ -239,36 +259,36 @@ bundling three models into one PR) gets closed: API service and Streamlit
 UI are genuinely independent halves, so this splits into two PRs (#7, #8)
 rather than one #11.
 
-- [ ] **C45** `feat: add FastAPI inference service and Pydantic schemas`
-- [ ] **C46** `test: add API contract tests`
-- [ ] **C47** `feat: add Streamlit app shell (sidebar, branding, navigation)`
-- [ ] **C48** `feat: add Executive Overview and Project Diagnostic pages`
-- [ ] **C49** `feat: add Scenario Simulator, Model Performance, and Model Health pages`
-- [ ] **C50** `docs: add streamlit-fastapi-boundary ADR`
+- [ ] **C47** `feat: add FastAPI inference service and Pydantic schemas`
+- [ ] **C48** `test: add API contract tests`
+- [ ] **C49** `feat: add Streamlit app shell (sidebar, branding, navigation)`
+- [ ] **C50** `feat: add Executive Overview and Project Diagnostic pages`
+- [ ] **C51** `feat: add Scenario Simulator, Model Performance, and Model Health pages`
+- [ ] **C52** `docs: add streamlit-fastapi-boundary ADR`
 
-**→ PR #7 "FastAPI inference service"** (C45-C46) **+ PR #8 "Streamlit public app"** (C47-C50)
+**→ PR #7 "FastAPI inference service"** (C47-C48) **+ PR #8 "Streamlit public app"** (C49-C52)
 
 ## Session M — Testing Hardening & CI/CD (Phase 9)
 
-- [ ] **C51** `test: add integration tests (raw → validation → features → prediction)`
-- [ ] **C52** `ci: add GitHub Actions pipeline (lint, format, type-check, test, coverage gate)`
-- [ ] **C53** `security: add dependency and secret scanning (pip-audit, Bandit)`
+- [ ] **C53** `test: add integration tests (raw → validation → features → prediction)`
+- [ ] **C54** `ci: add GitHub Actions pipeline (lint, format, type-check, test, coverage gate)`
+- [ ] **C55** `security: add dependency and secret scanning (pip-audit, Bandit)`
 
 **→ PR #12 "Testing hardening & CI/CD"**
 
 ## Session N — Documentation Completion (Phase 9)
 
-- [ ] **C54** `docs: add architecture, monitoring, and limitations docs`
-- [ ] **C55** `docs: complete model card and runbook`
-- [ ] **C56** `docs: add interview guide and remaining ADRs`
+- [ ] **C56** `docs: add architecture, monitoring, and limitations docs`
+- [ ] **C57** `docs: complete model card and runbook`
+- [ ] **C58** `docs: add interview guide and remaining ADRs`
 
 **→ PR #13 "Documentation completion"**
 
 ## Session O — Deployment & v1.0.0 Release (Phase 10–11)
 
-- [ ] **C57** `chore: add Dockerfile and package_model.py`
-- [ ] **C58** `chore: deploy to Streamlit Community Cloud and add smoke tests`
-- [ ] **C59** `chore: cut v1.0.0 release, update CHANGELOG and README with final results`
+- [ ] **C59** `chore: add Dockerfile and package_model.py`
+- [ ] **C60** `chore: deploy to Streamlit Community Cloud and add smoke tests`
+- [ ] **C61** `chore: cut v1.0.0 release, update CHANGELOG and README with final results`
 
 **→ PR #14 "Deployment & v1.0.0 release", tag `v1.0.0`**
 
@@ -276,9 +296,9 @@ rather than one #11.
 
 ## Running totals
 
-- **Commits:** 59 planned across 15 sessions — inside the 30 (minimum) to
+- **Commits:** 61 planned across 15 sessions — inside the 30 (minimum) to
   85 (stretch) range from Section 43, biased toward the upper-middle
-  because the foundation, anti-leakage, and calibration phases
+  because the foundation, anti-leakage, calibration, and evaluation phases
   legitimately needed more granularity than the minimum plan assumed.
   Expect the real number to drift ±10 as sessions actually happen —
   that's fine; this is a guide, not a quota.
@@ -297,7 +317,8 @@ rather than one #11.
 
 ## Next action
 
-Commit **C33–C38** now (Session I), open PR #9, then start Session J
-(explainability & error analysis) -- the next piece that depends on the
-calibrated champions existing (`models/*_champion.joblib`, now
-calibration-wrapped where it helped).
+Commit **C39–C43** now (Session J), open PR #10, then start Session K
+(monitoring & retraining policy) -- the next piece that depends on the
+final champions existing (Session J confirmed both classifiers'
+genuinely held-out performance; monitoring needs that same test-split
+baseline to detect future drift against).
