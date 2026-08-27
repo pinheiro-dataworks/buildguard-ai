@@ -41,12 +41,8 @@ import joblib
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, roc_auc_score
 
+from _common import assemble_task_dataset, feature_columns, filter_by_split, load_training_dataset
 from buildguard.config import PROJECT_ROOT, BaseAppConfig, load_base_config
-from buildguard.data.economic_index import DemoIndexProvider
-from buildguard.data.labels import resolve_outcomes
-from buildguard.data.split import chronological_project_split, filter_by_split
-from buildguard.data.synthetic import generate_portfolio
-from buildguard.features.pipeline import build_feature_table
 from buildguard.models import baselines as bl
 from buildguard.models import classification, regression
 from buildguard.models.tracking import configure_tracking, get_git_sha, log_model_run
@@ -69,21 +65,6 @@ TASKS: tuple[TaskSpec, ...] = (
     TaskSpec("final_cost", "regression", "final_cost_real"),
 )
 
-_NON_FEATURE_COLUMNS = {
-    "project_id",
-    "snapshot_date",
-    "planned_start_date",
-    "planned_completion_date",
-}
-
-
-def _assemble_task_dataset(
-    features: pd.DataFrame, outcomes: pd.DataFrame, label_column: str
-) -> pd.DataFrame:
-    """Every feature row of a resolved project, joined to its single outcome label."""
-    resolved = outcomes.loc[outcomes["is_resolved"], ["project_id", label_column]]
-    return features.merge(resolved, on="project_id", how="inner")
-
 
 def _classification_baselines(cpi_threshold: float) -> dict[str, Any]:
     return {
@@ -105,7 +86,7 @@ def _regression_baselines() -> dict[str, Any]:
 def _run_classification_task(
     task: TaskSpec, train: pd.DataFrame, calibration: pd.DataFrame, cfg: BaseAppConfig
 ) -> dict[str, Any]:
-    feature_cols = [c for c in train.columns if c not in _NON_FEATURE_COLUMNS | {task.label_column}]
+    feature_cols = feature_columns(train, task.label_column)
     x_train, y_train = train[feature_cols], train[task.label_column].astype(bool)
     x_cal, y_cal = calibration[feature_cols], calibration[task.label_column].astype(bool)
     groups_train = train["project_id"]
@@ -159,7 +140,7 @@ def _run_classification_task(
 def _run_regression_task(
     task: TaskSpec, train: pd.DataFrame, calibration: pd.DataFrame, cfg: BaseAppConfig
 ) -> dict[str, Any]:
-    feature_cols = [c for c in train.columns if c not in _NON_FEATURE_COLUMNS | {task.label_column}]
+    feature_cols = feature_columns(train, task.label_column)
     x_train, y_train = train[feature_cols], train[task.label_column]
     x_cal, y_cal = calibration[feature_cols], calibration[task.label_column]
     groups_train = train["project_id"]
@@ -235,31 +216,18 @@ def main() -> None:
     cfg = load_base_config()
     data_version = get_git_sha()
 
-    logger.info("Generating synthetic portfolio (seed=%s)...", cfg.seed)
-    dataset = generate_portfolio(cfg)
-    provider = DemoIndexProvider(
-        reference_date=cfg.synthetic_data.reference_date,
-        history_years=cfg.synthetic_data.history_years,
-    )
-
-    logger.info("Building leakage-safe feature table...")
-    features = build_feature_table(
-        dataset.projects, dataset.snapshots, dataset.change_orders, provider, cfg.features
-    )
-    outcomes = resolve_outcomes(
-        dataset.projects,
-        dataset.snapshots,
-        provider,
-        cfg.targets.cost_overrun_tolerance,
-        cfg.targets.schedule_delay_tolerance_days,
+    logger.info("Generating synthetic portfolio and feature table (seed=%s)...", cfg.seed)
+    training_dataset = load_training_dataset(cfg)
+    features, outcomes, assignment = (
+        training_dataset.features,
+        training_dataset.outcomes,
+        training_dataset.assignment,
     )
     logger.info(
         "%d / %d projects resolved (have a ground-truth outcome)",
         int(outcomes["is_resolved"].sum()),
         len(outcomes),
     )
-
-    assignment = chronological_project_split(dataset.projects, cfg.split)
 
     configure_tracking(cfg.paths.mlflow_tracking_uri, cfg.training.mlflow_experiment_name)
 
@@ -274,7 +242,7 @@ def main() -> None:
         logger.info("=== Task: %s (%s) ===", task.name, task.task_type)
         start = time.monotonic()
 
-        task_data = _assemble_task_dataset(features, outcomes, task.label_column)
+        task_data = assemble_task_dataset(features, outcomes, task.label_column)
         train = filter_by_split(task_data, assignment.train_project_ids)
         calibration = filter_by_split(task_data, assignment.calibration_project_ids)
         logger.info("train rows=%d, calibration rows=%d", len(train), len(calibration))
