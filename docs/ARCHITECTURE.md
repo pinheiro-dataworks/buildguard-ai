@@ -54,6 +54,10 @@ computation, so the whole chain is independently unit-testable without I/O.
 | `src/buildguard/features/temporal.py` | Lifecycle position and trend/persistence features |
 | `src/buildguard/features/pipeline.py` | Leakage-safe feature table assembly (Section 11/28) |
 | `src/buildguard/models/baselines.py` | Mandatory pre-modeling baselines (Section 13) |
+| `src/buildguard/models/preprocessing.py` | Shared numeric/categorical preprocessing for every model |
+| `src/buildguard/models/classification.py` | Candidate classifiers + Optuna tuning (Section 14/15) |
+| `src/buildguard/models/regression.py` | Candidate regressors + Optuna tuning (Section 14/15) |
+| `src/buildguard/models/tracking.py` | MLflow experiment tracking helpers (Section 25) |
 
 See [ADR-0001](adr/0001-project-architecture.md) for why this layout was
 chosen over alternatives.
@@ -193,11 +197,39 @@ domain-informed formula is a genuinely strong baseline, and Session H's
 advanced models have real work to do to clear it, not just an easy
 strawman.
 
-## 9. What's not built yet
+## 9. Advanced modeling (Section 14/15/25)
 
-The three core ML models, calibration/threshold/uncertainty,
-explainability, monitoring, the FastAPI service, and the Streamlit app are
-all still pending -- see
+`scripts/train.py` (`make train`) trains and selects the champion for each
+of the three core tasks: `RandomForestClassifier`/`RandomForestRegressor`
+and LightGBM (`src/buildguard/models/classification.py`, `regression.py`),
+tuned with Optuna (`GroupKFold` on `project_id`, train split only), then
+compared against the Section 13 baselines on the **calibration** split
+(test stays untouched). Every candidate is logged as one MLflow run
+(`src/buildguard/models/tracking.py`, SQLite-backed local tracking,
+`sqlite:///mlruns/mlflow.db`); the champion's fitted pipeline is attached
+as a run artifact and saved to `models/*_champion.joblib`.
+
+**Results at full scale** (400 projects, calibration split):
+
+| Task | Metric | Champion | Score | Best baseline |
+|---|---|---|---|---|
+| `cost_overrun` | ROC-AUC | Random Forest | 0.898 | 0.888 (logistic regression) |
+| `schedule_delay` | ROC-AUC | LightGBM | 0.974 | 0.816 (logistic regression) |
+| `final_cost` | MAE ($) | **Deterministic EAC (baseline)** | 1.96M | 4.11M (tuned LightGBM) |
+
+Two tasks are won by real, tuned ML models. The third is won decisively by
+the same deterministic EVM formula baseline from Section 8 -- not a bug,
+a reproducible finding confirmed at both baseline-validation scale
+(Session G) and here at full scale with proper hyperparameter tuning.
+`final_cost`'s shipped "champion" is honestly a formula, not a fitted
+model, and every downstream document (model card, UI copy) must say so.
+Full trade-off discussion (interpretability, latency, why LightGBM over
+XGBoost/CatBoost) in [ADR-0006](adr/0006-model-selection.md).
+
+## 10. What's not built yet
+
+Calibration/threshold/uncertainty, explainability, monitoring, the FastAPI
+service, and the Streamlit app are all still pending -- see
 [`BUILDGUARD_AI_COMMIT_PLAN.md`](../BUILDGUARD_AI_COMMIT_PLAN.md) for the
 session-by-session plan and [`BUILDGUARD_AI_PROJECT_SCOPE.md`](../BUILDGUARD_AI_PROJECT_SCOPE.md)
 Section 45 for the full roadmap. This document will grow a section for

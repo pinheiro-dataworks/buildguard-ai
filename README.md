@@ -94,13 +94,24 @@ train/calibration/test split.
 
 **Baselines** (`models/baselines.py`) are built and validated first, per
 Section 13 — every candidate model must beat them, not just a naive one.
-On the full synthetic portfolio: a domain-formula regression baseline
-(deterministic EVM Estimate at Completion) reaches ~1.6M MAE on final
-cost, beating even a real fitted linear regression (~3.8M MAE); a
-domain-rule classification baseline (`CPI < 0.90`) alone reaches ~0.83
-AUC. Details in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) Section 8.
-Candidate models (LightGBM, calibration, thresholding) land in a later
-phase — see [`BUILDGUARD_AI_COMMIT_PLAN.md`](BUILDGUARD_AI_COMMIT_PLAN.md).
+
+**Candidates** (`models/classification.py`, `regression.py`): Random
+Forest and LightGBM, tuned with Optuna (`GroupKFold` on `project_id`),
+compared against baselines on the calibration split (`scripts/train.py`,
+`make train`). Real results, full scale (400 projects):
+
+| Task | Champion | Score | Best baseline |
+|---|---|---|---|
+| Cost-overrun risk | Random Forest | 0.898 AUC | 0.888 (logistic regression) |
+| Schedule-delay risk | LightGBM | 0.974 AUC | 0.816 (logistic regression) |
+| Final-cost estimate | **Deterministic EAC (baseline)** | 1.96M MAE | 4.11M (tuned LightGBM) |
+
+Two tasks are won by real ML models; the third is won decisively by the
+plain EVM Estimate-at-Completion formula — a genuine, reproducible finding
+(confirmed at two different scales), not a shortcut. Every experiment run
+is tracked in MLflow (`sqlite:///mlruns/mlflow.db`, zero-cost/local); full
+rationale and trade-offs in [ADR-0006](docs/adr/0006-model-selection.md).
+Calibration, thresholding, and uncertainty land in the next phase.
 
 ## 9. Evaluation
 *(Classification/regression metrics, calibration, slice analysis — to be

@@ -14,9 +14,9 @@ match reality — this document follows the work, not the other way around.
 Check off an item (`- [x]`) once it is actually committed. Update the
 **Progress** line at the top after every session.
 
-**Progress:** 25 / 57 planned commits actually committed (C26–C27 code is
-written and tested, ready to commit) · 0 / 12 PRs opened · Phase 0-2
-complete, Phase 3 complete.
+**Progress:** 27 / 57 planned commits actually committed (C28–C32 code is
+written, tested, and actually trained end-to-end, ready to commit) · 0 / 12
+PRs opened · Phase 0-3 complete, Phase 4 (core modeling) complete.
 
 ---
 
@@ -34,8 +34,8 @@ earlier ones (e.g. no modeling before the temporal split exists).
 | D — EDA & data understanding | 1–2 | #2 (docs) | ⬜ Not started (skipped ahead to E; notebooks are documentation-only and don't block anything) |
 | E — Inflation & temporal features | 2 | #3 EVM feature engine (cont'd) | ✅ Committed (C17–C20) |
 | F — Anti-leakage & split | 3 | #4 Temporal anti-leakage split | ✅ Committed (C21–C25) |
-| G — Baselines | 3 | #5 Baseline models | ✅ Done (uncommitted, ready to commit) |
-| H — Advanced modeling | 4 | #6/#7/#8 Cost/schedule/final-cost models | ⬜ Not started |
+| G — Baselines | 3 | #5 Baseline models | ✅ Committed (C26–C27) |
+| H — Advanced modeling | 4 | #6 Advanced modeling (bundled) | ✅ Done (uncommitted, ready to commit) |
 | I — Calibration, threshold, uncertainty | 5 | #9 Calibration & threshold optimization | ⬜ Not started |
 | J — Explainability & error analysis | 6 | #9 (cont'd) | ⬜ Not started |
 | K — Monitoring & MLflow | 7 | #10 Monitoring | ⬜ Not started |
@@ -168,13 +168,26 @@ tested as a single cohesive module rather than two.
 
 ## Session H — Advanced Modeling (Phase 4)
 
-- [ ] **C28** `feat: add MLflow experiment tracking scaffolding`
-- [ ] **C29** `feat: train and tune cost-overrun risk model`
-- [ ] **C30** `feat: train and tune schedule-delay risk model`
-- [ ] **C31** `feat: train and tune final-cost regression model`
-- [ ] **C32** `docs: add model-selection ADR (families considered, trade-offs)`
+Done (uncommitted, ready to commit). Revised from the original C28-C32: the
+three tasks share one training script rather than three separate ones
+(`_run_classification_task`/`_run_regression_task` are the same machinery
+with a different label column and metric), so "train cost-overrun" /
+"train schedule-delay" / "train final-cost" became one combined commit;
+the shared preprocessing extraction (needed once `classification.py`
+existed alongside `baselines.py`) became its own commit instead.
 
-**→ PR #6 / #7 / #8 (one per model, or combined — your call at the time)**
+- [x] **C28** `refactor: extract shared model preprocessing`
+  `src/buildguard/models/preprocessing.py` (new), `src/buildguard/models/baselines.py`, `tests/unit/test_baselines.py` -- promoted out of `baselines.py` once a second real consumer needed it (Section 27)
+- [x] **C29** `feat: add candidate classification and regression models`
+  `src/buildguard/models/classification.py`, `src/buildguard/models/regression.py`, `tests/unit/test_classification.py`, `tests/unit/test_regression.py` -- Random Forest + LightGBM, Optuna-tuned with grouped (`project_id`) CV
+- [x] **C30** `feat: add MLflow experiment tracking`
+  `src/buildguard/models/tracking.py`, `tests/unit/test_tracking.py` -- SQLite-backed local tracking (MLflow's raw filesystem store is now in maintenance mode); champion artifacts logged via `mlflow.log_artifact`, not `mlflow.sklearn.log_model` (skops rejects BuildGuard's custom baseline classes)
+- [x] **C31** `feat: add training orchestration script and train the three core models`
+  `scripts/train.py`, `configs/base.yaml` (+`training:` section, `mlflow_tracking_uri` → sqlite), `src/buildguard/config.py` (+`TrainingConfig`), `tests/unit/test_config.py`, `reports/experiments/training_summary.json` -- **real results, full scale**: cost-overrun → Random Forest (0.898 AUC); schedule-delay → LightGBM (0.974 AUC); final-cost → deterministic EAC baseline (1.96M MAE, beating tuned LightGBM's 4.11M)
+- [x] **C32** `docs: add model-selection ADR with real training results`
+  `docs/adr/0006-model-selection.md`, `docs/ARCHITECTURE.md`, `README.md`, `CHANGELOG.md`, `BUILDGUARD_AI_COMMIT_PLAN.md`
+
+**→ PR #6 "Advanced modeling" (one bundled PR covering all three tasks, since they share one training script -- not split into #6/#7/#8)**
 
 ## Session I — Calibration, Threshold, Uncertainty (Phase 5)
 
@@ -249,13 +262,21 @@ This is where [`docs/design/UI_DESIGN_SPEC.md`](docs/design/UI_DESIGN_SPEC.md)
   granularity than the minimum plan assumed. Expect the real number to
   drift ±10 as sessions actually happen — that's fine; this is a guide,
   not a quota.
-- **PRs:** 12, matching Section 43's suggested list almost exactly (the
-  cost/schedule/final-cost models can be one PR or three, decide at
-  Session H time based on how independent they end up being).
+- **PRs:** target remains Section 43's minimum of 12 (recommended 15-20).
+  Session H merged the originally-planned #6/#7/#8 (one PR per model) into
+  a single PR #6, since all three tasks ended up sharing one training
+  script rather than three independent ones -- splitting the PR three ways
+  would have meant three PRs touching the same commits, not three
+  independent units of review. That leaves the numbering with a gap
+  (#7/#8 unused); it will be closed by splitting a later session that
+  genuinely has two independent halves -- Session L (API & Streamlit App)
+  is the natural candidate (backend service vs. frontend UI) -- rather
+  than manufacturing a split here that wouldn't reflect real, independently
+  reviewable work (Section 43: "do not manufacture commits [or PRs] to hit
+  a number").
 
 ## Next action
 
-Commit **C26–C27** now (Session G), open PR #5, then start Session H
-(advanced modeling) -- MLflow scaffolding plus the three core models,
-which is also where `docs/adr/0006-model-selection.md` (already referenced
-from `configs/base.yaml`) should get written.
+Commit **C28–C32** now (Session H), open PR #6, then start Session I
+(calibration, threshold optimization, uncertainty) -- the next piece that
+actually depends on the trained champions existing (`models/*_champion.joblib`).

@@ -94,6 +94,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   ~0.83 AUC — confirming Section 13's "beat a meaningful
   construction-management baseline" bar is a real one on this data, not a
   trivial strawman. Details in `docs/ARCHITECTURE.md` Section 8.
+- Shared model preprocessing (`src/buildguard/models/preprocessing.py`),
+  promoted out of `baselines.py` once `classification.py`/`regression.py`
+  needed the identical numeric/categorical handling.
+- Candidate classification and regression models
+  (`src/buildguard/models/classification.py`, `regression.py`, Section
+  14/15): Random Forest and LightGBM, tuned with Optuna (`GroupKFold` on
+  `project_id`, train split only). Deliberately not also XGBoost/CatBoost
+  — see `docs/adr/0006-model-selection.md`.
+- MLflow experiment tracking (`src/buildguard/models/tracking.py`, Section
+  25): SQLite-backed local tracking, not MLflow's raw filesystem store
+  (now in maintenance mode — discovered while building this). Every run
+  tagged with `git_sha`; champion artifacts logged via `mlflow.log_artifact`
+  rather than `mlflow.sklearn.log_model`, since BuildGuard's own baseline
+  wrapper classes trip skops' `UntrustedTypesFoundException` and a baseline
+  can legitimately be the champion (it was, for `final_cost`).
+- `scripts/train.py` (`make train`): trains and selects the champion for
+  all three core tasks, evaluated on the calibration split (test
+  untouched), with results written to `reports/experiments/training_summary.json`.
+  **Real results at full scale (400 projects):** cost-overrun risk →
+  Random Forest, 0.898 AUC (vs. 0.888 best baseline); schedule-delay risk
+  → LightGBM, 0.974 AUC (vs. 0.816); final-cost estimate → the
+  **deterministic EAC baseline**, 1.96M MAE, beating tuned LightGBM's
+  4.11M by more than 2x. Two tasks won by real models, one won decisively
+  by a formula — reported honestly rather than forced. Full rationale in
+  `docs/adr/0006-model-selection.md`.
 - 98% test coverage on everything shipped so far (`tests/unit/`,
   `tests/contracts/`, `tests/leakage/`); Ruff, Ruff format, and Mypy
   (`--strict`) all clean.
