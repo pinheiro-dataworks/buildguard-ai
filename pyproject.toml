@@ -63,6 +63,7 @@ dev = [
   "types-pyyaml>=6.0",
   "types-python-dateutil>=2.9",
   "pandas-stubs>=2.2",
+  "httpx>=0.27",  # required by fastapi.testclient.TestClient (Phase 8 API contract tests)
 ]
 
 [build-system]
@@ -92,6 +93,10 @@ ignore = ["E501"]  # line length is enforced by the formatter, not the linter
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["N802"]
+# FastAPI's dependency-injection pattern requires `Depends(...)` as an
+# argument default -- evaluated per-request by FastAPI itself, not at
+# function-definition time the way bugbear's B008 assumes.
+"src/buildguard/api/**" = ["B008"]
 
 [tool.mypy]
 python_version = "3.11"
@@ -104,7 +109,7 @@ disallow_untyped_defs = true
 show_error_codes = true
 
 [[tool.mypy.overrides]]
-module = ["pandera.*", "shap.*", "lightgbm.*", "optuna.*", "mlflow.*", "sklearn.*", "scipy.*"]
+module = ["pandera.*", "shap.*", "lightgbm.*", "optuna.*", "mlflow.*", "sklearn.*", "scipy.*", "joblib.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
