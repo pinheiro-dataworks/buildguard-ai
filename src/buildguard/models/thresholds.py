@@ -11,11 +11,14 @@ bad). Optimized on the **calibration** split only, never test (Section 12).
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Literal
 
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
 from sklearn.metrics import confusion_matrix, precision_score, recall_score
+
+RiskBand = Literal["low", "medium", "high"]
 
 
 @dataclass(frozen=True)
@@ -80,3 +83,22 @@ def optimize_threshold(
         true_negatives=tn,
         false_negatives=fn,
     )
+
+
+def risk_band(proba: npt.NDArray[np.float64], threshold: float) -> npt.NDArray[np.str_]:
+    """Bucket a (calibrated) probability into "low"/"medium"/"high" around the decision `threshold`.
+
+    Below `threshold` (not flagged by the business-cost decision, Section
+    17) is always "low". The flagged zone above it is split at its own
+    midpoint into "medium" and "high" -- there is no further business-cost
+    justification for where exactly to split it, unlike `threshold` itself,
+    so this is a display/reporting convenience (Section 23's risk-band
+    proportions, the API response shape in Section 28), not a second
+    business decision.
+    """
+    midpoint = threshold + (1.0 - threshold) / 2.0
+    bands = np.full(np.shape(proba), "low", dtype=object)
+    proba_arr = np.asarray(proba)
+    bands[proba_arr >= threshold] = "medium"
+    bands[proba_arr >= midpoint] = "high"
+    return bands.astype(str)

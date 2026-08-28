@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from buildguard.models.thresholds import optimize_threshold
+from buildguard.models.thresholds import optimize_threshold, risk_band
 
 pytestmark = pytest.mark.unit
 
@@ -80,3 +80,28 @@ class TestOptimizeThreshold:
             labels, proba, false_negative_cost=10.0, false_positive_cost=2.0
         )
         assert result.expected_cost >= 0.0
+
+
+class TestRiskBand:
+    def test_below_threshold_is_low(self) -> None:
+        bands = risk_band(np.array([0.0, 0.05, 0.079]), threshold=0.08)
+        assert list(bands) == ["low", "low", "low"]
+
+    def test_just_above_threshold_is_medium_not_high(self) -> None:
+        bands = risk_band(np.array([0.08, 0.3]), threshold=0.08)
+        assert list(bands) == ["medium", "medium"]
+
+    def test_near_one_is_high(self) -> None:
+        bands = risk_band(np.array([0.95, 1.0]), threshold=0.08)
+        assert list(bands) == ["high", "high"]
+
+    def test_bands_are_monotonic_in_probability(self) -> None:
+        proba = np.linspace(0, 1, 101)
+        bands = risk_band(proba, threshold=0.14)
+        order = {"low": 0, "medium": 1, "high": 2}
+        ranks = [order[b] for b in bands]
+        assert ranks == sorted(ranks)
+
+    def test_handles_a_scalar_shaped_input(self) -> None:
+        bands = risk_band(np.array(0.5), threshold=0.14)
+        assert bands.item() in ("low", "medium", "high")

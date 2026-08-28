@@ -87,6 +87,19 @@ class UncertaintyConfig(BaseModel):
     target_coverage: float = Field(gt=0, lt=1)
 
 
+class MonitoringConfig(BaseModel):
+    psi_warning_threshold: float = Field(gt=0)
+    psi_critical_threshold: float = Field(gt=0)
+    performance_drop_threshold: float = Field(gt=0, lt=1)
+    calibration_brier_degradation_threshold: float = Field(gt=0)
+
+    @model_validator(mode="after")
+    def _check_psi_thresholds_ordered(self) -> MonitoringConfig:
+        if self.psi_warning_threshold >= self.psi_critical_threshold:
+            raise ValueError("psi_warning_threshold must be < psi_critical_threshold")
+        return self
+
+
 class SplitConfig(BaseModel):
     train_fraction: float = Field(gt=0, lt=1)
     calibration_fraction: float = Field(gt=0, lt=1)
@@ -110,6 +123,7 @@ class BaseAppConfig(BaseModel):
     baselines: BaselinesConfig
     training: TrainingConfig
     uncertainty: UncertaintyConfig
+    monitoring: MonitoringConfig
 
 
 class CostMatrix(BaseModel):

@@ -100,6 +100,19 @@ uncertainty:
   # 19's own worked example reports an 80% interval).
   target_coverage: 0.80
 
+monitoring:
+  # PSI severity cutoffs (Section 23), the industry-standard 0.10/0.25
+  # convention: below 0.10 is noise, 0.10-0.25 is a moderate shift worth
+  # watching, 0.25+ is a significant shift worth investigating.
+  psi_warning_threshold: 0.10
+  psi_critical_threshold: 0.25
+  # Relative degradation (Section 24's "performance drop > X%" retraining
+  # trigger) that flags a metric as degraded vs. its recorded baseline.
+  performance_drop_threshold: 0.05
+  # Absolute Brier-score increase (Section 24's "calibration deterioration"
+  # trigger) that flags a classifier's calibration as degraded.
+  calibration_brier_degradation_threshold: 0.03
+
 baselines:
   # Domain-rule classification baseline (Section 13's own example):
   # "CPI < 0.90 -> High Cost Risk." 0.90 is a common informal
