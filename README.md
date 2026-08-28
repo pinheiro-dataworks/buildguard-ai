@@ -169,17 +169,39 @@ out-of-distribution rows, largest regression errors) in
 [`reports/error_analysis/`](reports/error_analysis/); full numbers in
 [`reports/experiments/test_set_metrics.json`](reports/experiments/test_set_metrics.json).
 
-## 11. Business Impact
+## 11. Monitoring & Retraining
+
+Implemented, not just documented (Section 23): data quality, data/prediction
+drift (PSI + KS test + Wasserstein distance), performance-drop and
+calibration-deterioration comparisons, and real (measured, not simulated)
+inference latency, all run against the actual portfolio and champions
+(`monitoring/`, `scripts/monitor.py`, `make monitor`). **Real results:**
+0 data-quality violations across 400 projects / 11,953 snapshots / 897
+change orders; 10 of 23 features significantly drifted between train and
+test (the expected signature of the chronological split, not a defect —
+see below); `schedule_delay` fired all three computed retraining triggers
+(PSI, performance drop, calibration deterioration) despite negligible
+prediction drift — caught only because performance monitoring uses labels
+and drift detection does not. Inference latency: p95 20.8ms / 5.6ms /
+0.03ms for cost-overrun / schedule-delay / final-cost, well under Section
+49's 500ms target. **Never auto-retrains** — the retraining policy
+(Section 24: Detect → Investigate → Validate → Retrain → Compare → Approve
+→ Release) is enforced structurally: `scripts/monitor.py` has no code path
+that calls `scripts/train.py`. Full rationale and results:
+[ADR-0011](docs/adr/0011-monitoring-drift-detection.md) and
+[`docs/MONITORING.md`](docs/MONITORING.md).
+
+## 12. Business Impact
 *(Scenario-based estimated decision-support value — to be documented.)*
 
-## 12. Architecture
+## 13. Architecture
 
 Zero-cost public path: GitHub → GitHub Actions (lint/test/type-check) →
 Streamlit Community Cloud, serving the app, packaged model, and in-process
 prediction service against the synthetic demo dataset. See
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-## 13. How to Run
+## 14. How to Run
 
 ```bash
 git clone <repo-url>
@@ -189,18 +211,19 @@ make data      # generate the synthetic demo dataset
 make train     # train and select the three core champion models
 make calibrate # calibrate probabilities, optimize thresholds, quantify uncertainty
 make evaluate  # final held-out test evaluation, explainability, failure analysis
+make monitor   # data quality, drift, and performance monitoring
 make test      # unit, integration, leakage, contract tests
 make app       # run the Streamlit app locally (once built)
 ```
 
 Requires Python 3.11 and [`uv`](https://docs.astral.sh/uv/).
 
-## 14. Limitations
+## 15. Limitations
 
 Documented in [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) as they are
 identified through slice analysis and failure-mode review — never hidden.
 
-## 15. Future Improvements
+## 16. Future Improvements
 
 Tracked as GitHub issues against the roadmap in
 [`BUILDGUARD_AI_PROJECT_SCOPE.md`](BUILDGUARD_AI_PROJECT_SCOPE.md) Section 45.

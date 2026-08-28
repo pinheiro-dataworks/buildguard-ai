@@ -14,12 +14,12 @@ match reality — this document follows the work, not the other way around.
 Check off an item (`- [x]`) once it is actually committed. Update the
 **Progress** line at the top after every session.
 
-**Progress:** 40 / 61 planned commits actually committed (C39–C43 code is
-written, tested, and actually evaluated end-to-end against the real
-held-out test split, ready to commit) · 0 / 14 PRs opened · Phase 0-6
-complete (data, features, leakage-safe split, baselines, advanced
-modeling, calibration/threshold/uncertainty, explainability/evaluation/
-failure analysis).
+**Progress:** 45 / 63 planned commits actually committed (C44–C48 code is
+written, tested, and actually run end-to-end against the real portfolio
+and champions, ready to commit) · 0 / 14 PRs opened · Phase 0-7 complete
+(data, features, leakage-safe split, baselines, advanced modeling,
+calibration/threshold/uncertainty, explainability/evaluation/failure
+analysis, monitoring/retraining policy).
 
 ---
 
@@ -41,7 +41,7 @@ earlier ones (e.g. no modeling before the temporal split exists).
 | H — Advanced modeling | 4 | #6 Advanced modeling (bundled) | ✅ Committed (C28–C32) |
 | I — Calibration, threshold, uncertainty | 5 | #9 Calibration & threshold optimization | ✅ Done (uncommitted, ready to commit) |
 | J — Explainability & error analysis | 6 | #10 Explainability & error analysis | ✅ Done (uncommitted, ready to commit) |
-| K — Monitoring & MLflow | 7 | #11 Monitoring | ⬜ Not started |
+| K — Monitoring & retraining policy | 7 | #11 Monitoring | ✅ Done (uncommitted, ready to commit) |
 | L — API & Streamlit app | 8 | #7 FastAPI service + #8 Streamlit UI | ⬜ Not started |
 | M — Testing hardening & CI/CD | 9 | #12 Testing hardening & CI/CD | ⬜ Not started |
 | N — Documentation completion | 9 | #13 Documentation completion | ⬜ Not started |
@@ -244,9 +244,26 @@ of the failure-analysis-report commit.
 
 ## Session K — Monitoring & Retraining Policy (Phase 7)
 
-- [ ] **C44** `feat: add data quality and drift monitoring`
-- [ ] **C45** `feat: add prediction and performance monitoring`
-- [ ] **C46** `docs: add monitoring documentation, retraining policy, and monitoring ADR`
+Done, ready to commit. Grew from the original 3 items to 5, the same
+pattern as Sessions I and J: data quality, drift, and
+performance/operational monitoring turned out to be three independently
+meaningful modules (not one bundled "data quality and drift" commit), and
+wiring everything into `scripts/monitor.py` against the real portfolio
+and champions -- including a small but real refactor extracting
+`positive_class_proba` into `scripts/_common.py` once a third script
+needed it, and reusing `evaluation`'s metrics rather than a second copy --
+was its own substantial commit.
+
+- [x] **C44** `feat: add data quality monitoring`
+  `src/buildguard/monitoring/__init__.py`, `data_quality.py`, `tests/monitoring/test_data_quality.py` -- missing values, schema violations (reusing `buildguard.data.contracts`), unexpected categories, range violations, duplicate keys -- **real result**: 0 violations across Projects/Snapshots/Change Orders (400/11,953/897 rows)
+- [x] **C45** `feat: add drift detection (PSI, KS test, Wasserstein distance)`
+  `src/buildguard/monitoring/drift.py`, `tests/monitoring/test_drift.py`, `pyproject.toml` (+scipy mypy override) -- PSI for every variable type, KS/Wasserstein for numeric only -- **real result**: 10 of 23 features significantly drifted train vs. test, dominated by `inflation_multiplier`/`months_since_start` (the expected chronological-split signature, not a defect)
+- [x] **C46** `feat: add risk bands and performance/operational monitoring`
+  `src/buildguard/models/thresholds.py` (+`risk_band()`), `tests/unit/test_thresholds.py`, `src/buildguard/monitoring/performance.py`, `tests/monitoring/test_performance.py`, `src/buildguard/config.py` (+`MonitoringConfig`), `configs/base.yaml` (+`monitoring:`) -- **real result**: `schedule_delay` degraded on ROC-AUC/recall/Brier vs. its calibration-split baseline despite negligible prediction drift
+- [x] **C47** `feat: add monitoring orchestration script and run it end-to-end`
+  `scripts/monitor.py`, `scripts/_common.py` (+`raw` field, +`positive_class_proba` extracted from `calibrate.py`/`evaluate.py`), `scripts/calibrate.py`/`evaluate.py` (consume the shared helper; `evaluate.py` also now reuses `monitoring.data_quality`'s range functions instead of its own private copies), `Makefile` (+`monitor` target), `reports/monitoring/monitoring_report.json` -- **real results**: all 3 champions' inference latency p95 well under Section 49's 500ms target (20.8ms/5.6ms/0.03ms); 3 of 4 computed retraining triggers fired, all pointing at `schedule_delay`
+- [x] **C48** `docs: add monitoring documentation, retraining policy, and monitoring ADR`
+  `docs/adr/0011-monitoring-drift-detection.md`, `docs/MONITORING.md`, `docs/ARCHITECTURE.md`, `README.md`, `CHANGELOG.md`, `BUILDGUARD_AI_COMMIT_PLAN.md` -- **key finding documented**: prediction drift alone would have missed the `schedule_delay` performance drop (PSI ~0.002 despite a real accuracy collapse) -- only label-dependent performance monitoring caught it
 
 **→ PR #11 "Monitoring"**
 
@@ -259,36 +276,36 @@ bundling three models into one PR) gets closed: API service and Streamlit
 UI are genuinely independent halves, so this splits into two PRs (#7, #8)
 rather than one #11.
 
-- [ ] **C47** `feat: add FastAPI inference service and Pydantic schemas`
-- [ ] **C48** `test: add API contract tests`
-- [ ] **C49** `feat: add Streamlit app shell (sidebar, branding, navigation)`
-- [ ] **C50** `feat: add Executive Overview and Project Diagnostic pages`
-- [ ] **C51** `feat: add Scenario Simulator, Model Performance, and Model Health pages`
-- [ ] **C52** `docs: add streamlit-fastapi-boundary ADR`
+- [ ] **C49** `feat: add FastAPI inference service and Pydantic schemas`
+- [ ] **C50** `test: add API contract tests`
+- [ ] **C51** `feat: add Streamlit app shell (sidebar, branding, navigation)`
+- [ ] **C52** `feat: add Executive Overview and Project Diagnostic pages`
+- [ ] **C53** `feat: add Scenario Simulator, Model Performance, and Model Health pages`
+- [ ] **C54** `docs: add streamlit-fastapi-boundary ADR`
 
-**→ PR #7 "FastAPI inference service"** (C47-C48) **+ PR #8 "Streamlit public app"** (C49-C52)
+**→ PR #7 "FastAPI inference service"** (C49-C50) **+ PR #8 "Streamlit public app"** (C51-C54)
 
 ## Session M — Testing Hardening & CI/CD (Phase 9)
 
-- [ ] **C53** `test: add integration tests (raw → validation → features → prediction)`
-- [ ] **C54** `ci: add GitHub Actions pipeline (lint, format, type-check, test, coverage gate)`
-- [ ] **C55** `security: add dependency and secret scanning (pip-audit, Bandit)`
+- [ ] **C55** `test: add integration tests (raw → validation → features → prediction)`
+- [ ] **C56** `ci: add GitHub Actions pipeline (lint, format, type-check, test, coverage gate)`
+- [ ] **C57** `security: add dependency and secret scanning (pip-audit, Bandit)`
 
 **→ PR #12 "Testing hardening & CI/CD"**
 
 ## Session N — Documentation Completion (Phase 9)
 
-- [ ] **C56** `docs: add architecture, monitoring, and limitations docs`
-- [ ] **C57** `docs: complete model card and runbook`
-- [ ] **C58** `docs: add interview guide and remaining ADRs`
+- [ ] **C58** `docs: add architecture, monitoring, and limitations docs`
+- [ ] **C59** `docs: complete model card and runbook`
+- [ ] **C60** `docs: add interview guide and remaining ADRs`
 
 **→ PR #13 "Documentation completion"**
 
 ## Session O — Deployment & v1.0.0 Release (Phase 10–11)
 
-- [ ] **C59** `chore: add Dockerfile and package_model.py`
-- [ ] **C60** `chore: deploy to Streamlit Community Cloud and add smoke tests`
-- [ ] **C61** `chore: cut v1.0.0 release, update CHANGELOG and README with final results`
+- [ ] **C61** `chore: add Dockerfile and package_model.py`
+- [ ] **C62** `chore: deploy to Streamlit Community Cloud and add smoke tests`
+- [ ] **C63** `chore: cut v1.0.0 release, update CHANGELOG and README with final results`
 
 **→ PR #14 "Deployment & v1.0.0 release", tag `v1.0.0`**
 
@@ -296,12 +313,12 @@ rather than one #11.
 
 ## Running totals
 
-- **Commits:** 61 planned across 15 sessions — inside the 30 (minimum) to
+- **Commits:** 63 planned across 15 sessions — inside the 30 (minimum) to
   85 (stretch) range from Section 43, biased toward the upper-middle
-  because the foundation, anti-leakage, calibration, and evaluation phases
-  legitimately needed more granularity than the minimum plan assumed.
-  Expect the real number to drift ±10 as sessions actually happen —
-  that's fine; this is a guide, not a quota.
+  because the foundation, anti-leakage, calibration, evaluation, and
+  monitoring phases legitimately needed more granularity than the minimum
+  plan assumed. Expect the real number to drift ±10 as sessions actually
+  happen -- that's fine; this is a guide, not a quota.
 - **PRs:** 14 planned, clearing Section 43's minimum of 12 (recommended
   15-20) with room to spare. Session H merged the originally-planned
   #6/#7/#8 (one PR per model) into a single PR #6, since all three tasks
@@ -309,16 +326,15 @@ rather than one #11.
   -- splitting the PR three ways would have meant three PRs touching the
   same commits, not three independent units of review. That gap is closed
   by Session L splitting into two real, independent PRs (#7 FastAPI
-  service, #8 Streamlit UI) and Session J/M/N/O each getting their own PR
-  (#10, #12, #13, #14) rather than folding into a neighbor -- every PR
-  boundary here reflects an actual independently-reviewable unit of work,
-  not a number manufactured to hit a target (Section 43: "do not
+  service, #8 Streamlit UI) and Session J/K/M/N/O each getting their own
+  PR (#10, #11, #12, #13, #14) rather than folding into a neighbor --
+  every PR boundary here reflects an actual independently-reviewable unit
+  of work, not a number manufactured to hit a target (Section 43: "do not
   manufacture commits [or PRs] to hit a number").
 
 ## Next action
 
-Commit **C39–C43** now (Session J), open PR #10, then start Session K
-(monitoring & retraining policy) -- the next piece that depends on the
-final champions existing (Session J confirmed both classifiers'
-genuinely held-out performance; monitoring needs that same test-split
-baseline to detect future drift against).
+Commit **C44–C48** now (Session K), open PR #11, then start Session L
+(API & Streamlit app) -- the first UI-facing phase, and the one that
+finally implements `docs/design/UI_DESIGN_SPEC.md`'s renan-standard
+branding direction.

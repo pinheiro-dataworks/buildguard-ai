@@ -59,13 +59,16 @@ computation, so the whole chain is independently unit-testable without I/O.
 | `src/buildguard/models/regression.py` | Candidate regressors + Optuna tuning (Section 14/15) |
 | `src/buildguard/models/tracking.py` | MLflow experiment tracking helpers (Section 25) |
 | `src/buildguard/models/calibration.py` | Probability calibration comparison (Section 16) |
-| `src/buildguard/models/thresholds.py` | Business-cost threshold optimization (Section 17) |
+| `src/buildguard/models/thresholds.py` | Business-cost threshold optimization + risk bands (Section 17/23) |
 | `src/buildguard/models/uncertainty.py` | Split-conformal prediction intervals (Section 19) |
 | `src/buildguard/evaluation/classification.py` | Held-out classification metrics: ROC-AUC, PR-AUC, precision/recall/F1, Brier, confusion matrix (Section 18) |
 | `src/buildguard/evaluation/regression.py` | Held-out regression metrics: MAE, RMSE, R2, MAPE/SMAPE, business-terms error (Section 18) |
 | `src/buildguard/evaluation/calibration.py` | Out-of-sample calibration check, reusing `models/calibration.py`'s `CalibrationCurve` (Section 18) |
 | `src/buildguard/evaluation/slices.py` | Per-subgroup metric evaluation and quantile bucketing (Section 18) |
 | `src/buildguard/explainability/shap.py` | Global (SHAP + permutation) and local (SHAP) explanations for the tree-based classifiers (Section 20) |
+| `src/buildguard/monitoring/data_quality.py` | Missing values, schema violations, unexpected categories, range violations, duplicate keys (Section 23) |
+| `src/buildguard/monitoring/drift.py` | PSI/KS/Wasserstein data and prediction drift detection (Section 23) |
+| `src/buildguard/monitoring/performance.py` | Performance-drop comparison (reusing `evaluation`'s metrics) and real inference-latency measurement (Section 23/24) |
 
 See [ADR-0001](adr/0001-project-architecture.md) for why this layout was
 chosen over alternatives.
@@ -319,10 +322,58 @@ unchanged, to data none of them ever saw:
 Full design rationale, both findings above, and every alternative
 considered: [ADR-0010](adr/0010-evaluation-explainability-design.md).
 
-## 12. What's not built yet
+## 12. Monitoring and retraining policy (Section 23/24)
 
-Monitoring, the FastAPI service, and the Streamlit app are all still
-pending -- see [`BUILDGUARD_AI_COMMIT_PLAN.md`](../BUILDGUARD_AI_COMMIT_PLAN.md)
-for the session-by-session plan and [`BUILDGUARD_AI_PROJECT_SCOPE.md`](../BUILDGUARD_AI_PROJECT_SCOPE.md)
+`scripts/monitor.py` (`make monitor`) is the second and last script to run
+after training/calibration/evaluation -- it implements every Section 23
+signal against the real portfolio and real champions rather than just
+documenting a plan:
+
+- **Data quality** (`src/buildguard/monitoring/data_quality.py`): missing
+  values, schema violations (reusing `buildguard.data.contracts`, never
+  re-implemented), unexpected categories, range violations, duplicate
+  keys. **Real result:** 0 violations across Projects/Snapshots/Change
+  Orders (400/11,953/897 rows).
+- **Data & prediction drift** (`src/buildguard/monitoring/drift.py`): PSI
+  for every variable type, KS test + Wasserstein distance for numeric
+  only. Feature drift compares the **train** vs. **test** split;
+  prediction drift compares the **calibration** vs. **test** split.
+  **Real result:** 10 of 23 features significantly drifted (dominated by
+  `inflation_multiplier` and `months_since_start`) -- the expected
+  signature of the chronological split itself, not a data defect (see
+  ADR-0011 for why); prediction-drift and risk-band proportions stayed
+  stable for both classifiers even where performance did not (below).
+- **Performance monitoring** (`src/buildguard/monitoring/performance.py`):
+  reuses `buildguard.evaluation`'s metrics, comparing each task's
+  calibration-split baseline against Session J's held-out test-split
+  result. **Real result:** `schedule_delay` degraded on all three tracked
+  metrics (ROC-AUC 0.974 -> 0.900, recall 0.984 -> 0.929, Brier 0.059 ->
+  0.145) despite negligible prediction drift -- caught only because
+  performance monitoring is label-dependent and drift detection is not.
+- **Operational monitoring**: real (not simulated) inference latency,
+  timing actual `predict`/`predict_proba` calls. **Real result:** p95
+  20.8ms / 5.6ms / 0.03ms for cost-overrun / schedule-delay / final-cost,
+  all comfortably under Section 49's 500ms target. Request volume/error
+  rate stay inert until Phase 8's API exists to generate real traffic.
+- **Risk bands** (`models/thresholds.risk_band()`): "low" below the
+  optimized decision threshold, the flagged zone above it split at its
+  own midpoint into "medium"/"high" -- a reporting convenience, not a
+  second business-cost decision.
+- **Retraining triggers** (Section 24): PSI-above-critical,
+  performance-drop, calibration-deterioration, and schema-changes are
+  computed for real against this run's signals; new-labeled-data-volume
+  and scheduled-quarterly-evaluation are calendar/volume-driven policy,
+  documented rather than computed. **The script only flags -- it never
+  retrains**; enforced structurally, not just by convention.
+
+Full rationale, every alternative considered, and the complete real-results
+snapshot: [ADR-0011](adr/0011-monitoring-drift-detection.md) and
+[`docs/MONITORING.md`](MONITORING.md).
+
+## 13. What's not built yet
+
+The FastAPI service and the Streamlit app are still pending -- see
+[`BUILDGUARD_AI_COMMIT_PLAN.md`](../BUILDGUARD_AI_COMMIT_PLAN.md) for the
+session-by-session plan and [`BUILDGUARD_AI_PROJECT_SCOPE.md`](../BUILDGUARD_AI_PROJECT_SCOPE.md)
 Section 45 for the full roadmap. This document will grow a section for
 each as it lands.

@@ -194,3 +194,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   (0.9495) hides a materially weaker `ES`-state subgroup (AUC 0.597,
   n=76). Both documented, not hidden, per Section 18. Full rationale:
   `docs/adr/0010-evaluation-explainability-design.md`.
+- Data quality monitoring (`src/buildguard/monitoring/data_quality.py`,
+  Section 23): missing values, schema violations (reusing
+  `buildguard.data.contracts`, never re-implemented), unexpected
+  categories, range violations, and duplicate keys. **Real result:** 0
+  violations across Projects/Snapshots/Change Orders (400/11,953/897
+  rows).
+- Drift detection (`src/buildguard/monitoring/drift.py`, Section 23): PSI
+  for every variable type (numeric quantile-binned, categorical
+  proportion-based), KS test and Wasserstein distance for numeric columns
+  specifically. **Real result:** 10 of 23 features significantly
+  drifted between the train and test splits — dominated by
+  `inflation_multiplier` and `months_since_start`, the expected signature
+  of the chronological split itself (older/train projects have had more
+  calendar time to accrue inflation and lifecycle progress), not a data
+  defect.
+- Performance and operational monitoring
+  (`src/buildguard/monitoring/performance.py`, Section 23/24): compares
+  each task's calibration-split baseline against its genuinely held-out
+  test-split result (reusing `buildguard.evaluation`'s metrics rather than
+  recomputing them), and measures real (not simulated) inference latency
+  by timing actual `predict`/`predict_proba` calls. **Real results:**
+  `schedule_delay` degraded on ROC-AUC (0.974 → 0.900), recall (0.984 →
+  0.929), and Brier score (0.059 → 0.145) despite negligible prediction
+  drift — caught only because performance monitoring is label-dependent
+  and drift detection is not; `cost_overrun`/`final_cost` both held or
+  improved. Inference latency p95: 20.8ms / 5.6ms / 0.03ms for
+  cost-overrun/schedule-delay/final-cost, all well under Section 49's
+  500ms target.
+- Risk bands (`models/thresholds.risk_band()`, Section 23/28): "low"
+  below the optimized decision threshold, the flagged zone above it split
+  at its own midpoint into "medium"/"high".
+- `scripts/monitor.py` (`make monitor`): the monitoring orchestration
+  script — data quality on the raw tables, feature drift (train vs.
+  test), prediction drift (calibration vs. test, including risk-band
+  proportions), performance comparison, real inference-latency
+  measurement, and Section 24 retraining-trigger evaluation, all written
+  to `reports/monitoring/monitoring_report.json`. **Never auto-retrains**
+  — the script has no code path that calls `scripts/train.py`; it only
+  flags. Of the six Section 24 triggers, four are computed for real
+  (PSI, performance drop, calibration deterioration, schema changes); two
+  (new labeled-data volume, scheduled quarterly evaluation) are
+  calendar/volume-driven policy, documented rather than computed.
+- `docs/MONITORING.md`: the Section 23/24 reference — what is monitored,
+  why these particular reference/current split pairings, how to read a
+  drift alert without misreading expected chronological-split drift as a
+  problem, and the full retraining-trigger table.
+- `docs/adr/0011-monitoring-drift-detection.md`: design rationale for
+  every monitoring decision above, the complete real-results snapshot,
+  and the alternatives considered (including why a synthetic drift demo
+  was rejected in favor of the real train/calibration/test splits).
