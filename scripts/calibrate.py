@@ -23,6 +23,16 @@ untouched):
 
 Every task's outcome is logged as one MLflow run and appended to
 ``reports/experiments/calibration_summary.json``.
+
+**Not idempotent -- run ``make train`` first, every time.** Because the
+calibrated model replaces the saved champion artifact in place, running
+this script twice in a row calibrates an *already-calibrated* model a
+second time, which silently produces a different (and wrong) comparison.
+The intended flow (Section 24: Detect -> Investigate -> Validate data ->
+Retrain candidate -> Compare vs. champion -> Approve -> Release) always
+regenerates a fresh, uncalibrated candidate via ``scripts/train.py``
+immediately before this script runs -- never calibrate the same artifact
+twice.
 """
 
 from __future__ import annotations
@@ -33,11 +43,15 @@ from pathlib import Path
 from typing import Any
 
 import joblib
-import numpy as np
-import numpy.typing as npt
 import pandas as pd
 
-from _common import assemble_task_dataset, feature_columns, filter_by_split, load_training_dataset
+from _common import (
+    assemble_task_dataset,
+    feature_columns,
+    filter_by_split,
+    load_training_dataset,
+    positive_class_proba,
+)
 from buildguard.config import PROJECT_ROOT, load_base_config, load_business_config
 from buildguard.models.calibration import evaluate_calibration_methods
 from buildguard.models.thresholds import optimize_threshold
@@ -49,11 +63,6 @@ from buildguard.models.uncertainty import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-def _positive_class_proba(model: Any, features: pd.DataFrame) -> npt.NDArray[np.float64]:
-    raw = model.predict_proba(features)
-    return raw[:, 1] if raw.ndim == 2 else raw
 
 
 def _calibrate_classification_task(
@@ -73,7 +82,7 @@ def _calibrate_classification_task(
     champion = joblib.load(model_path)
 
     comparison = evaluate_calibration_methods(champion, x_cal, y_cal)
-    calibrated_proba = _positive_class_proba(comparison.calibrated_model, x_cal)
+    calibrated_proba = positive_class_proba(comparison.calibrated_model, x_cal)
     threshold_result = optimize_threshold(
         y_cal, calibrated_proba, false_negative_cost, false_positive_cost
     )

@@ -1,4 +1,4 @@
-.PHONY: setup data train calibrate evaluate test lint format type-check app api docker-build clean
+.PHONY: setup data train calibrate evaluate monitor test lint format type-check app api docker-build clean
 
 UV := uv
 
@@ -16,6 +16,9 @@ calibrate: ## Calibrate probabilities, optimize thresholds, quantify uncertainty
 
 evaluate: ## Re-run evaluation (metrics, slices, error analysis) for the current champion model
 	$(UV) run python scripts/evaluate.py
+
+monitor: ## Run data quality, drift, and performance monitoring (requires make evaluate first)
+	$(UV) run python scripts/monitor.py
 
 test: ## Run the full test suite with coverage
 	$(UV) run pytest --cov

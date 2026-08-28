@@ -12,14 +12,17 @@ module is `buildguard.features.pipeline`, which this calls into).
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
+import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 from buildguard.config import BaseAppConfig
 from buildguard.data.economic_index import DemoIndexProvider, EconomicIndexProvider
 from buildguard.data.labels import resolve_outcomes
 from buildguard.data.split import SplitAssignment, chronological_project_split, filter_by_split
-from buildguard.data.synthetic import generate_portfolio
+from buildguard.data.synthetic import PortfolioDataset, generate_portfolio
 from buildguard.features.pipeline import build_feature_table
 
 NON_FEATURE_COLUMNS = {
@@ -32,6 +35,7 @@ NON_FEATURE_COLUMNS = {
 
 @dataclass(frozen=True)
 class TrainingDataset:
+    raw: PortfolioDataset
     features: pd.DataFrame
     outcomes: pd.DataFrame
     assignment: SplitAssignment
@@ -41,8 +45,11 @@ class TrainingDataset:
 def load_training_dataset(cfg: BaseAppConfig) -> TrainingDataset:
     """Regenerate the synthetic portfolio and assemble the leakage-safe
     feature table, resolved outcomes, and project split -- everything
-    downstream of `generate_portfolio` that both `train.py` and
-    `calibrate.py` need identically.
+    downstream of `generate_portfolio` that `train.py`, `calibrate.py`,
+    `evaluate.py`, and `monitor.py` need identically. `raw` (the six core
+    tables straight from `generate_portfolio`) is only needed by
+    `monitor.py`'s data-quality checks -- everything else works off
+    `features`/`outcomes`.
     """
     dataset = generate_portfolio(cfg)
     provider = DemoIndexProvider(
@@ -61,7 +68,11 @@ def load_training_dataset(cfg: BaseAppConfig) -> TrainingDataset:
     )
     assignment = chronological_project_split(dataset.projects, cfg.split)
     return TrainingDataset(
-        features=features, outcomes=outcomes, assignment=assignment, index_provider=provider
+        raw=dataset,
+        features=features,
+        outcomes=outcomes,
+        assignment=assignment,
+        index_provider=provider,
     )
 
 
@@ -77,6 +88,13 @@ def feature_columns(df: pd.DataFrame, label_column: str) -> list[str]:
     return [c for c in df.columns if c not in NON_FEATURE_COLUMNS | {label_column}]
 
 
+def positive_class_proba(model: Any, features: pd.DataFrame) -> npt.NDArray[np.float64]:
+    """The positive-class column of `model.predict_proba(features)`, handling both a
+    2-column `(n, 2)` output and an already-1-D positive-class-only output."""
+    raw = model.predict_proba(features)
+    return raw[:, 1] if raw.ndim == 2 else raw
+
+
 __all__ = [
     "NON_FEATURE_COLUMNS",
     "TrainingDataset",
@@ -84,4 +102,5 @@ __all__ = [
     "feature_columns",
     "filter_by_split",
     "load_training_dataset",
+    "positive_class_proba",
 ]

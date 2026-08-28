@@ -1,5 +1,5 @@
 {
-  "git_sha": "78e0e28",
+  "git_sha": "ec43690",
   "seed": 42,
   "tasks": {
     "cost_overrun": {
@@ -39,7 +39,7 @@
           "calibration_auc": 0.8751739604985637
         }
       },
-      "elapsed_seconds": 66.0
+      "elapsed_seconds": 60.9
     },
     "schedule_delay": {
       "metric": "calibration_auc",
@@ -78,7 +78,7 @@
           "calibration_auc": 0.9739469121155627
         }
       },
-      "elapsed_seconds": 62.1
+      "elapsed_seconds": 63.4
     },
     "final_cost": {
       "metric": "calibration_mae",
@@ -121,7 +121,7 @@
           "calibration_mae": 4105407.2822552663
         }
       },
-      "elapsed_seconds": 267.5
+      "elapsed_seconds": 273.4
     }
   }
 }

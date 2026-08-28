@@ -50,7 +50,13 @@ import numpy.typing as npt
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, roc_auc_score
 
-from _common import assemble_task_dataset, feature_columns, filter_by_split, load_training_dataset
+from _common import (
+    assemble_task_dataset,
+    feature_columns,
+    filter_by_split,
+    load_training_dataset,
+    positive_class_proba,
+)
 from buildguard.config import PROJECT_ROOT, load_base_config
 from buildguard.evaluation.calibration import evaluate_calibration_on_holdout
 from buildguard.evaluation.classification import compute_classification_metrics
@@ -65,17 +71,13 @@ from buildguard.explainability.shap import (
 from buildguard.models.preprocessing import NUMERIC_FEATURE_COLUMNS
 from buildguard.models.tracking import configure_tracking, get_git_sha, log_model_run
 from buildguard.models.uncertainty import ConformalInterval, empirical_coverage, predict_interval
+from buildguard.monitoring.data_quality import range_violation_mask, reference_ranges
 
 logger = logging.getLogger(__name__)
 
 MIN_SLICE_SIZE = 15
 NEAR_THRESHOLD_BAND = 0.05
 TOP_N_EXAMPLES = 5
-
-
-def _positive_class_proba(model: Any, features: pd.DataFrame) -> npt.NDArray[np.float64]:
-    raw = model.predict_proba(features)
-    return raw[:, 1] if raw.ndim == 2 else raw
 
 
 def _slice_dimensions(df: pd.DataFrame) -> dict[str, pd.Series]:
@@ -114,21 +116,6 @@ def _slice_report(
             for r in results
         ]
     return report
-
-
-def _train_feature_ranges(train: pd.DataFrame) -> dict[str, tuple[float, float]]:
-    return {
-        col: (float(train[col].min()), float(train[col].max())) for col in NUMERIC_FEATURE_COLUMNS
-    }
-
-
-def _out_of_distribution_mask(
-    df: pd.DataFrame, ranges: dict[str, tuple[float, float]]
-) -> pd.Series:
-    mask = pd.Series(False, index=df.index)
-    for col, (lo, hi) in ranges.items():
-        mask |= (df[col] < lo) | (df[col] > hi)
-    return mask
 
 
 def _top_shap_features(explanation: GlobalExplanation, n: int = 5) -> list[tuple[str, float]]:
@@ -389,7 +376,7 @@ def _evaluate_classification_task(
     y_test = test[label_column].astype(bool).to_numpy()
 
     champion = joblib.load(models_dir / f"{task_name}_champion.joblib")
-    proba = _positive_class_proba(champion, x_test)
+    proba = positive_class_proba(champion, x_test)
     task_summary = calibration_summary["tasks"][task_name]
     threshold = float(task_summary["threshold"])
     method = task_summary["calibration_method"]
@@ -399,8 +386,8 @@ def _evaluate_classification_task(
 
     slices = _slice_report(test, y_test, proba, roc_auc_score, "auc")
 
-    ranges = _train_feature_ranges(train)
-    ood_mask = _out_of_distribution_mask(test, ranges)
+    ranges = reference_ranges(train, list(NUMERIC_FEATURE_COLUMNS))
+    ood_mask = range_violation_mask(test, ranges)
 
     global_explanation = explain_global(champion, x_test, test[label_column].astype(bool))
 
@@ -520,8 +507,8 @@ def _evaluate_final_cost_task(
         for entry in dim_results:
             entry["bias"] = bias_by_value.get(entry["slice_value"])
 
-    ranges = _train_feature_ranges(train)
-    ood_mask = _out_of_distribution_mask(test, ranges)
+    ranges = reference_ranges(train, list(NUMERIC_FEATURE_COLUMNS))
+    ood_mask = range_violation_mask(test, ranges)
 
     logger.info(
         "final_cost test set: MAE=$%.0f, RMSE=$%.0f, R2=%.3f, MAPE=%.3f, coverage=%.3f "

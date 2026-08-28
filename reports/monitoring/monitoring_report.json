@@ -1,0 +1,529 @@
+{
+  "git_sha": "ec43690",
+  "data_quality": {
+    "projects": {
+      "n_rows": 400,
+      "missing_value_counts": {
+        "project_id": 0,
+        "project_type": 0,
+        "city": 0,
+        "state": 0,
+        "gross_floor_area_m2": 0,
+        "number_of_towers": 0,
+        "number_of_units": 0,
+        "construction_standard": 0,
+        "planned_start_date": 0,
+        "planned_completion_date": 0,
+        "approved_budget": 0
+      },
+      "missing_value_rates": {
+        "project_id": 0.0,
+        "project_type": 0.0,
+        "city": 0.0,
+        "state": 0.0,
+        "gross_floor_area_m2": 0.0,
+        "number_of_towers": 0.0,
+        "number_of_units": 0.0,
+        "construction_standard": 0.0,
+        "planned_start_date": 0.0,
+        "planned_completion_date": 0.0,
+        "approved_budget": 0.0
+      },
+      "schema_violations": [],
+      "unexpected_categories": {
+        "project_type": [],
+        "construction_standard": []
+      },
+      "range_violation_counts": {},
+      "duplicate_key_count": 0
+    },
+    "snapshots": {
+      "n_rows": 11953,
+      "missing_value_counts": {
+        "project_id": 0,
+        "snapshot_date": 0,
+        "planned_progress": 0,
+        "actual_progress": 0,
+        "planned_cost": 0,
+        "actual_cost": 0,
+        "committed_cost": 0,
+        "earned_value": 0,
+        "forecast_cost": 0
+      },
+      "missing_value_rates": {
+        "project_id": 0.0,
+        "snapshot_date": 0.0,
+        "planned_progress": 0.0,
+        "actual_progress": 0.0,
+        "planned_cost": 0.0,
+        "actual_cost": 0.0,
+        "committed_cost": 0.0,
+        "earned_value": 0.0,
+        "forecast_cost": 0.0
+      },
+      "schema_violations": [],
+      "unexpected_categories": {},
+      "range_violation_counts": {},
+      "duplicate_key_count": 0
+    },
+    "change_orders": {
+      "n_rows": 897,
+      "missing_value_counts": {
+        "change_order_id": 0,
+        "project_id": 0,
+        "date": 0,
+        "category": 0,
+        "approved_amount": 0,
+        "status": 0
+      },
+      "missing_value_rates": {
+        "change_order_id": 0.0,
+        "project_id": 0.0,
+        "date": 0.0,
+        "category": 0.0,
+        "approved_amount": 0.0,
+        "status": 0.0
+      },
+      "schema_violations": [],
+      "unexpected_categories": {},
+      "range_violation_counts": {},
+      "duplicate_key_count": 0
+    }
+  },
+  "feature_drift": [
+    {
+      "column": "gross_floor_area_m2",
+      "variable_type": "numeric",
+      "psi": 0.14450432597921495,
+      "psi_severity": "moderate",
+      "ks_statistic": 0.1142918092946791,
+      "ks_p_value": 1.4746423988378974e-13,
+      "wasserstein_distance": 768.750642861902
+    },
+    {
+      "column": "number_of_towers",
+      "variable_type": "numeric",
+      "psi": 0.012267098085143282,
+      "psi_severity": "none",
+      "ks_statistic": 0.039611358477079056,
+      "ks_p_value": 0.052327300355339064,
+      "wasserstein_distance": 0.04997322300144602
+    },
+    {
+      "column": "number_of_units",
+      "variable_type": "numeric",
+      "psi": 0.08590143691860863,
+      "psi_severity": "none",
+      "ks_statistic": 0.12237765077222804,
+      "ks_p_value": 1.7452458592573025e-15,
+      "wasserstein_distance": 9.58648175911389
+    },
+    {
+      "column": "cpi",
+      "variable_type": "numeric",
+      "psi": 0.4407763270235014,
+      "psi_severity": "significant",
+      "ks_statistic": 0.28938919190746976,
+      "ks_p_value": 1.075521101876769e-85,
+      "wasserstein_distance": 0.08721956303943622
+    },
+    {
+      "column": "spi",
+      "variable_type": "numeric",
+      "psi": 0.07642370349993098,
+      "psi_severity": "none",
+      "ks_statistic": 0.12466659733375667,
+      "ks_p_value": 4.702970218591011e-16,
+      "wasserstein_distance": 0.2797416339747262
+    },
+    {
+      "column": "cost_variance",
+      "variable_type": "numeric",
+      "psi": 0.37960043793116943,
+      "psi_severity": "significant",
+      "ks_statistic": 0.25967209375695566,
+      "ks_p_value": 7.406152632811638e-69,
+      "wasserstein_distance": 1728854.1404604642
+    },
+    {
+      "column": "schedule_variance",
+      "variable_type": "numeric",
+      "psi": 0.0890334292839563,
+      "psi_severity": "none",
+      "ks_statistic": 0.12937241578823877,
+      "ks_p_value": 2.935500817711271e-17,
+      "wasserstein_distance": 597174.0889597986
+    },
+    {
+      "column": "inflation_multiplier",
+      "variable_type": "numeric",
+      "psi": 1.9437197441276872,
+      "psi_severity": "significant",
+      "ks_statistic": 0.3841740909202442,
+      "ks_p_value": 9.750497919366062e-153,
+      "wasserstein_distance": 0.057007518227406066
+    },
+    {
+      "column": "operational_variance",
+      "variable_type": "numeric",
+      "psi": 0.19976623009642727,
+      "psi_severity": "moderate",
+      "ks_statistic": 0.19110263165546817,
+      "ks_p_value": 2.8538462897969525e-37,
+      "wasserstein_distance": 696784.18083708
+    },
+    {
+      "column": "inflation_component",
+      "variable_type": "numeric",
+      "psi": 0.4883672078465275,
+      "psi_severity": "significant",
+      "ks_statistic": 0.2761811852312519,
+      "ks_p_value": 5.691059403741865e-78,
+      "wasserstein_distance": 1072504.703542348
+    },
+    {
+      "column": "months_since_start",
+      "variable_type": "numeric",
+      "psi": 1.8651093029505192,
+      "psi_severity": "significant",
+      "ks_statistic": 0.3684512381382001,
+      "ks_p_value": 3.634869426715682e-140,
+      "wasserstein_distance": 10.118496492269948
+    },
+    {
+      "column": "months_to_planned_completion",
+      "variable_type": "numeric",
+      "psi": 0.16543375881154537,
+      "psi_severity": "moderate",
+      "ks_statistic": 0.1545580756118171,
+      "ks_p_value": 1.7844507757366334e-24,
+      "wasserstein_distance": 3.3802050001253057
+    },
+    {
+      "column": "lifecycle_fraction",
+      "variable_type": "numeric",
+      "psi": 0.11187161678685985,
+      "psi_severity": "moderate",
+      "ks_statistic": 0.15181060624120185,
+      "ks_p_value": 1.2645913714826913e-23,
+      "wasserstein_distance": 0.1065011896960754
+    },
+    {
+      "column": "cpi_trend",
+      "variable_type": "numeric",
+      "psi": 0.035204702559540155,
+      "psi_severity": "none",
+      "ks_statistic": 0.078520683655545,
+      "ks_p_value": 1.3585325726572904e-05,
+      "wasserstein_distance": 0.007002756904911969
+    },
+    {
+      "column": "spi_trend",
+      "variable_type": "numeric",
+      "psi": 0.2817864141585549,
+      "psi_severity": "significant",
+      "ks_statistic": 0.2075237455128553,
+      "ks_p_value": 1.1043952149254768e-36,
+      "wasserstein_distance": 0.3324033673297411
+    },
+    {
+      "column": "cpi_decline_streak",
+      "variable_type": "numeric",
+      "psi": 7.437925975221664e-05,
+      "psi_severity": "none",
+      "ks_statistic": 0.0035995481310545684,
+      "ks_p_value": 1.0,
+      "wasserstein_distance": 0.010914344778241047
+    },
+    {
+      "column": "spi_decline_streak",
+      "variable_type": "numeric",
+      "psi": 0.3564358259296847,
+      "psi_severity": "significant",
+      "ks_statistic": 0.19533517004420103,
+      "ks_p_value": 6.21532733280898e-39,
+      "wasserstein_distance": 3.3118072111989587
+    },
+    {
+      "column": "change_order_count_to_date",
+      "variable_type": "numeric",
+      "psi": 0.5931993525270303,
+      "psi_severity": "significant",
+      "ks_statistic": 0.25471356819725616,
+      "ks_p_value": 3.091046660199628e-66,
+      "wasserstein_distance": 0.8609362579945691
+    },
+    {
+      "column": "change_order_amount_to_date",
+      "variable_type": "numeric",
+      "psi": 0.609367438685907,
+      "psi_severity": "significant",
+      "ks_statistic": 0.28633400317307217,
+      "ks_p_value": 7.131278882819486e-84,
+      "wasserstein_distance": 345892.29814261256
+    },
+    {
+      "column": "change_order_amount_ratio_to_date",
+      "variable_type": "numeric",
+      "psi": 0.6451092413200615,
+      "psi_severity": "significant",
+      "ks_statistic": 0.29861239000058765,
+      "ks_p_value": 2.570335146584209e-91,
+      "wasserstein_distance": 0.016482390006168007
+    },
+    {
+      "column": "project_type",
+      "variable_type": "categorical",
+      "psi": 0.051525523699596086,
+      "psi_severity": "none",
+      "ks_statistic": null,
+      "ks_p_value": null,
+      "wasserstein_distance": null
+    },
+    {
+      "column": "construction_standard",
+      "variable_type": "categorical",
+      "psi": 0.057944893214019716,
+      "psi_severity": "none",
+      "ks_statistic": null,
+      "ks_p_value": null,
+      "wasserstein_distance": null
+    },
+    {
+      "column": "lifecycle_stage",
+      "variable_type": "categorical",
+      "psi": 0.09875910333306506,
+      "psi_severity": "none",
+      "ks_statistic": null,
+      "ks_p_value": null,
+      "wasserstein_distance": null
+    }
+  ],
+  "prediction_drift": {
+    "cost_overrun": {
+      "probability_drift": {
+        "column": "predicted_probability",
+        "variable_type": "numeric",
+        "psi": 0.09450697212063393,
+        "psi_severity": "none",
+        "ks_statistic": 0.05402942724217526,
+        "ks_p_value": 0.08735892129804865,
+        "wasserstein_distance": 0.031144576434033115
+      },
+      "risk_band_drift": {
+        "column": "risk_band",
+        "variable_type": "categorical",
+        "psi": 0.005740412428605186,
+        "psi_severity": "none",
+        "ks_statistic": null,
+        "ks_p_value": null,
+        "wasserstein_distance": null
+      },
+      "calibration_split_band_proportions": {
+        "high": 0.5632377740303541,
+        "low": 0.3412029229904441,
+        "medium": 0.0955593029792018
+      },
+      "test_split_band_proportions": {
+        "high": 0.526595744680851,
+        "low": 0.375,
+        "medium": 0.09840425531914894
+      }
+    },
+    "schedule_delay": {
+      "probability_drift": {
+        "column": "predicted_probability",
+        "variable_type": "numeric",
+        "psi": 0.0019015203293176691,
+        "psi_severity": "none",
+        "ks_statistic": 0.018113959551744347,
+        "ks_p_value": 0.99359593546826,
+        "wasserstein_distance": 0.00956133185093958
+      },
+      "risk_band_drift": {
+        "column": "risk_band",
+        "variable_type": "categorical",
+        "psi": 0.00233289044115723,
+        "psi_severity": "none",
+        "ks_statistic": null,
+        "ks_p_value": null,
+        "wasserstein_distance": null
+      },
+      "calibration_split_band_proportions": {
+        "high": 0.6053962900505903,
+        "low": 0.33108487914558743,
+        "medium": 0.06351883080382237
+      },
+      "test_split_band_proportions": {
+        "high": 0.5970744680851063,
+        "low": 0.3271276595744681,
+        "medium": 0.07579787234042554
+      }
+    },
+    "final_cost": {
+      "predicted_cost_drift": {
+        "column": "predicted_final_cost",
+        "variable_type": "numeric",
+        "psi": 0.5922613681152761,
+        "psi_severity": "significant",
+        "ks_statistic": 0.191209799911497,
+        "ks_p_value": 2.2114509155725547e-17,
+        "wasserstein_distance": 5584063.474675335
+      }
+    }
+  },
+  "performance": {
+    "cost_overrun": {
+      "baseline": {
+        "roc_auc": 0.8976501657554148,
+        "brier_score": 0.12233053006356898,
+        "recall": 0.9767726161369193
+      },
+      "current": {
+        "roc_auc": 0.9494840496302485,
+        "brier_score": 0.11289018549150891,
+        "recall": 0.9736842105263158
+      },
+      "comparisons": [
+        {
+          "metric_name": "roc_auc",
+          "baseline_value": 0.8976501657554148,
+          "current_value": 0.9494840496302485,
+          "higher_is_better": true,
+          "relative_change": 0.05774396959110794,
+          "is_degraded": false
+        },
+        {
+          "metric_name": "recall",
+          "baseline_value": 0.9767726161369193,
+          "current_value": 0.9736842105263158,
+          "higher_is_better": true,
+          "relative_change": -0.003161847045649169,
+          "is_degraded": false
+        },
+        {
+          "metric_name": "brier_score",
+          "baseline_value": 0.12233053006356898,
+          "current_value": 0.11289018549150891,
+          "higher_is_better": false,
+          "relative_change": -0.07717079756913013,
+          "is_degraded": false
+        }
+      ]
+    },
+    "schedule_delay": {
+      "baseline": {
+        "roc_auc": 0.9739469121155627,
+        "brier_score": 0.0592042921171248,
+        "recall": 0.9837320574162679
+      },
+      "current": {
+        "roc_auc": 0.9002198347693506,
+        "brier_score": 0.1452058855617748,
+        "recall": 0.9291139240506329
+      },
+      "comparisons": [
+        {
+          "metric_name": "roc_auc",
+          "baseline_value": 0.9739469121155627,
+          "current_value": 0.9002198347693506,
+          "higher_is_better": true,
+          "relative_change": -0.07569927726970818,
+          "is_degraded": true
+        },
+        {
+          "metric_name": "recall",
+          "baseline_value": 0.9837320574162679,
+          "current_value": 0.9291139240506329,
+          "higher_is_better": true,
+          "relative_change": -0.055521351524405266,
+          "is_degraded": true
+        },
+        {
+          "metric_name": "brier_score",
+          "baseline_value": 0.0592042921171248,
+          "current_value": 0.1452058855617748,
+          "higher_is_better": false,
+          "relative_change": 1.4526243008616955,
+          "is_degraded": true
+        }
+      ]
+    },
+    "final_cost": {
+      "baseline": {
+        "mae": 1963249.614936306
+      },
+      "current": {
+        "mae": 1607528.1122704658
+      },
+      "comparisons": [
+        {
+          "metric_name": "mae",
+          "baseline_value": 1963249.614936306,
+          "current_value": 1607528.1122704658,
+          "higher_is_better": false,
+          "relative_change": -0.18119015532183402,
+          "is_degraded": false
+        }
+      ]
+    }
+  },
+  "operational": {
+    "cost_overrun": {
+      "n_predictions": 100,
+      "n_errors": 0,
+      "error_rate": 0.0,
+      "latency_p50_ms": 14.859099996101577,
+      "latency_p95_ms": 20.75906500176643,
+      "latency_p99_ms": 21.64784700100427
+    },
+    "schedule_delay": {
+      "n_predictions": 100,
+      "n_errors": 0,
+      "error_rate": 0.0,
+      "latency_p50_ms": 4.561800000374205,
+      "latency_p95_ms": 5.548195001028944,
+      "latency_p99_ms": 5.980884990276537
+    },
+    "final_cost": {
+      "n_predictions": 100,
+      "n_errors": 0,
+      "error_rate": 0.0,
+      "latency_p50_ms": 0.021900006686337292,
+      "latency_p95_ms": 0.02910500188590958,
+      "latency_p99_ms": 0.03604501209338198
+    }
+  },
+  "retraining_triggers": [
+    {
+      "trigger": "psi_above_critical_threshold",
+      "fired": true,
+      "detail": "10 feature(s) significantly drifted: ['cpi', 'cost_variance', 'inflation_multiplier', 'inflation_component', 'months_since_start', 'spi_trend', 'spi_decline_streak', 'change_order_count_to_date', 'change_order_amount_to_date', 'change_order_amount_ratio_to_date']"
+    },
+    {
+      "trigger": "performance_drop_above_threshold",
+      "fired": true,
+      "detail": "degraded metrics: ['schedule_delay.roc_auc', 'schedule_delay.recall']"
+    },
+    {
+      "trigger": "calibration_deterioration",
+      "fired": true,
+      "detail": "calibration degraded for: ['schedule_delay']"
+    },
+    {
+      "trigger": "schema_changes",
+      "fired": false,
+      "detail": "no schema violations"
+    },
+    {
+      "trigger": "new_labeled_data_volume_above_n",
+      "fired": null,
+      "detail": "calendar/volume-driven policy trigger, not computed by a single run -- see docs/MONITORING.md"
+    },
+    {
+      "trigger": "scheduled_quarterly_evaluation",
+      "fired": null,
+      "detail": "calendar-driven policy trigger, not computed by a single run -- see docs/MONITORING.md"
+    }
+  ]
+}

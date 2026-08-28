@@ -63,6 +63,10 @@ reports/monitoring/*
 !reports/figures/.gitkeep
 !reports/metrics/.gitkeep
 !reports/monitoring/.gitkeep
+# The monitoring report itself is small and is real evidence (Section 23:
+# "implemented, not just documented") -- committed like the other
+# reports/experiments/*.json summaries, unlike figures/metrics.
+!reports/monitoring/monitoring_report.json
 
 # ---- OS / editor ----
 .DS_Store
