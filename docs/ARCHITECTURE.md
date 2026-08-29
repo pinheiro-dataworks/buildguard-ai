@@ -69,6 +69,12 @@ computation, so the whole chain is independently unit-testable without I/O.
 | `src/buildguard/monitoring/data_quality.py` | Missing values, schema violations, unexpected categories, range violations, duplicate keys (Section 23) |
 | `src/buildguard/monitoring/drift.py` | PSI/KS/Wasserstein data and prediction drift detection (Section 23) |
 | `src/buildguard/monitoring/performance.py` | Performance-drop comparison (reusing `evaluation`'s metrics) and real inference-latency measurement (Section 23/24) |
+| `src/buildguard/api/app.py` | FastAPI routes: health/version/predict-cost-risk/predict-schedule-risk/predict-final-cost (Section 29) |
+| `src/buildguard/api/dependencies.py` | Loads champion models + calibration decisions once, shared across requests |
+| `src/buildguard/api/schemas.py` | Pydantic request/response schemas mirroring the raw table shapes |
+| `app/theme.py` | Renan-standard color tokens and CSS injection (`docs/design/UI_DESIGN_SPEC.md`) |
+| `app/data_access.py` | Report loading + in-process prediction calls shared by every Streamlit page |
+| `app/page_modules/*.py` | One `render()` function per page (Section 30) |
 
 See [ADR-0001](adr/0001-project-architecture.md) for why this layout was
 chosen over alternatives.
@@ -370,9 +376,48 @@ Full rationale, every alternative considered, and the complete real-results
 snapshot: [ADR-0011](adr/0011-monitoring-drift-detection.md) and
 [`docs/MONITORING.md`](MONITORING.md).
 
-## 13. What's not built yet
+## 13. API and Streamlit app (Section 28/29/30)
 
-The FastAPI service and the Streamlit app are still pending -- see
+**FastAPI service** (`src/buildguard/api/`): `GET /health`, `GET /version`,
+`POST /predict/{cost-risk,schedule-risk,final-cost}`. Every prediction
+endpoint is a plain, dependency-injected function
+(`app.py`) -- `dependencies.py`'s `get_service_state()` loads the three
+champion artifacts and calibration decisions once (`lru_cache`d, not
+per-request); `schemas.py`'s `PredictionRequest` mirrors the raw
+Project/Snapshot/Change-Order table shapes rather than a bespoke shape, so
+a caller sends a project's real snapshot history and the endpoint rebuilds
+its feature row through the exact same `build_feature_table` training
+uses (Section 28). Validated twice -- Pydantic (types/ranges/enums) then
+`buildguard.data.contracts` (cross-field checks Pydantic can't express) --
+both failing safely as a 422, never a crash (Section 48). 15 contract
+tests (`tests/api/test_inference_service.py`) run against the real
+trained/calibrated champions, not mocks.
+
+**Streamlit app** (`app/`): six pages (Executive Overview, Project
+Diagnostic, Scenario Simulator, Model Performance, Model Health, About/
+Governance) under `app/page_modules/` (not Section 33's suggested
+`pages/` -- see ADR-0012 for why that name conflicts with Streamlit's own
+auto-discovery). Predictions are made **in-process** by calling the
+FastAPI endpoint functions directly (Section 29) -- one prediction code
+path, called two ways, never two implementations. The sidebar (logo,
+project name, bordered nav buttons, version/GitHub footer) is a custom
+`st.session_state` router styled to `docs/design/UI_DESIGN_SPEC.md`'s
+renan-standard tokens (`app/theme.py`), chosen over `st.navigation()`
+after empirically hitting a fixed-position constraint that would have put
+the nav above the logo. The Executive Overview page batch-scores the
+whole portfolio in one vectorized pass (same feature pipeline, same
+champions) rather than 400 individual single-prediction calls. Verified
+with a real headless-browser pass (Playwright) across all six pages, not
+just import-level smoke tests -- caught two real bugs `ruff`/`mypy`
+couldn't (see ADR-0012).
+
+Full rationale and every alternative considered:
+[ADR-0012](adr/0012-streamlit-fastapi-boundary.md).
+
+## 14. What's not built yet
+
+Testing hardening (CI/CD), full documentation completion (model card,
+runbook, limitations), and deployment are still pending -- see
 [`BUILDGUARD_AI_COMMIT_PLAN.md`](../BUILDGUARD_AI_COMMIT_PLAN.md) for the
 session-by-session plan and [`BUILDGUARD_AI_PROJECT_SCOPE.md`](../BUILDGUARD_AI_PROJECT_SCOPE.md)
 Section 45 for the full roadmap. This document will grow a section for

@@ -14,12 +14,13 @@ match reality — this document follows the work, not the other way around.
 Check off an item (`- [x]`) once it is actually committed. Update the
 **Progress** line at the top after every session.
 
-**Progress:** 45 / 63 planned commits actually committed (C44–C48 code is
-written, tested, and actually run end-to-end against the real portfolio
-and champions, ready to commit) · 0 / 14 PRs opened · Phase 0-7 complete
-(data, features, leakage-safe split, baselines, advanced modeling,
-calibration/threshold/uncertainty, explainability/evaluation/failure
-analysis, monitoring/retraining policy).
+**Progress:** 51 / 63 planned commits actually committed (C49–C54 code is
+written, tested, and verified end-to-end -- API contract tests plus a
+real headless-browser pass across all six Streamlit pages -- ready to
+commit) · 0 / 14 PRs opened · Phase 0-8 complete (data, features,
+leakage-safe split, baselines, advanced modeling, calibration/threshold/
+uncertainty, explainability/evaluation/failure analysis, monitoring/
+retraining policy, API + Streamlit app).
 
 ---
 
@@ -42,7 +43,7 @@ earlier ones (e.g. no modeling before the temporal split exists).
 | I — Calibration, threshold, uncertainty | 5 | #9 Calibration & threshold optimization | ✅ Done (uncommitted, ready to commit) |
 | J — Explainability & error analysis | 6 | #10 Explainability & error analysis | ✅ Done (uncommitted, ready to commit) |
 | K — Monitoring & retraining policy | 7 | #11 Monitoring | ✅ Done (uncommitted, ready to commit) |
-| L — API & Streamlit app | 8 | #7 FastAPI service + #8 Streamlit UI | ⬜ Not started |
+| L — API & Streamlit app | 8 | #7 FastAPI service + #8 Streamlit UI | ✅ Done (uncommitted, ready to commit) |
 | M — Testing hardening & CI/CD | 9 | #12 Testing hardening & CI/CD | ⬜ Not started |
 | N — Documentation completion | 9 | #13 Documentation completion | ⬜ Not started |
 | O — Deployment & v1.0.0 release | 10–11 | #14 Deployment & v1.0.0 release | ⬜ Not started |
@@ -276,12 +277,26 @@ bundling three models into one PR) gets closed: API service and Streamlit
 UI are genuinely independent halves, so this splits into two PRs (#7, #8)
 rather than one #11.
 
-- [ ] **C49** `feat: add FastAPI inference service and Pydantic schemas`
-- [ ] **C50** `test: add API contract tests`
-- [ ] **C51** `feat: add Streamlit app shell (sidebar, branding, navigation)`
-- [ ] **C52** `feat: add Executive Overview and Project Diagnostic pages`
-- [ ] **C53** `feat: add Scenario Simulator, Model Performance, and Model Health pages`
-- [ ] **C54** `docs: add streamlit-fastapi-boundary ADR`
+Done, ready to commit. C51-C53 revised from the original "shell then
+pages" split: `app/Home.py` (the shell) imports every page module by
+name, so shell-before-pages would have committed a broken import; the
+real dependency order is shared infra -> page content -> the shell that
+ties them together and is where the app actually becomes runnable (and
+is where its end-to-end Playwright verification belongs). Total commit
+count is unchanged (still 6, C49-C54).
+
+- [x] **C49** `feat: add FastAPI inference service and Pydantic schemas`
+  `src/buildguard/api/__init__.py`, `app.py`, `dependencies.py`, `schemas.py` -- `PredictionRequest` mirrors the raw Project/Snapshot/Change-Order shapes (a project's real snapshot history, not just its latest state) and rebuilds its feature row through the same `build_feature_table` training uses; validated twice (Pydantic, then `data.contracts`), failing safely as a 422
+- [x] **C50** `test: add API contract tests`
+  `tests/api/test_inference_service.py` -- 15 tests against the real trained/calibrated champions (not mocks), including a genuine model-behavior check (worse cost efficiency -> strictly higher cost-overrun risk)
+- [x] **C51** `feat: add Streamlit theme and shared data access layer`
+  `app/theme.py` (renan-standard tokens + CSS, sampled from `docs/design/renan-standard.png`), `app/data_access.py` (report loading, portfolio batch-scoring, in-process prediction calls reusing the API's own endpoint functions)
+- [x] **C52** `feat: add Streamlit page content (Executive Overview, Project Diagnostic, Scenario Simulator, Model Performance, Model Health, About/Governance)`
+  `app/page_modules/*.py` -- all six Section 30 pages, each one `render()` function
+- [x] **C53** `feat: add Streamlit app shell (sidebar, branding, navigation) and verify end-to-end`
+  `app/Home.py` -- custom sidebar router (logo, project name, bordered nav buttons, version/GitHub footer), the app's actual entrypoint. **Verified with a real headless-browser pass** (Playwright, not just import smoke tests) across all six pages -- caught and fixed two real bugs neither `ruff` nor `mypy` could: `DataQualityReport.is_clean` read as a JSON key on Model Health (it's a computed property, not a serialized field) and a duplicate-`approved_budget`-column merge on Executive Overview
+- [x] **C54** `docs: add streamlit-fastapi-boundary ADR`
+  `docs/adr/0012-streamlit-fastapi-boundary.md`, `docs/ARCHITECTURE.md`, `README.md`, `CHANGELOG.md`, `BUILDGUARD_AI_COMMIT_PLAN.md` -- **key finding documented**: `st.navigation()` was tried first and rejected (its sidebar nav renders at a fixed position, incompatible with logo-above-nav); `pages/` was renamed to `app/page_modules/` after confirming empirically that name alone triggers Streamlit's own auto-discovery regardless of navigation approach
 
 **→ PR #7 "FastAPI inference service"** (C49-C50) **+ PR #8 "Streamlit public app"** (C51-C54)
 
@@ -334,7 +349,7 @@ rather than one #11.
 
 ## Next action
 
-Commit **C44–C48** now (Session K), open PR #11, then start Session L
-(API & Streamlit app) -- the first UI-facing phase, and the one that
-finally implements `docs/design/UI_DESIGN_SPEC.md`'s renan-standard
-branding direction.
+Commit **C49–C54** now (Session L), open PR #7 and PR #8, then start
+Session M (testing hardening & CI/CD) -- the app and API are real and
+verified, but there is still no GitHub Actions pipeline actually gating
+merges on lint/test/type-check.

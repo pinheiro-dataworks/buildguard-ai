@@ -244,3 +244,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   every monitoring decision above, the complete real-results snapshot,
   and the alternatives considered (including why a synthetic drift demo
   was rejected in favor of the real train/calibration/test splits).
+- FastAPI inference service (`src/buildguard/api/`, Section 28/29):
+  `GET /health`, `GET /version`, `POST /predict/{cost-risk,schedule-risk,
+  final-cost}`. Every endpoint rebuilds the caller's project through the
+  same `build_feature_table` training uses (a project's real snapshot
+  history, not just its latest state, since trend/streak features need
+  it), validated twice — Pydantic (types/ranges/enum membership, so an
+  unseen category fails safely as a 422) then `buildguard.data.contracts`
+  (cross-field checks Pydantic alone can't express, e.g.
+  `completion_after_start`). Champion models and calibration decisions
+  load once (`lru_cache`d), not per request.
+- API contract tests (`tests/api/test_inference_service.py`, 15 tests):
+  run against the real trained/calibrated champions rather than mocks,
+  including a genuine model-behavior check (a project with worse cost
+  efficiency scores strictly higher cost-overrun risk than an identical
+  healthy one) alongside the schema/error-handling checks.
+- Streamlit public app (`app/`, Section 30): six pages — Executive
+  Overview, Project Diagnostic, Scenario Simulator, Model Performance,
+  Model Health, About/Governance — following the renan-standard sidebar
+  direction from `docs/design/UI_DESIGN_SPEC.md` (logo, project name,
+  bordered nav buttons, version/GitHub footer). Predictions are made
+  in-process by calling the FastAPI endpoint functions directly (Section
+  29) — one prediction code path, never two. The Executive Overview page
+  batch-scores the whole portfolio in one vectorized pass (same pipeline,
+  same champions) rather than 400 individual calls. Verified with a real
+  headless-browser pass (Playwright) across every page — caught two real
+  bugs neither `ruff` nor `mypy` could (a computed dataclass property
+  read as a JSON key, a duplicate-column merge), fixed before commit.
+- `docs/adr/0012-streamlit-fastapi-boundary.md`: why `st.navigation()` was
+  tried and rejected (its sidebar nav renders at a fixed position,
+  incompatible with the logo-above-nav spec) in favor of a custom
+  `st.session_state` router; why page files live in `app/page_modules/`
+  rather than Section 33's suggested `pages/` (that literal name
+  triggers Streamlit's own auto-discovery regardless of navigation
+  approach — confirmed empirically, not assumed); and every other
+  API/UI boundary decision, with real findings from the verification
+  pass.

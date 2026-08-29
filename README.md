@@ -201,6 +201,20 @@ Streamlit Community Cloud, serving the app, packaged model, and in-process
 prediction service against the synthetic demo dataset. See
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
+**API** (`api/app.py`, Section 29): `GET /health`, `GET /version`,
+`POST /predict/{cost-risk,schedule-risk,final-cost}` — every endpoint
+rebuilds a project's feature row through the same `build_feature_table`
+training uses, validated twice (Pydantic, then `data.contracts`), failing
+safely as a 422 rather than crashing. 15 contract tests run against the
+real trained/calibrated champions.
+
+**App** (`app/`, Section 30): Executive Overview, Project Diagnostic,
+Scenario Simulator, Model Performance, Model Health, About/Governance —
+six pages, in-process predictions (Section 29: "may call it in-process"),
+one prediction code path shared with the API. Verified with a real
+headless-browser pass across every page, not just import-level checks.
+Full design rationale: [ADR-0012](docs/adr/0012-streamlit-fastapi-boundary.md).
+
 ## 14. How to Run
 
 ```bash
@@ -213,7 +227,8 @@ make calibrate # calibrate probabilities, optimize thresholds, quantify uncertai
 make evaluate  # final held-out test evaluation, explainability, failure analysis
 make monitor   # data quality, drift, and performance monitoring
 make test      # unit, integration, leakage, contract tests
-make app       # run the Streamlit app locally (once built)
+make api       # run the FastAPI inference service locally
+make app       # run the Streamlit app locally
 ```
 
 Requires Python 3.11 and [`uv`](https://docs.astral.sh/uv/).
