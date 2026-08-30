@@ -1,4 +1,4 @@
-.PHONY: setup data train calibrate evaluate monitor test lint format type-check app api docker-build clean
+.PHONY: setup data train calibrate evaluate monitor test lint format type-check app api package docker-build docker-run clean
 
 UV := uv
 
@@ -38,8 +38,14 @@ app: ## Run the Streamlit app locally
 api: ## Run the FastAPI inference service locally
 	$(UV) run uvicorn buildguard.api.app:app --reload
 
-docker-build: ## Build the container image
+package: ## Package trained/calibrated models + manifest for distribution (requires make calibrate first)
+	$(UV) run python scripts/package_model.py
+
+docker-build: ## Build the container image (trains + calibrates fresh inside the image)
 	docker build -t buildguard-ai:local .
+
+docker-run: ## Run the built container locally on http://localhost:8501
+	docker run --rm -p 8501:8501 buildguard-ai:local
 
 clean: ## Remove caches and build artifacts
 	rm -rf .pytest_cache .mypy_cache .ruff_cache htmlcov .coverage dist build *.egg-info
