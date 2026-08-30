@@ -11,16 +11,25 @@ number. Every item below is a real, independently meaningful unit of work.
 If a real session naturally merges or splits an item, update this file to
 match reality — this document follows the work, not the other way around.
 
+**Note on "PR #N" labels:** every commit so far has gone straight to
+`main` (no feature branches, no real GitHub PRs opened) — confirmed and
+decided deliberately after Session M. The "PR #N" tags below are an
+**organizational label only**, grouping commits into the reviewable units
+Section 43 asks for, for the portfolio narrative — not a literal GitHub
+PR to open. "PRs opened" in the Progress line means labels assigned to
+committed work, not actual GitHub pull requests.
+
 Check off an item (`- [x]`) once it is actually committed. Update the
 **Progress** line at the top after every session.
 
-**Progress:** 54 / 63 planned commits actually committed (C55–C57 code is
-written and verified -- CI/security workflows checked locally against
-the exact commands GitHub Actions will run -- ready to commit) · 0 / 14
-PRs opened · Phase 0-9 complete (data, features, leakage-safe split,
-baselines, advanced modeling, calibration/threshold/uncertainty,
-explainability/evaluation/failure analysis, monitoring/retraining
-policy, API + Streamlit app, testing/CI/CD hardening).
+**Progress:** 57 / 63 planned commits actually committed · 13 / 14
+PR labels assigned to committed work (no real GitHub PRs opened, by
+choice -- see note above) · Phase 0-9 complete, documentation set
+complete (data, features, leakage-safe split, baselines, advanced
+modeling, calibration/threshold/uncertainty, explainability/evaluation/
+failure analysis, monitoring/retraining policy, API + Streamlit app,
+testing/CI/CD hardening, full docs/ADR set). Only Session O
+(deployment & v1.0.0 release) remains.
 
 ---
 
@@ -40,12 +49,12 @@ earlier ones (e.g. no modeling before the temporal split exists).
 | F — Anti-leakage & split | 3 | #4 Temporal anti-leakage split | ✅ Committed (C21–C25) |
 | G — Baselines | 3 | #5 Baseline models | ✅ Committed (C26–C27) |
 | H — Advanced modeling | 4 | #6 Advanced modeling (bundled) | ✅ Committed (C28–C32) |
-| I — Calibration, threshold, uncertainty | 5 | #9 Calibration & threshold optimization | ✅ Done (uncommitted, ready to commit) |
-| J — Explainability & error analysis | 6 | #10 Explainability & error analysis | ✅ Done (uncommitted, ready to commit) |
-| K — Monitoring & retraining policy | 7 | #11 Monitoring | ✅ Done (uncommitted, ready to commit) |
-| L — API & Streamlit app | 8 | #7 FastAPI service + #8 Streamlit UI | ✅ Done (uncommitted, ready to commit) |
-| M — Testing hardening & CI/CD | 9 | #12 Testing hardening & CI/CD | ✅ Done (uncommitted, ready to commit) |
-| N — Documentation completion | 9 | #13 Documentation completion | ⬜ Not started |
+| I — Calibration, threshold, uncertainty | 5 | #9 Calibration & threshold optimization | ✅ Committed (C33–C38) |
+| J — Explainability & error analysis | 6 | #10 Explainability & error analysis | ✅ Committed (C39–C43) |
+| K — Monitoring & retraining policy | 7 | #11 Monitoring | ✅ Committed (C44–C48) |
+| L — API & Streamlit app | 8 | #7 FastAPI service + #8 Streamlit UI | ✅ Committed (C49–C54) |
+| M — Testing hardening & CI/CD | 9 | #12 Testing hardening & CI/CD | ✅ Committed (C55–C57) |
+| N — Documentation completion | 9 | #13 Documentation completion | ✅ Done (uncommitted, ready to commit) |
 | O — Deployment & v1.0.0 release | 10–11 | #14 Deployment & v1.0.0 release | ⬜ Not started |
 
 ---
@@ -315,9 +324,19 @@ Done, ready to commit. Matches the original 3-item plan exactly.
 
 ## Session N — Documentation Completion (Phase 9)
 
-- [ ] **C58** `docs: add architecture, monitoring, and limitations docs`
-- [ ] **C59** `docs: complete model card and runbook`
-- [ ] **C60** `docs: add interview guide and remaining ADRs`
+Done, ready to commit. C58 grew to include a real bug fix found while
+writing it: the README had drifted to 16 sections (a "Monitoring &
+Retraining" section added in Session K) against Section 40's explicit
+15-section authoritative structure, which says monitoring content
+belongs folded into Architecture, not a section of its own. Fixed and
+renumbered back to 15.
+
+- [x] **C58** `docs: add limitations doc and fix README section structure`
+  `docs/LIMITATIONS.md` (10 real findings, all traced to existing ADRs/reports), `README.md` (folds "Monitoring & Retraining" into "Architecture", restores the Section 40-mandated 15-section numbering), `docs/ARCHITECTURE.md` (Section 14: tests/CI/security/docs summary)
+- [x] **C59** `docs: complete model card and runbook`
+  `docs/MODEL_CARD.md` (Section 22's full field list, real metrics per model), `docs/RUNBOOK.md` (setup, deployment procedure, monitoring-alert response, rollback, and 3 real troubleshooting entries from this project's own history)
+- [x] **C60** `docs: add interview guide and remaining ADRs`
+  `docs/INTERVIEW_GUIDE.md` (Business/Data/Leakage/Modeling/Calibration/Threshold/Regression/Explainability/MLOps/Production, real Q&A), `docs/adr/0013-zero-cost-deployment.md` (closes the gap in Section 39's minimum ADR set)
 
 **→ PR #13 "Documentation completion"**
 
@@ -339,21 +358,22 @@ Done, ready to commit. Matches the original 3-item plan exactly.
   monitoring phases legitimately needed more granularity than the minimum
   plan assumed. Expect the real number to drift ±10 as sessions actually
   happen -- that's fine; this is a guide, not a quota.
-- **PRs:** 14 planned, clearing Section 43's minimum of 12 (recommended
-  15-20) with room to spare. Session H merged the originally-planned
-  #6/#7/#8 (one PR per model) into a single PR #6, since all three tasks
-  ended up sharing one training script rather than three independent ones
-  -- splitting the PR three ways would have meant three PRs touching the
-  same commits, not three independent units of review. That gap is closed
-  by Session L splitting into two real, independent PRs (#7 FastAPI
-  service, #8 Streamlit UI) and Session J/K/M/N/O each getting their own
-  PR (#10, #11, #12, #13, #14) rather than folding into a neighbor --
-  every PR boundary here reflects an actual independently-reviewable unit
-  of work, not a number manufactured to hit a target (Section 43: "do not
-  manufacture commits [or PRs] to hit a number").
+- **PR labels:** 14 planned, clearing Section 43's minimum of 12
+  (recommended 15-20) with room to spare -- as *labels* grouping commits
+  into reviewable units, not literal GitHub PRs (every commit has gone
+  straight to `main`; see the note near the top of this file). Session H
+  merged the originally-planned #6/#7/#8 (one label per model) into a
+  single #6, since all three tasks ended up sharing one training script
+  rather than three independent ones. That gap is closed by Session L
+  splitting into two real, independent labels (#7 FastAPI service, #8
+  Streamlit UI) and Session J/K/M/N/O each getting their own (#10, #11,
+  #12, #13, #14) rather than folding into a neighbor -- every boundary
+  here reflects an actual independently-reviewable unit of work, not a
+  number manufactured to hit a target (Section 43: "do not manufacture
+  commits [or PRs] to hit a number").
 
 ## Next action
 
-Commit **C55–C57** now (Session M), open PR #12, then start Session N
-(documentation completion) -- model card, runbook, limitations, and
-interview guide are still missing.
+Commit C58–C60 (Session N), then start Session O (deployment & v1.0.0
+release) -- the last remaining phase: Dockerfile, `package_model.py`,
+the actual Streamlit Community Cloud deploy, and the tagged release.

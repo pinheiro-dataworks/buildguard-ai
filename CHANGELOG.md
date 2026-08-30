@@ -292,3 +292,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   (`cryptography` < 50, pinned by `mlflow` itself) is explicitly ignored
   with a documented reason — BuildGuard never touches the vulnerable
   code path (MLflow's Databricks integration).
+- Full documentation set: `docs/MODEL_CARD.md`, `docs/LIMITATIONS.md`
+  (10 real findings), `docs/RUNBOOK.md`, `docs/INTERVIEW_GUIDE.md`, and
+  `docs/adr/0013-zero-cost-deployment.md`.
+- Fixed the README drifting to 16 sections — folded "Monitoring &
+  Retraining" back into "Architecture" per Section 40's 15-section
+  structure.
