@@ -2,8 +2,8 @@
 
 UV := uv
 
-setup: ## Create the uv-managed environment (core + dev + ml + api + app extras)
-	$(UV) sync --python 3.11 --extra dev --extra ml --extra api --extra app
+setup: ## Create the uv-managed environment (core deps + dev extra)
+	$(UV) sync --python 3.11 --extra dev
 
 data: ## Generate the deterministic synthetic demo dataset
 	$(UV) run python scripts/generate_data.py

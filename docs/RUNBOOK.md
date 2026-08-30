@@ -8,7 +8,7 @@ current deployment status (Session O, not yet done).
 ## 1. Local setup and full pipeline
 
 ```bash
-make setup     # uv-managed environment (dev + ml + api + app extras)
+make setup     # uv-managed environment (core deps + dev extra)
 make data      # generate the synthetic demo dataset
 make train     # train and select the three core champion models (~6-7 min)
 make calibrate # calibrate probabilities, optimize thresholds, quantify uncertainty
@@ -54,9 +54,21 @@ the repo and runs `app/Home.py` directly — it does not run `make train`/
 `reports/experiments/calibration_summary.json` are therefore committed
 to the repo (deliberately, ~6MB total, Section 49's <100MB target) —
 without them, every prediction page would 503 on first load. A locked
-`requirements.txt` (`uv export --format requirements.txt --extra ml
---extra api --extra app --no-dev`) is committed alongside `pyproject.toml`/
+`requirements.txt` (`uv export --format requirements.txt --no-dev
+--no-hashes --no-emit-project`) is committed alongside `pyproject.toml`/
 `uv.lock` for platforms that don't resolve `uv.lock` natively.
+
+**Real incident, first deploy attempt:** the app failed at import with
+`ModuleNotFoundError: No module named 'fastapi'`. Root cause: Streamlit
+Cloud can install from `pyproject.toml` instead of `requirements.txt`,
+and a plain `pip install .` only pulls `[project.dependencies]`, never
+optional extras — `fastapi`/`streamlit`/`scikit-learn`/etc. were all
+sitting in `ml`/`api`/`app` optional groups at the time. Fixed by
+collapsing those groups into `dependencies` directly (every one of them
+is genuinely required to run `app/Home.py` now that the API/app both
+exist, so the "optional per phase" split no longer reflected reality)
+and by having `Home.py` add `src/` to `sys.path` explicitly rather than
+assuming `buildguard` itself ends up importable. See Section 6 below.
 
 **Steps:**
 
@@ -126,6 +138,13 @@ construction.
 
 ## 6. Known troubleshooting
 
+- **Deployed app fails with `ModuleNotFoundError` on a package that's
+  installed locally.** Streamlit Cloud may have installed from
+  `pyproject.toml`'s core `dependencies` only, skipping something that
+  used to live in an optional extra. All runtime dependencies now live
+  in `dependencies` directly for exactly this reason — if a new one is
+  ever added back as an "optional" extra, expect this failure mode to
+  return for whichever page imports it first.
 - **Streamlit shows a duplicate, unstyled navigation list.** Caused by a
   directory literally named `pages/` next to `app/Home.py` — Streamlit
   auto-discovers it regardless of navigation approach. Page content

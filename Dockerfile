@@ -20,7 +20,7 @@ WORKDIR /app
 # below never invalidate this layer.
 COPY pyproject.toml uv.lock README.md ./
 COPY src/ src/
-RUN uv sync --frozen --no-dev --extra ml --extra api --extra app
+RUN uv sync --frozen --no-dev
 
 # Application code and the config/asset files it reads at runtime.
 COPY configs/ configs/

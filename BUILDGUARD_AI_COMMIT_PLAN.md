@@ -22,10 +22,10 @@ committed work, not actual GitHub pull requests.
 Check off an item (`- [x]`) once it is actually committed. Update the
 **Progress** line at the top after every session.
 
-**Progress:** 59 / 64 planned commits actually committed (Session O grew
-from 3 to 4 planned commits) · 13 / 14 PR labels assigned to committed
+**Progress:** 60 / 65 planned commits actually committed (Session O grew
+from 3 to 5 planned commits) · 13 / 14 PR labels assigned to committed
 work (no real GitHub PRs opened, by choice -- see note above) · Phase
-0-9 complete, documentation set complete. Session O's C63/C64 (actual
+0-9 complete, documentation set complete. Session O's C64/C65 (actual
 Streamlit Cloud deploy, then the v1.0.0 tag) are the only remaining
 work, and both need a manual step from the repo owner first.
 
@@ -53,7 +53,7 @@ earlier ones (e.g. no modeling before the temporal split exists).
 | L — API & Streamlit app | 8 | #7 FastAPI service + #8 Streamlit UI | ✅ Committed (C49–C54) |
 | M — Testing hardening & CI/CD | 9 | #12 Testing hardening & CI/CD | ✅ Committed (C55–C57) |
 | N — Documentation completion | 9 | #13 Documentation completion | ✅ Done (uncommitted, ready to commit) |
-| O — Deployment & v1.0.0 release | 10–11 | #14 Deployment & v1.0.0 release | 🟡 In progress (C61-C62 committed; C63-C64 need a manual deploy) |
+| O — Deployment & v1.0.0 release | 10–11 | #14 Deployment & v1.0.0 release | 🟡 In progress (C61-C63 committed; C64-C65 need a manual deploy) |
 
 ---
 
@@ -340,22 +340,26 @@ renumbered back to 15.
 
 ## Session O — Deployment & v1.0.0 Release (Phase 10–11)
 
-C61-C62 done, ready to commit. Grew from 3 planned items to 4: getting
-the app actually deployable surfaced a real blocker mid-session --
-Streamlit Community Cloud has no build step (it just clones the repo and
-runs `app/Home.py`), so `models/*.joblib` had to move from gitignored to
-committed, which is its own real, separate decision from "add a
-Dockerfile" and gets its own commit. C63/C64 need a manual step (the
-actual Streamlit Cloud deploy) only the repo owner can do, then a
-confirmed-live smoke test before the release is cut -- both stay
-unchecked until that happens.
+C61-C63 done, ready to commit. Grew from 3 planned items to 5: getting
+the app actually deployable surfaced two real blockers, each its own
+commit rather than a footnote --
+`models/*.joblib` had to move from gitignored to committed (Streamlit
+Cloud has no build step), and the first real deploy attempt genuinely
+failed (`ModuleNotFoundError: No module named 'fastapi'`), which is
+exactly the kind of finding this project's "verify, don't just write"
+rule exists to catch. C64/C65 need a manual step (the actual Streamlit
+Cloud deploy) only the repo owner can do, then a confirmed-live smoke
+test before the release is cut -- both stay unchecked until that
+happens.
 
 - [x] **C61** `chore: add Dockerfile and package_model.py`
   `Dockerfile`, `.dockerignore`, `scripts/package_model.py`, `Makefile` (+`package`/`docker-run` targets) -- champions train *inside* the image build for full reproducibility (Section 26). Not build-tested locally (Docker isn't installed on this machine) -- flagged to the user, `make docker-build` should be run and checked before trusting it.
 - [x] **C62** `chore: commit model artifacts for zero-build Streamlit Cloud deployment`
   `.gitignore` (`models/*.joblib` un-ignored), `models/*.joblib`, `requirements.txt` (locked via `uv export`), refreshed `reports/experiments/*.json` + `reports/monitoring/monitoring_report.json` (retrained/recalibrated/re-evaluated/re-monitored fresh against current HEAD -- every real number identical to the previous run, confirming full determinism once more), `docs/RUNBOOK.md` (precise deploy steps)
-- [ ] **C63** `chore: deploy to Streamlit Community Cloud and add smoke tests` -- pending manual deploy
-- [ ] **C64** `chore: cut v1.0.0 release, update CHANGELOG and README with final results` -- pending C63
+- [x] **C63** `fix: consolidate optional dependency groups for Streamlit Cloud deployment`
+  `pyproject.toml` (`ml`/`api`/`app` extras collapsed into `dependencies`, `joblib` made explicit instead of relying on it arriving transitively), `uv.lock`, `requirements.txt` (regenerated, no hashes/no local project line), `app/Home.py` (adds `src/` to `sys.path` explicitly), `Dockerfile`/`Makefile`/`ci.yml`/`security.yml` (drop the now-nonexistent `--extra` flags), `docs/RUNBOOK.md` + `docs/adr/0013-zero-cost-deployment.md` (the real incident, documented) -- **real finding**: the first actual deploy attempt failed with `ModuleNotFoundError: No module named 'fastapi'`; root-caused and fixed, verified locally end to end again afterward (293 tests, full 6-page Playwright pass)
+- [ ] **C64** `chore: deploy to Streamlit Community Cloud and add smoke tests` -- pending manual deploy
+- [ ] **C65** `chore: cut v1.0.0 release, update CHANGELOG and README with final results` -- pending C64
 
 **→ PR #14 "Deployment & v1.0.0 release", tag `v1.0.0`**
 
@@ -363,7 +367,7 @@ unchecked until that happens.
 
 ## Running totals
 
-- **Commits:** 64 planned across 15 sessions — inside the 30 (minimum) to
+- **Commits:** 65 planned across 15 sessions — inside the 30 (minimum) to
   85 (stretch) range from Section 43, biased toward the upper-middle
   because the foundation, anti-leakage, calibration, evaluation, and
   monitoring phases legitimately needed more granularity than the minimum
@@ -385,7 +389,8 @@ unchecked until that happens.
 
 ## Next action
 
-Commit C61–C62, then the repo owner deploys to Streamlit Community
-Cloud by hand (`docs/RUNBOOK.md` Section 3 has the exact steps) — once
-it's live, come back to smoke-test it (C63) and cut the v1.0.0 release
-(C64). This is the last remaining work in the whole roadmap.
+Commit C63 (the dependency-consolidation fix), then the repo owner
+retries the Streamlit Community Cloud deploy (`docs/RUNBOOK.md` Section
+3) — once it's live, come back to smoke-test it (C64) and cut the
+v1.0.0 release (C65). This is the last remaining work in the whole
+roadmap.

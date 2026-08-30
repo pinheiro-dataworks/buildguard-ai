@@ -99,3 +99,19 @@ alerts in place (Section 31).
 - If a future need genuinely requires a paid service, that is a decision
   to make explicitly and document in a new ADR -- not a silent drift away
   from this one.
+
+**Real deployment incident (first live attempt, Session O):** the app
+failed at import with `ModuleNotFoundError: No module named 'fastapi'`.
+Streamlit Community Cloud installs from `pyproject.toml` when it decides
+to skip `requirements.txt`, and a plain `pip install .` only pulls
+`[project.dependencies]`, never optional extras -- `fastapi`/`streamlit`/
+`scikit-learn`/etc. were split into `ml`/`api`/`app` optional groups at
+the time (a Session A decision to add dependencies incrementally per
+phase, never revisited once every phase existed simultaneously in one
+deployed app). Fixed by collapsing all of them into `dependencies`
+directly, and by having `app/Home.py` add `src/` to `sys.path` explicitly
+rather than assuming `buildguard` ends up importable via whatever install
+path Streamlit Cloud happens to choose. The lesson generalizes: a
+dependency-group split that made sense for incremental development
+stops being safe the moment a single deployed entrypoint needs all of
+the groups at once.

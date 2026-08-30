@@ -15,6 +15,14 @@ Section 33's suggested `pages/` -- that literal directory name triggers
 Streamlit's legacy auto-discovery regardless of navigation approach,
 confirmed empirically: it produced a second, unstyled nav list stacked on
 top of this one). Each file exposes a single `render()` function.
+
+`src/` is added to `sys.path` explicitly (not relying on `buildguard`
+being pip-installed) because Streamlit Community Cloud has no build step
+of its own -- it can install from `requirements.txt`, `pyproject.toml`,
+or both depending on what it finds, and a `pyproject.toml`-only install
+(`pip install .`) only pulls this project's core dependencies, never the
+`ml`/`api`/`app` extras every page here actually needs. Never assume
+`buildguard` is importable "for free"; this makes it importable either way.
 """
 
 from __future__ import annotations
@@ -23,8 +31,10 @@ import sys
 from pathlib import Path
 
 APP_DIR = Path(__file__).resolve().parent
-if str(APP_DIR) not in sys.path:
-    sys.path.insert(0, str(APP_DIR))
+SRC_DIR = APP_DIR.parent / "src"
+for path in (APP_DIR, SRC_DIR):
+    if str(path) not in sys.path:
+        sys.path.insert(0, str(path))
 
 import streamlit as st  # noqa: E402
 

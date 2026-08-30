@@ -20,7 +20,7 @@ jobs:
         uses: astral-sh/setup-uv@v3
 
       - name: Sync environment
-        run: uv sync --python 3.11 --extra dev --extra ml --extra api --extra app
+        run: uv sync --python 3.11 --extra dev
 
       # Run inside the project's own synced environment (`uv run --with`),
       # not an isolated `uvx` env, so the scan sees the actual dependency

@@ -303,3 +303,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   a locked `requirements.txt` — Streamlit Community Cloud has no build
   step, so these have to already be in the repo for the deployed app to
   work at all.
+
+### Fixed
+
+- First live Streamlit Community Cloud deploy attempt failed with
+  `ModuleNotFoundError: No module named 'fastapi'`. Cause: Streamlit
+  Cloud can install from `pyproject.toml` instead of `requirements.txt`,
+  and `pip install .` only pulls core dependencies — `fastapi`/
+  `streamlit`/`scikit-learn`/etc. were sitting in optional `ml`/`api`/
+  `app` groups. Fixed by collapsing them into `dependencies` directly
+  and having `app/Home.py` add `src/` to `sys.path` explicitly.
