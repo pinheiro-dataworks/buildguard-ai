@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/brand/logo_renan_ds.png" alt="renan DS" width="220">
+</p>
+
 # BuildGuard AI
 
 **Production-oriented ML platform for construction cost-overrun and

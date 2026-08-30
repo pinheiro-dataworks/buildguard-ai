@@ -80,20 +80,38 @@ def inject_css() -> None:
             color: {SIDEBAR_TEXT} !important;
             font-weight: 700;
         }}
+        .bg-sidebar-logo {{
+            text-align: center;
+            margin: 0.2rem 0 0.4rem 0;
+        }}
+        .bg-sidebar-logo img {{
+            max-width: 140px;
+            width: 100%;
+            height: auto;
+        }}
         .bg-sidebar-title {{
             color: {SIDEBAR_TEXT};
             font-size: 1.15rem;
             font-weight: 800;
+            text-align: center;
             margin: 0.3rem 0 1.1rem 0;
         }}
         .bg-sidebar-footer {{
             color: {SIDEBAR_TEXT_DIM};
             font-size: 0.78rem;
             line-height: 1.6;
+            text-align: center;
         }}
         .bg-sidebar-footer a {{
             color: {SIDEBAR_TEXT_DIM};
             text-decoration: underline;
+        }}
+        /* The logo is now a plain <img>, not st.image, specifically to
+           avoid this -- but keep it belt-and-suspenders in case any
+           other sidebar image is ever added with st.image(). */
+        [data-testid="stSidebar"] [data-testid="StyledFullScreenButton"],
+        [data-testid="stSidebar"] button[title="View fullscreen"] {{
+            display: none;
         }}
         .bg-card {{
             background-color: {SURFACE};

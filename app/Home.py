@@ -27,6 +27,7 @@ or both depending on what it finds, and a `pyproject.toml`-only install
 
 from __future__ import annotations
 
+import base64
 import sys
 from pathlib import Path
 
@@ -69,9 +70,20 @@ PAGES = {
 if "active_page" not in st.session_state:
     st.session_state["active_page"] = next(iter(PAGES))
 
+LOGO_PATH = APP_DIR.parent / "assets" / "brand" / "logo_renan_ds.png"
+LOGO_B64 = base64.b64encode(LOGO_PATH.read_bytes()).decode("ascii")
+
 with st.sidebar:
-    st.image(str(APP_DIR.parent / "assets" / "brand" / "logo_renan_ds.png"), width=140)
-    st.markdown('<div class="bg-sidebar-title">BuildGuard AI</div>', unsafe_allow_html=True)
+    # A plain <img> via st.markdown, not st.image() -- st.image() renders
+    # its own hover-to-fullscreen control, which has no place on a brand
+    # logo (and isn't controllable via an st.image() parameter). This
+    # also centers naturally under the CSS below, which a bare st.image()
+    # does not.
+    st.markdown(
+        f'<div class="bg-sidebar-logo"><img src="data:image/png;base64,{LOGO_B64}" alt="renan DS"></div>'
+        '<div class="bg-sidebar-title">BuildGuard AI</div>',
+        unsafe_allow_html=True,
+    )
 
     for page_name in PAGES:
         is_active = st.session_state["active_page"] == page_name
@@ -86,7 +98,8 @@ with st.sidebar:
 
     st.markdown("<div style='min-height:3rem;'></div>", unsafe_allow_html=True)
     st.markdown(
-        f'<div class="bg-sidebar-footer">v{buildguard.__version__}<br>'
+        '<div class="bg-sidebar-footer">Developed by Renan Pinheiro<br>'
+        f"v{buildguard.__version__}<br>"
         f'<a href="{theme.GITHUB_URL}" target="_blank">GitHub</a></div>',
         unsafe_allow_html=True,
     )
