@@ -280,3 +280,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   approach — confirmed empirically, not assumed); and every other
   API/UI boundary decision, with real findings from the verification
   pass.
+- Integration tests (`tests/integration/test_pipeline_integration.py`):
+  raw `data/sample/` CSVs → contracts → `build_feature_table` → real
+  trained champions, end to end. 10 tests, all passing against the
+  actual committed sample data.
+- CI (`.github/workflows/ci.yml`): lint, format check, and mypy in one
+  job; train + calibrate + full test suite with an 85% coverage gate in
+  another. Real run: 293 tests, 98% coverage.
+- Security scanning (`.github/workflows/security.yml`): `pip-audit` and
+  `bandit`, weekly plus on every push/PR. One known CVE
+  (`cryptography` < 50, pinned by `mlflow` itself) is explicitly ignored
+  with a documented reason — BuildGuard never touches the vulnerable
+  code path (MLflow's Databricks integration).

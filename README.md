@@ -13,7 +13,8 @@ explainability, deployed at zero recurring cost.
 > [`CHANGELOG.md`](CHANGELOG.md) for what currently exists versus what is
 > planned.
 
-[![CI](https://img.shields.io/badge/CI-not_yet_configured-lightgrey)]()
+[![CI](https://github.com/pinheiro-dataworks/buildguard-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/pinheiro-dataworks/buildguard-ai/actions/workflows/ci.yml)
+[![Security](https://github.com/pinheiro-dataworks/buildguard-ai/actions/workflows/security.yml/badge.svg)](https://github.com/pinheiro-dataworks/buildguard-ai/actions/workflows/security.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)]()
 

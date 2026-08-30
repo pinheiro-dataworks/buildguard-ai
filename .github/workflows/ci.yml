@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    name: Lint, format, type-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Sync environment
+        run: uv sync --python 3.11 --extra dev --extra ml --extra api --extra app
+
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+      - name: Mypy strict
+        run: uv run mypy src
+
+  test:
+    name: Train, calibrate, test (coverage gate)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Sync environment
+        run: uv sync --python 3.11 --extra dev --extra ml --extra api --extra app
+
+      # Tests exercise the real trained/calibrated champions (API contract
+      # tests, integration tests) -- not mocks -- so both must run first.
+      - name: Train champion models
+        run: uv run python scripts/train.py
+
+      - name: Calibrate probabilities and optimize thresholds
+        run: uv run python scripts/calibrate.py
+
+      - name: Run test suite with an 85% coverage gate (Section 54)
+        run: uv run pytest --cov=src/buildguard --cov-report=term-missing --cov-fail-under=85

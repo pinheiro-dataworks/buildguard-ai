@@ -14,13 +14,13 @@ match reality — this document follows the work, not the other way around.
 Check off an item (`- [x]`) once it is actually committed. Update the
 **Progress** line at the top after every session.
 
-**Progress:** 51 / 63 planned commits actually committed (C49–C54 code is
-written, tested, and verified end-to-end -- API contract tests plus a
-real headless-browser pass across all six Streamlit pages -- ready to
-commit) · 0 / 14 PRs opened · Phase 0-8 complete (data, features,
-leakage-safe split, baselines, advanced modeling, calibration/threshold/
-uncertainty, explainability/evaluation/failure analysis, monitoring/
-retraining policy, API + Streamlit app).
+**Progress:** 54 / 63 planned commits actually committed (C55–C57 code is
+written and verified -- CI/security workflows checked locally against
+the exact commands GitHub Actions will run -- ready to commit) · 0 / 14
+PRs opened · Phase 0-9 complete (data, features, leakage-safe split,
+baselines, advanced modeling, calibration/threshold/uncertainty,
+explainability/evaluation/failure analysis, monitoring/retraining
+policy, API + Streamlit app, testing/CI/CD hardening).
 
 ---
 
@@ -44,7 +44,7 @@ earlier ones (e.g. no modeling before the temporal split exists).
 | J — Explainability & error analysis | 6 | #10 Explainability & error analysis | ✅ Done (uncommitted, ready to commit) |
 | K — Monitoring & retraining policy | 7 | #11 Monitoring | ✅ Done (uncommitted, ready to commit) |
 | L — API & Streamlit app | 8 | #7 FastAPI service + #8 Streamlit UI | ✅ Done (uncommitted, ready to commit) |
-| M — Testing hardening & CI/CD | 9 | #12 Testing hardening & CI/CD | ⬜ Not started |
+| M — Testing hardening & CI/CD | 9 | #12 Testing hardening & CI/CD | ✅ Done (uncommitted, ready to commit) |
 | N — Documentation completion | 9 | #13 Documentation completion | ⬜ Not started |
 | O — Deployment & v1.0.0 release | 10–11 | #14 Deployment & v1.0.0 release | ⬜ Not started |
 
@@ -302,9 +302,14 @@ count is unchanged (still 6, C49-C54).
 
 ## Session M — Testing Hardening & CI/CD (Phase 9)
 
-- [ ] **C55** `test: add integration tests (raw → validation → features → prediction)`
-- [ ] **C56** `ci: add GitHub Actions pipeline (lint, format, type-check, test, coverage gate)`
-- [ ] **C57** `security: add dependency and secret scanning (pip-audit, Bandit)`
+Done, ready to commit. Matches the original 3-item plan exactly.
+
+- [x] **C55** `test: add integration tests (raw → validation → features → prediction)`
+  `tests/integration/test_pipeline_integration.py` -- 10 tests against the committed `data/sample/` CSVs and the real trained champions, not synthetic-generator output
+- [x] **C56** `ci: add GitHub Actions pipeline (lint, format, type-check, test, coverage gate)`
+  `.github/workflows/ci.yml`, `README.md` (real CI badge) -- two parallel jobs: quality (ruff/mypy) and test (train → calibrate → pytest, 85% coverage gate). Real local run: 293 tests, 98% coverage
+- [x] **C57** `security: add dependency and secret scanning (pip-audit, Bandit)`
+  `.github/workflows/security.yml` -- weekly + on push/PR. One real finding: a `cryptography` CVE pinned below the fix by `mlflow` itself, in a Databricks-integration code path this project never uses -- ignored with a documented reason, not silently
 
 **→ PR #12 "Testing hardening & CI/CD"**
 
@@ -349,7 +354,6 @@ count is unchanged (still 6, C49-C54).
 
 ## Next action
 
-Commit **C49–C54** now (Session L), open PR #7 and PR #8, then start
-Session M (testing hardening & CI/CD) -- the app and API are real and
-verified, but there is still no GitHub Actions pipeline actually gating
-merges on lint/test/type-check.
+Commit **C55–C57** now (Session M), open PR #12, then start Session N
+(documentation completion) -- model card, runbook, limitations, and
+interview guide are still missing.
