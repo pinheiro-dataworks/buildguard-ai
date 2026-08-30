@@ -1,0 +1,42 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly, independent of any code change -- new CVEs get published
+    # against dependencies that haven't themselves changed.
+    - cron: "0 6 * * 1"
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Sync environment
+        run: uv sync --python 3.11 --extra dev --extra ml --extra api --extra app
+
+      # Run inside the project's own synced environment (`uv run --with`),
+      # not an isolated `uvx` env, so the scan sees the actual dependency
+      # set this project ships -- not scanning tools themselves aren't
+      # added as project dependencies.
+      #
+      # PYSEC-2026-3552 (cryptography < 50.0.0) is ignored deliberately,
+      # not silently: mlflow==3.15.1 itself pins `cryptography<50`
+      # (confirmed via `uv lock --upgrade-package cryptography --verbose`),
+      # so upgrading is blocked upstream, not by this project. The
+      # vulnerable path is mlflow's optional Databricks-SDK integration
+      # (mlflow -> databricks-sdk -> google-auth -> cryptography), which
+      # BuildGuard AI never exercises -- MLflow here only ever uses the
+      # local SQLite tracking backend. Revisit once mlflow relaxes the cap.
+      - name: Dependency vulnerability scan (pip-audit)
+        run: uv run --with pip-audit pip-audit --ignore-vuln PYSEC-2026-3552
+
+      - name: Static security scan (Bandit)
+        run: uv run --with bandit bandit -r src scripts app -ll
