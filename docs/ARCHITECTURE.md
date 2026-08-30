@@ -414,11 +414,35 @@ couldn't (see ADR-0012).
 Full rationale and every alternative considered:
 [ADR-0012](adr/0012-streamlit-fastapi-boundary.md).
 
-## 14. What's not built yet
+## 14. Testing, CI/CD, and documentation (Section 26/33/38/54)
 
-Testing hardening (CI/CD), full documentation completion (model card,
-runbook, limitations), and deployment are still pending -- see
-[`BUILDGUARD_AI_COMMIT_PLAN.md`](../BUILDGUARD_AI_COMMIT_PLAN.md) for the
-session-by-session plan and [`BUILDGUARD_AI_PROJECT_SCOPE.md`](../BUILDGUARD_AI_PROJECT_SCOPE.md)
-Section 45 for the full roadmap. This document will grow a section for
-each as it lands.
+**Integration tests** (`tests/integration/test_pipeline_integration.py`):
+the real pipeline end to end -- raw `data/sample/` CSVs -> contract
+validation -> `build_feature_table` -> the actual trained champions --
+rather than each stage tested only in isolation.
+
+**CI** (`.github/workflows/ci.yml`): two parallel jobs, `quality`
+(`ruff check`, `ruff format --check`, `mypy src`) and `test` (`make
+train && make calibrate`, then the full suite with an 85% coverage gate,
+Section 54). **Security** (`security.yml`): `pip-audit` and `bandit`,
+weekly plus every push/PR -- one real, documented exception (a
+`cryptography` CVE pinned below the fix by `mlflow` itself, on a
+Databricks-integration code path this project never exercises).
+
+**Documentation set** (Section 38): every file now exists --
+[`MODEL_CARD.md`](MODEL_CARD.md), [`LIMITATIONS.md`](LIMITATIONS.md),
+[`RUNBOOK.md`](RUNBOOK.md), and [`INTERVIEW_GUIDE.md`](INTERVIEW_GUIDE.md)
+complete the set alongside `ARCHITECTURE.md`/`DATA_DICTIONARY.md`/
+`DATA_PRIVACY.md`/`LEAKAGE_POLICY.md`/`MONITORING.md` from earlier
+sessions. [ADR-0013](adr/0013-zero-cost-deployment.md) documents the
+zero-cost deployment path formally (GitHub Actions + Streamlit Community
+Cloud + local SQLite MLflow, no paid database/model endpoint/LLM/
+monitoring SaaS), closing the gap Section 39's minimum ADR set flagged.
+
+## 15. What's not built yet
+
+Deployment itself (Session O: Dockerfile, Streamlit Community Cloud
+deploy, `v1.0.0` release/tag) is the one remaining phase -- see
+[`BUILDGUARD_AI_COMMIT_PLAN.md`](../BUILDGUARD_AI_COMMIT_PLAN.md) for
+the session-by-session plan and [`BUILDGUARD_AI_PROJECT_SCOPE.md`](../BUILDGUARD_AI_PROJECT_SCOPE.md)
+Section 45 for the full roadmap.

@@ -170,32 +170,10 @@ out-of-distribution rows, largest regression errors) in
 [`reports/error_analysis/`](reports/error_analysis/); full numbers in
 [`reports/experiments/test_set_metrics.json`](reports/experiments/test_set_metrics.json).
 
-## 11. Monitoring & Retraining
-
-Implemented, not just documented (Section 23): data quality, data/prediction
-drift (PSI + KS test + Wasserstein distance), performance-drop and
-calibration-deterioration comparisons, and real (measured, not simulated)
-inference latency, all run against the actual portfolio and champions
-(`monitoring/`, `scripts/monitor.py`, `make monitor`). **Real results:**
-0 data-quality violations across 400 projects / 11,953 snapshots / 897
-change orders; 10 of 23 features significantly drifted between train and
-test (the expected signature of the chronological split, not a defect —
-see below); `schedule_delay` fired all three computed retraining triggers
-(PSI, performance drop, calibration deterioration) despite negligible
-prediction drift — caught only because performance monitoring uses labels
-and drift detection does not. Inference latency: p95 20.8ms / 5.6ms /
-0.03ms for cost-overrun / schedule-delay / final-cost, well under Section
-49's 500ms target. **Never auto-retrains** — the retraining policy
-(Section 24: Detect → Investigate → Validate → Retrain → Compare → Approve
-→ Release) is enforced structurally: `scripts/monitor.py` has no code path
-that calls `scripts/train.py`. Full rationale and results:
-[ADR-0011](docs/adr/0011-monitoring-drift-detection.md) and
-[`docs/MONITORING.md`](docs/MONITORING.md).
-
-## 12. Business Impact
+## 11. Business Impact
 *(Scenario-based estimated decision-support value — to be documented.)*
 
-## 13. Architecture
+## 12. Architecture
 
 Zero-cost public path: GitHub → GitHub Actions (lint/test/type-check) →
 Streamlit Community Cloud, serving the app, packaged model, and in-process
@@ -216,7 +194,27 @@ one prediction code path shared with the API. Verified with a real
 headless-browser pass across every page, not just import-level checks.
 Full design rationale: [ADR-0012](docs/adr/0012-streamlit-fastapi-boundary.md).
 
-## 14. How to Run
+**Monitoring** (`monitoring/`, `scripts/monitor.py`, `make monitor`,
+Section 23): data quality, data/prediction drift (PSI + KS test +
+Wasserstein distance), performance-drop and calibration-deterioration
+comparisons, and real (measured, not simulated) inference latency, all
+run against the actual portfolio and champions. **Real results:** 0
+data-quality violations across 400 projects / 11,953 snapshots / 897
+change orders; 10 of 23 features significantly drifted between train and
+test (the expected signature of the chronological split, not a defect);
+`schedule_delay` fired all three computed retraining triggers (PSI,
+performance drop, calibration deterioration) despite negligible
+prediction drift — caught only because performance monitoring uses
+labels and drift detection does not. Inference latency: p95 20.8ms /
+5.6ms / 0.03ms for cost-overrun / schedule-delay / final-cost, well
+under Section 49's 500ms target. **Never auto-retrains** — the
+retraining policy (Section 24: Detect → Investigate → Validate →
+Retrain → Compare → Approve → Release) is enforced structurally:
+`scripts/monitor.py` has no code path that calls `scripts/train.py`.
+Full rationale and results: [ADR-0011](docs/adr/0011-monitoring-drift-detection.md)
+and [`docs/MONITORING.md`](docs/MONITORING.md).
+
+## 13. How to Run
 
 ```bash
 git clone <repo-url>
@@ -234,12 +232,16 @@ make app       # run the Streamlit app locally
 
 Requires Python 3.11 and [`uv`](https://docs.astral.sh/uv/).
 
-## 15. Limitations
+## 14. Limitations
 
-Documented in [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) as they are
-identified through slice analysis and failure-mode review — never hidden.
+Full list in [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md), identified
+through slice analysis and failure-mode review — never hidden. Headline
+items: synthetic data only, no real-world validation yet;
+`cost_overrun`'s `ES`-state subgroup scores near-random (AUC 0.597 vs.
+0.9495 global); `schedule_delay`'s calibration degrades out-of-sample
+(Brier 0.059 → 0.145).
 
-## 16. Future Improvements
+## 15. Future Improvements
 
 Tracked as GitHub issues against the roadmap in
 [`BUILDGUARD_AI_PROJECT_SCOPE.md`](BUILDGUARD_AI_PROJECT_SCOPE.md) Section 45.
