@@ -298,3 +298,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Fixed the README drifting to 16 sections — folded "Monitoring &
   Retraining" back into "Architecture" per Section 40's 15-section
   structure.
+- `Dockerfile` and `scripts/package_model.py` (Section 25/32/33).
+- Champion models are now committed (`models/*.joblib`, ~6MB) along with
+  a locked `requirements.txt` — Streamlit Community Cloud has no build
+  step, so these have to already be in the repo for the deployed app to
+  work at all.

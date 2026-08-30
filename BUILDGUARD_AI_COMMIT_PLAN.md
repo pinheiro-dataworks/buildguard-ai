@@ -22,14 +22,12 @@ committed work, not actual GitHub pull requests.
 Check off an item (`- [x]`) once it is actually committed. Update the
 **Progress** line at the top after every session.
 
-**Progress:** 57 / 63 planned commits actually committed · 13 / 14
-PR labels assigned to committed work (no real GitHub PRs opened, by
-choice -- see note above) · Phase 0-9 complete, documentation set
-complete (data, features, leakage-safe split, baselines, advanced
-modeling, calibration/threshold/uncertainty, explainability/evaluation/
-failure analysis, monitoring/retraining policy, API + Streamlit app,
-testing/CI/CD hardening, full docs/ADR set). Only Session O
-(deployment & v1.0.0 release) remains.
+**Progress:** 59 / 64 planned commits actually committed (Session O grew
+from 3 to 4 planned commits) · 13 / 14 PR labels assigned to committed
+work (no real GitHub PRs opened, by choice -- see note above) · Phase
+0-9 complete, documentation set complete. Session O's C63/C64 (actual
+Streamlit Cloud deploy, then the v1.0.0 tag) are the only remaining
+work, and both need a manual step from the repo owner first.
 
 ---
 
@@ -55,7 +53,7 @@ earlier ones (e.g. no modeling before the temporal split exists).
 | L — API & Streamlit app | 8 | #7 FastAPI service + #8 Streamlit UI | ✅ Committed (C49–C54) |
 | M — Testing hardening & CI/CD | 9 | #12 Testing hardening & CI/CD | ✅ Committed (C55–C57) |
 | N — Documentation completion | 9 | #13 Documentation completion | ✅ Done (uncommitted, ready to commit) |
-| O — Deployment & v1.0.0 release | 10–11 | #14 Deployment & v1.0.0 release | ⬜ Not started |
+| O — Deployment & v1.0.0 release | 10–11 | #14 Deployment & v1.0.0 release | 🟡 In progress (C61-C62 committed; C63-C64 need a manual deploy) |
 
 ---
 
@@ -342,9 +340,22 @@ renumbered back to 15.
 
 ## Session O — Deployment & v1.0.0 Release (Phase 10–11)
 
-- [ ] **C61** `chore: add Dockerfile and package_model.py`
-- [ ] **C62** `chore: deploy to Streamlit Community Cloud and add smoke tests`
-- [ ] **C63** `chore: cut v1.0.0 release, update CHANGELOG and README with final results`
+C61-C62 done, ready to commit. Grew from 3 planned items to 4: getting
+the app actually deployable surfaced a real blocker mid-session --
+Streamlit Community Cloud has no build step (it just clones the repo and
+runs `app/Home.py`), so `models/*.joblib` had to move from gitignored to
+committed, which is its own real, separate decision from "add a
+Dockerfile" and gets its own commit. C63/C64 need a manual step (the
+actual Streamlit Cloud deploy) only the repo owner can do, then a
+confirmed-live smoke test before the release is cut -- both stay
+unchecked until that happens.
+
+- [x] **C61** `chore: add Dockerfile and package_model.py`
+  `Dockerfile`, `.dockerignore`, `scripts/package_model.py`, `Makefile` (+`package`/`docker-run` targets) -- champions train *inside* the image build for full reproducibility (Section 26). Not build-tested locally (Docker isn't installed on this machine) -- flagged to the user, `make docker-build` should be run and checked before trusting it.
+- [x] **C62** `chore: commit model artifacts for zero-build Streamlit Cloud deployment`
+  `.gitignore` (`models/*.joblib` un-ignored), `models/*.joblib`, `requirements.txt` (locked via `uv export`), refreshed `reports/experiments/*.json` + `reports/monitoring/monitoring_report.json` (retrained/recalibrated/re-evaluated/re-monitored fresh against current HEAD -- every real number identical to the previous run, confirming full determinism once more), `docs/RUNBOOK.md` (precise deploy steps)
+- [ ] **C63** `chore: deploy to Streamlit Community Cloud and add smoke tests` -- pending manual deploy
+- [ ] **C64** `chore: cut v1.0.0 release, update CHANGELOG and README with final results` -- pending C63
 
 **→ PR #14 "Deployment & v1.0.0 release", tag `v1.0.0`**
 
@@ -352,7 +363,7 @@ renumbered back to 15.
 
 ## Running totals
 
-- **Commits:** 63 planned across 15 sessions — inside the 30 (minimum) to
+- **Commits:** 64 planned across 15 sessions — inside the 30 (minimum) to
   85 (stretch) range from Section 43, biased toward the upper-middle
   because the foundation, anti-leakage, calibration, evaluation, and
   monitoring phases legitimately needed more granularity than the minimum
@@ -374,6 +385,7 @@ renumbered back to 15.
 
 ## Next action
 
-Commit C58–C60 (Session N), then start Session O (deployment & v1.0.0
-release) -- the last remaining phase: Dockerfile, `package_model.py`,
-the actual Streamlit Community Cloud deploy, and the tagged release.
+Commit C61–C62, then the repo owner deploys to Streamlit Community
+Cloud by hand (`docs/RUNBOOK.md` Section 3 has the exact steps) — once
+it's live, come back to smoke-test it (C63) and cut the v1.0.0 release
+(C64). This is the last remaining work in the whole roadmap.

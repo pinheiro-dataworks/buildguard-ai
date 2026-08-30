@@ -1,5 +1,5 @@
 {
-  "git_sha": "ec43690",
+  "git_sha": "042fb7b",
   "data_quality": {
     "projects": {
       "n_rows": 400,
@@ -473,25 +473,25 @@
       "n_predictions": 100,
       "n_errors": 0,
       "error_rate": 0.0,
-      "latency_p50_ms": 14.859099996101577,
-      "latency_p95_ms": 20.75906500176643,
-      "latency_p99_ms": 21.64784700100427
+      "latency_p50_ms": 30.086450002272613,
+      "latency_p95_ms": 37.17721000139136,
+      "latency_p99_ms": 38.75000699728844
     },
     "schedule_delay": {
       "n_predictions": 100,
       "n_errors": 0,
       "error_rate": 0.0,
-      "latency_p50_ms": 4.561800000374205,
-      "latency_p95_ms": 5.548195001028944,
-      "latency_p99_ms": 5.980884990276537
+      "latency_p50_ms": 9.544350010401104,
+      "latency_p95_ms": 11.279609988559969,
+      "latency_p99_ms": 11.87048099920503
     },
     "final_cost": {
       "n_predictions": 100,
       "n_errors": 0,
       "error_rate": 0.0,
-      "latency_p50_ms": 0.021900006686337292,
-      "latency_p95_ms": 0.02910500188590958,
-      "latency_p99_ms": 0.03604501209338198
+      "latency_p50_ms": 0.03929999365936965,
+      "latency_p95_ms": 0.05641000680043362,
+      "latency_p99_ms": 0.06969200447201744
     }
   },
   "retraining_triggers": [

@@ -50,8 +50,14 @@ data/external/**
 !data/external/README.md
 
 # ---- Models & large artifacts ----
+# The three champion joblib files ARE committed, deliberately (Section
+# 54: "packaged artifacts in-repo... when size permits" -- ~6MB total,
+# well under it). Streamlit Community Cloud deploys straight from this
+# repo with no build/training step (ADR-0013), so the deployed app has
+# no way to produce them itself -- only *.pkl/*.cbm/*.txt (formats this
+# project never actually produces) stay ignored, as a guard against
+# accidentally committing some other framework's model dump later.
 models/*.pkl
-models/*.joblib
 models/*.cbm
 models/*.txt
 !models/README.md

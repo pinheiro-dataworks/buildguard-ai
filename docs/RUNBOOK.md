@@ -44,17 +44,44 @@ otherwise every prediction endpoint/page returns a clean 503 /
 
 ## 3. Deployment (Streamlit Community Cloud — Section 31)
 
-Not yet done (Session O). Procedure once it is:
+Not yet done (Session O) — this is a manual step; Streamlit Community
+Cloud deployment requires a GitHub-authenticated dashboard session,
+which nothing running in this repo's automation has access to.
 
-1. Ensure `models/*.joblib` and `reports/experiments/calibration_summary.json`
-   are available to the deployed instance — either committed (small
-   enough per Section 49's <100MB target) or regenerated at startup via
-   `make train && make calibrate`.
-2. Point Streamlit Community Cloud at `app/Home.py` as the entrypoint.
-3. Confirm `GET /health` (if the API is also deployed) and the app's
-   Model Health page both load without error before announcing the link.
-4. Never deploy a paid tier or external database/model endpoint — the
-   zero-cost path (Section 31) is mandatory for the public demo.
+**Why this works with no build step:** Streamlit Community Cloud clones
+the repo and runs `app/Home.py` directly — it does not run `make train`/
+`make calibrate` first. `models/*.joblib` and
+`reports/experiments/calibration_summary.json` are therefore committed
+to the repo (deliberately, ~6MB total, Section 49's <100MB target) —
+without them, every prediction page would 503 on first load. A locked
+`requirements.txt` (`uv export --format requirements.txt --extra ml
+--extra api --extra app --no-dev`) is committed alongside `pyproject.toml`/
+`uv.lock` for platforms that don't resolve `uv.lock` natively.
+
+**Steps:**
+
+1. Push `main` with `models/*.joblib` and `requirements.txt` present
+   (already true as of this commit).
+2. Go to [share.streamlit.io](https://share.streamlit.io), sign in with
+   the GitHub account that owns this repo.
+3. "New app" → repository `pinheiro-dataworks/buildguard-ai`, branch
+   `main`, main file path `app/Home.py`.
+4. Deploy. First boot installs ~150 packages from `requirements.txt` —
+   expect a few minutes, not instant.
+5. Once live, open the app and click through all six pages once —
+   Executive Overview's portfolio batch-scoring is the slowest first
+   load (regenerates the demo portfolio in memory, `st.cache_data`
+   caches it after that).
+6. Confirm the Model Health and Model Performance pages render real
+   numbers (not a 503/`FileNotFoundError`) before sharing the link.
+7. Never upgrade to a paid tier or point at an external database/model
+   endpoint — the zero-cost path (Section 31,
+   [ADR-0013](adr/0013-zero-cost-deployment.md)) is mandatory for the
+   public demo.
+
+**Smoke test after deploying:** re-run the same Playwright check used to
+verify the app locally in Session L, pointed at the live URL instead of
+`localhost:8501`, checking each page loads and the console has no errors.
 
 ## 4. Responding to a monitoring alert
 
