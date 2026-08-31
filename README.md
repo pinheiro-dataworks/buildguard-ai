@@ -79,7 +79,17 @@ and the temporal train/calibration/test split are documented in
 [`docs/LEAKAGE_POLICY.md`](docs/LEAKAGE_POLICY.md).
 
 ## 6. Exploratory Data Analysis
-*(Notebooks under `notebooks/` — to be added.)*
+
+[`notebooks/02_eda.ipynb`](notebooks/02_eda.ipynb) — portfolio composition,
+budget and EVM-ratio (CPI/SPI) distributions, and realized outcome rates,
+run top-to-bottom against the deterministic synthetic portfolio (Section
+34). **Real findings:** CPI averages 0.86 (below the 1.0 on-plan line —
+this portfolio skews toward cost pressure by construction); CPI and SPI
+are only weakly correlated (r = 0.27), which is why cost-overrun and
+schedule-delay are modeled as two separate tasks rather than one combined
+label; 345 of 400 projects have already completed, and among those 47.0%
+overran cost and 50.4% ran behind schedule — both far from a rare-event
+base rate. Figures saved to [`reports/figures/`](reports/figures/).
 
 ## 7. Feature Engineering
 
@@ -176,7 +186,28 @@ out-of-distribution rows, largest regression errors) in
 [`reports/experiments/test_set_metrics.json`](reports/experiments/test_set_metrics.json).
 
 ## 11. Business Impact
-*(Scenario-based estimated decision-support value — to be documented.)*
+
+**Scenario-based estimated impact** (Section 21) — explicitly never a claim
+of realized savings:
+
+```
+active_projects × avg_financial_exposure × overrun_prevalence
+× model_recall × avoidable_impact_assumption
+= estimated_decision_support_value
+```
+
+Computed by `scripts/business_impact.py` (`make business-impact`) from
+real numbers — the current portfolio's 55 in-flight (unresolved) projects,
+their $18.9M average approved budget, the 47.0% cost-overrun prevalence
+measured on the 345 already-completed projects, and the cost-overrun
+model's real held-out test recall (97.4% @ threshold 0.080) — combined
+with one explicit, adjustable business assumption
+(`configs/business.yaml: business_impact.avoidable_impact_assumption`,
+30%: even a correctly flagged overrun isn't fully avoidable). **Result:
+$142.9M.** Every factor is shown wherever this number appears (README,
+Executive Overview page) precisely so the estimate can be recomputed or
+challenged, not taken on faith. Full numbers in
+[`reports/experiments/business_impact.json`](reports/experiments/business_impact.json).
 
 ## 12. Architecture
 

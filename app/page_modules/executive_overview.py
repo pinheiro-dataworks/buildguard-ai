@@ -6,7 +6,7 @@ import plotly.express as px
 import streamlit as st
 
 import theme
-from data_access import portfolio_latest_scores
+from data_access import load_json_report, portfolio_latest_scores
 
 
 def render() -> None:
@@ -80,6 +80,31 @@ def render() -> None:
         )
         fig.update_layout(showlegend=False, plot_bgcolor=theme.SURFACE, paper_bgcolor=theme.SURFACE)
         st.plotly_chart(fig, use_container_width=True)
+
+    st.subheader("Estimated decision-support value (Section 21)")
+    impact = load_json_report("experiments/business_impact.json")
+    if impact is not None:
+        st.markdown(
+            theme.kpi_card(
+                impact["label"],
+                f"${impact['estimated_decision_support_value'] / 1e6:,.1f}M",
+                "Never a claim of realized savings -- see the assumptions below",
+            ),
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            f'<div class="bg-disclaimer">Formula: active projects '
+            f"({impact['active_projects']}) x avg financial exposure "
+            f"(${impact['avg_financial_exposure'] / 1e6:,.1f}M) x overrun prevalence "
+            f"({impact['overrun_prevalence']:.1%}, measured on completed projects) x "
+            f"cost-overrun model recall ({impact['model_recall']:.1%}, held-out test) x "
+            f"avoidable-impact assumption ({impact['avoidable_impact_assumption']:.0%}, "
+            f"an explicit, adjustable business assumption -- not a measured "
+            f"quantity).</div>",
+            unsafe_allow_html=True,
+        )
+    else:
+        st.info("Run `make business-impact` to compute this scenario.")
 
     st.subheader("Highest cost-overrun-risk projects")
     top = scores.sort_values("cost_overrun_probability", ascending=False).head(10).copy()

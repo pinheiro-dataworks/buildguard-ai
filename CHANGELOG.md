@@ -303,6 +303,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   a locked `requirements.txt` — Streamlit Community Cloud has no build
   step, so these have to already be in the repo for the deployed app to
   work at all.
+- Live deploy confirmed at <https://buildguard-ai-renands.streamlit.app/>,
+  smoke-tested with the same Playwright check used locally in Session L.
+  **Real finding:** the live page's content sits inside a child iframe,
+  not the top-level document — selectors have to target that frame.
+- Sidebar polish: logo and project name centered, footer now credits
+  "Developed by Renan Pinheiro", and the logo is a plain `<img>` (not
+  `st.image()`) specifically to drop Streamlit's built-in
+  fullscreen-on-hover control, which has no place on a brand mark.
+- `notebooks/02_eda.ipynb` (Section 6/34): portfolio composition, budget
+  and EVM-ratio distributions, realized outcome rates — run top-to-bottom,
+  written conclusions included, figures committed to `reports/figures/`.
+  **Real findings:** CPI averages 0.86 (below the 1.0 on-plan line); CPI
+  and SPI are only weakly correlated (r = 0.27), supporting the decision
+  to model cost-overrun and schedule-delay as two separate tasks; of the
+  345 already-completed projects, 47.0% overran cost and 50.4% ran behind
+  schedule — both far from a rare-event base rate.
+- Business impact scenario (`src/buildguard/evaluation/business_impact.py`,
+  `scripts/business_impact.py`/`make business-impact`, Section 21): the
+  mandatory `active_projects × avg_financial_exposure × overrun_prevalence
+  × model_recall × avoidable_impact_assumption` formula, computed from the
+  real portfolio and the real held-out test recall, combined with one
+  explicit, adjustable business assumption
+  (`configs/business.yaml`). **Real result:** $142.9M, always shown with
+  every input factor alongside it and labeled "Scenario-based estimated
+  impact" — never a claimed realized saving. Surfaced on the Executive
+  Overview page and in the README.
 
 ### Fixed
 

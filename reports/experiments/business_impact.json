@@ -1,0 +1,10 @@
+{
+  "git_sha": "fa05df4",
+  "active_projects": 55,
+  "avg_financial_exposure": 18947164.486545455,
+  "overrun_prevalence": 0.46956521739130436,
+  "model_recall": 0.9736842105263158,
+  "avoidable_impact_assumption": 0.3,
+  "estimated_decision_support_value": 142936194.88053638,
+  "label": "Scenario-based estimated impact"
+}

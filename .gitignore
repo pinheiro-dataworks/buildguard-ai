@@ -74,6 +74,16 @@ reports/monitoring/*
 # reports/experiments/*.json summaries, unlike figures/metrics.
 !reports/monitoring/monitoring_report.json
 
+# 02_eda.ipynb's own figures: same reasoning -- small, real, and the
+# point of committing them is so a reviewer can see them without running
+# the notebook (which also embeds them inline for the same reason).
+!reports/figures/portfolio_composition.png
+!reports/figures/budget_distribution.png
+!reports/figures/cpi_spi_distribution.png
+!reports/figures/cpi_vs_spi.png
+!reports/figures/change_order_amounts.png
+!reports/figures/overrun_rate_by_type.png
+
 # ---- OS / editor ----
 .DS_Store
 Thumbs.db
