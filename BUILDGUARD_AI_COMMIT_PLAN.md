@@ -22,12 +22,15 @@ committed work, not actual GitHub pull requests.
 Check off an item (`- [x]`) once it is actually committed. Update the
 **Progress** line at the top after every session.
 
-**Progress:** 60 / 65 planned commits actually committed (Session O grew
-from 3 to 5 planned commits) · 13 / 14 PR labels assigned to committed
-work (no real GitHub PRs opened, by choice -- see note above) · Phase
-0-9 complete, documentation set complete. Session O's C64/C65 (actual
-Streamlit Cloud deploy, then the v1.0.0 tag) are the only remaining
-work, and both need a manual step from the repo owner first.
+**Progress:** 61 / 66 planned commits actually committed (Session O grew
+from 3 to 6: two real deploy blockers plus one unplanned post-deploy
+layout fix, each its own commit) · 13 / 14 PR labels assigned to
+committed work (no real GitHub PRs opened, by choice -- see note above)
+· Phase 0-9 complete, documentation set complete. The app is deployed
+and live at <https://buildguard-ai-renands.streamlit.app/>, smoke-tested
+clean. C64's docs update (recording the live URL and the smoke test) is
+ready to commit; C65 (the v1.0.0 tag) is the only thing left after that,
+and both still need a manual step from the repo owner.
 
 ---
 
@@ -358,7 +361,10 @@ happens.
   `.gitignore` (`models/*.joblib` un-ignored), `models/*.joblib`, `requirements.txt` (locked via `uv export`), refreshed `reports/experiments/*.json` + `reports/monitoring/monitoring_report.json` (retrained/recalibrated/re-evaluated/re-monitored fresh against current HEAD -- every real number identical to the previous run, confirming full determinism once more), `docs/RUNBOOK.md` (precise deploy steps)
 - [x] **C63** `fix: consolidate optional dependency groups for Streamlit Cloud deployment`
   `pyproject.toml` (`ml`/`api`/`app` extras collapsed into `dependencies`, `joblib` made explicit instead of relying on it arriving transitively), `uv.lock`, `requirements.txt` (regenerated, no hashes/no local project line), `app/Home.py` (adds `src/` to `sys.path` explicitly), `Dockerfile`/`Makefile`/`ci.yml`/`security.yml` (drop the now-nonexistent `--extra` flags), `docs/RUNBOOK.md` + `docs/adr/0013-zero-cost-deployment.md` (the real incident, documented) -- **real finding**: the first actual deploy attempt failed with `ModuleNotFoundError: No module named 'fastapi'`; root-caused and fixed, verified locally end to end again afterward (293 tests, full 6-page Playwright pass)
-- [ ] **C64** `chore: deploy to Streamlit Community Cloud and add smoke tests` -- pending manual deploy
+- [x] *(unplanned)* `fix: center sidebar logo/title, add name to footer, remove logo fullscreen button`
+  Post-deploy layout feedback from the live app: `app/theme.py` + `app/Home.py` (logo/title centered, `st.image()` swapped for a base64 `<img>` specifically to drop its built-in fullscreen-on-hover control, footer now reads "Developed by Renan Pinheiro"), `README.md` (logo added, centered, at the top)
+- [ ] **C64** `chore: deploy to Streamlit Community Cloud and add smoke tests` -- deployed and smoke-tested, docs update ready to commit
+  Live at <https://buildguard-ai-renands.streamlit.app/>. Smoke-tested with the same Playwright check from Session L, re-pointed at the live URL instead of `localhost:8501` -- **real finding**: the live page's actual content sits inside a child iframe (`<url>/~/+/`), not the top-level document, so selectors have to target that frame. All six pages render, the logo/footer fix holds in production, hovering the logo shows no fullscreen button, and the only console errors are two benign `404`s from Streamlit Cloud's own chrome (`/api/v2/user/details`, an anonymous-viewer auth check, not this app). `docs/RUNBOOK.md` and `README.md` updated with the live URL and the iframe finding.
 - [ ] **C65** `chore: cut v1.0.0 release, update CHANGELOG and README with final results` -- pending C64
 
 **→ PR #14 "Deployment & v1.0.0 release", tag `v1.0.0`**

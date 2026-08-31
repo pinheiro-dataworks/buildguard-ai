@@ -44,9 +44,10 @@ otherwise every prediction endpoint/page returns a clean 503 /
 
 ## 3. Deployment (Streamlit Community Cloud — Section 31)
 
-Not yet done (Session O) — this is a manual step; Streamlit Community
-Cloud deployment requires a GitHub-authenticated dashboard session,
-which nothing running in this repo's automation has access to.
+Live at <https://buildguard-ai-renands.streamlit.app/> (deployed Session O).
+Deploying itself is a manual step — Streamlit Community Cloud requires a
+GitHub-authenticated dashboard session, which nothing running in this
+repo's automation has access to.
 
 **Why this works with no build step:** Streamlit Community Cloud clones
 the repo and runs `app/Home.py` directly — it does not run `make train`/
@@ -94,6 +95,14 @@ assuming `buildguard` itself ends up importable. See Section 6 below.
 **Smoke test after deploying:** re-run the same Playwright check used to
 verify the app locally in Session L, pointed at the live URL instead of
 `localhost:8501`, checking each page loads and the console has no errors.
+Run against the live URL above — passed: all six pages render, the
+sidebar logo/footer fix holds in production, and hovering the logo shows
+no fullscreen button. One thing to know: the live page's actual content
+sits inside a child iframe (`<url>/~/+/`), not the top-level document —
+target that frame for selectors, not `page` directly. The only console
+errors seen are two `404`s from Streamlit Cloud's own chrome polling
+`/api/v2/user/details` to check for a logged-in viewer — that's the
+platform wrapper, not this app, and is expected for an anonymous visit.
 
 ## 4. Responding to a monitoring alert
 

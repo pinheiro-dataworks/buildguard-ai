@@ -21,6 +21,7 @@ explainability, deployed at zero recurring cost.
 [![Security](https://github.com/pinheiro-dataworks/buildguard-ai/actions/workflows/security.yml/badge.svg)](https://github.com/pinheiro-dataworks/buildguard-ai/actions/workflows/security.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)]()
+[![Live app](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://buildguard-ai-renands.streamlit.app/)
 
 ---
 
