@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-08-30
+
+First public release. Live at
+<https://buildguard-ai-renands.streamlit.app/>. Everything below built up
+to this point, one phase at a time — full details in `git log` and
+`BUILDGUARD_AI_COMMIT_PLAN.md`.
+
 ### Added
 - Repository foundation: full project layout, `pyproject.toml` (uv-managed,
   Ruff + Mypy strict + Pytest configured), `Makefile`, governance files

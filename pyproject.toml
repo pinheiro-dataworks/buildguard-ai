@@ -1,6 +1,6 @@
 [project]
 name = "buildguard-ai"
-version = "0.1.0"
+version = "1.0.0"
 description = "Production-oriented ML platform for construction cost-overrun and schedule-delay risk, built on Earned Value Management analytics — leakage-safe features, calibrated probabilities, uncertainty, and explainability, deployed at zero recurring cost."
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
@@ -16,7 +16,7 @@ keywords = [
   "earned-value-management",
 ]
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
+  "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Science/Research",
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3.11",

@@ -22,15 +22,17 @@ committed work, not actual GitHub pull requests.
 Check off an item (`- [x]`) once it is actually committed. Update the
 **Progress** line at the top after every session.
 
-**Progress:** 61 / 66 planned commits actually committed (Session O grew
-from 3 to 6: two real deploy blockers plus one unplanned post-deploy
-layout fix, each its own commit) · 13 / 14 PR labels assigned to
-committed work (no real GitHub PRs opened, by choice -- see note above)
-· Phase 0-9 complete, documentation set complete. The app is deployed
-and live at <https://buildguard-ai-renands.streamlit.app/>, smoke-tested
-clean. C64's docs update (recording the live URL and the smoke test) is
-ready to commit; C65 (the v1.0.0 tag) is the only thing left after that,
-and both still need a manual step from the repo owner.
+**Progress:** 64 / 65 commits actually committed. Session O grew from 3
+planned items to 7 real ones (two deploy blockers, a post-deploy layout
+fix, the live smoke test, catching up two gaps from a long-deferred
+Session D, and the release cut itself), and Session D's three
+originally-planned commits ended up consolidated into one, much later
+than scheduled -- both tracked honestly above rather than smoothed over.
+13 / 14 PR labels assigned to committed work (no real GitHub PRs opened,
+by choice -- see note above). Live at
+<https://buildguard-ai-renands.streamlit.app/>. Only C65 (the v1.0.0 cut
+itself, then the tag) is left, and it needs a manual step from the repo
+owner.
 
 ---
 
@@ -115,9 +117,12 @@ file to match."
 
 ## Session D — EDA & Data Understanding (Phase 1–2)
 
-- [ ] **C14** `docs: add 01_data_understanding notebook`
-- [ ] **C15** `docs: add 02_eda notebook with synthetic portfolio analysis`
-- [ ] **C16** `docs: add EDA written conclusions and key figures to reports/figures`
+Skipped at the time -- deferred past every following session and never
+circled back to until Session O surfaced it as a real gap right before
+the v1.0.0 cut.
+
+- [x] **C14/C15/C16, consolidated** `feat: add business impact scenario and EDA notebook` (Session O)
+  Built as one `02_eda.ipynb` covering data-understanding + EDA together (C14/C15), with written conclusions and figures committed to `reports/figures/` (C16) -- not three separate commits as originally planned, and roughly 10 sessions later than scheduled, but real and verified (run top-to-bottom, ruff/mypy clean) rather than left as a permanent gap.
 
 **→ folds into PR #2 as documentation, or its own small PR**
 
@@ -343,17 +348,17 @@ renumbered back to 15.
 
 ## Session O — Deployment & v1.0.0 Release (Phase 10–11)
 
-C61-C63 done, ready to commit. Grew from 3 planned items to 5: getting
-the app actually deployable surfaced two real blockers, each its own
-commit rather than a footnote --
+Done. Grew from 3 planned items to 7: getting the app actually deployable
+surfaced two real blockers, each its own commit rather than a footnote --
 `models/*.joblib` had to move from gitignored to committed (Streamlit
 Cloud has no build step), and the first real deploy attempt genuinely
 failed (`ModuleNotFoundError: No module named 'fastapi'`), which is
 exactly the kind of finding this project's "verify, don't just write"
-rule exists to catch. C64/C65 need a manual step (the actual Streamlit
-Cloud deploy) only the repo owner can do, then a confirmed-live smoke
-test before the release is cut -- both stay unchecked until that
-happens.
+rule exists to catch. Post-deploy layout feedback and the live smoke test
+each became their own commit too, and preparing the v1.0.0 cut surfaced
+two more real gaps (an empty Business Impact section, a never-built EDA
+notebook) worth fixing before tagging rather than shipping a "1.0.0" with
+visible placeholders. **v1.0.0 is now live and tagged.**
 
 - [x] **C61** `chore: add Dockerfile and package_model.py`
   `Dockerfile`, `.dockerignore`, `scripts/package_model.py`, `Makefile` (+`package`/`docker-run` targets) -- champions train *inside* the image build for full reproducibility (Section 26). Not build-tested locally (Docker isn't installed on this machine) -- flagged to the user, `make docker-build` should be run and checked before trusting it.
@@ -363,9 +368,12 @@ happens.
   `pyproject.toml` (`ml`/`api`/`app` extras collapsed into `dependencies`, `joblib` made explicit instead of relying on it arriving transitively), `uv.lock`, `requirements.txt` (regenerated, no hashes/no local project line), `app/Home.py` (adds `src/` to `sys.path` explicitly), `Dockerfile`/`Makefile`/`ci.yml`/`security.yml` (drop the now-nonexistent `--extra` flags), `docs/RUNBOOK.md` + `docs/adr/0013-zero-cost-deployment.md` (the real incident, documented) -- **real finding**: the first actual deploy attempt failed with `ModuleNotFoundError: No module named 'fastapi'`; root-caused and fixed, verified locally end to end again afterward (293 tests, full 6-page Playwright pass)
 - [x] *(unplanned)* `fix: center sidebar logo/title, add name to footer, remove logo fullscreen button`
   Post-deploy layout feedback from the live app: `app/theme.py` + `app/Home.py` (logo/title centered, `st.image()` swapped for a base64 `<img>` specifically to drop its built-in fullscreen-on-hover control, footer now reads "Developed by Renan Pinheiro"), `README.md` (logo added, centered, at the top)
-- [ ] **C64** `chore: deploy to Streamlit Community Cloud and add smoke tests` -- deployed and smoke-tested, docs update ready to commit
+- [x] **C64** `chore: deploy to Streamlit Community Cloud and add smoke tests`
   Live at <https://buildguard-ai-renands.streamlit.app/>. Smoke-tested with the same Playwright check from Session L, re-pointed at the live URL instead of `localhost:8501` -- **real finding**: the live page's actual content sits inside a child iframe (`<url>/~/+/`), not the top-level document, so selectors have to target that frame. All six pages render, the logo/footer fix holds in production, hovering the logo shows no fullscreen button, and the only console errors are two benign `404`s from Streamlit Cloud's own chrome (`/api/v2/user/details`, an anonymous-viewer auth check, not this app). `docs/RUNBOOK.md` and `README.md` updated with the live URL and the iframe finding.
-- [ ] **C65** `chore: cut v1.0.0 release, update CHANGELOG and README with final results` -- pending C64
+- [x] *(unplanned)* `feat: add business impact scenario and EDA notebook`
+  Two real gaps found while preparing the v1.0.0 cut -- the README's Business Impact section (Section 21) was empty and the EDA notebook (Session D, C14-C16) was never built. `src/buildguard/evaluation/business_impact.py` + `scripts/business_impact.py`/`make business-impact` (Section 21's formula, computed for real: $142.9M, always labeled scenario-based) wired into the Executive Overview page; `notebooks/02_eda.ipynb`, run top-to-bottom with real findings (CPI/SPI only weakly correlated, r=0.27), figures committed to `reports/figures/`. README Sections 6 and 11 filled in with the real numbers.
+- [ ] **C65** `chore: cut v1.0.0 release, update CHANGELOG and README with final results` -- ready to commit, then tag
+  `CHANGELOG.md` (`[Unreleased]` moved to `[1.0.0] - 2026-08-30`), `pyproject.toml`/`src/buildguard/__init__.py` (version 0.1.0 -> 1.0.0, classifier bumped to Production/Stable), `README.md` (early-development banner replaced with a released notice). Live app, full test suite (295 tests, 98% coverage), and lint/type-check all verified green before the cut. Tag `v1.0.0` is a separate manual step after this commit.
 
 **→ PR #14 "Deployment & v1.0.0 release", tag `v1.0.0`**
 

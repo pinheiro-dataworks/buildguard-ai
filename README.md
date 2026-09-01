@@ -9,13 +9,13 @@ schedule-delay risk**, built on Earned Value Management analytics —
 leakage-safe features, calibrated probabilities, uncertainty, and
 explainability, deployed at zero recurring cost.
 
-> 🚧 **Status: early development.** This repository is being built in public,
-> phase by phase, following the roadmap in
-> [`BUILDGUARD_AI_PROJECT_SCOPE.md`](BUILDGUARD_AI_PROJECT_SCOPE.md), tracked
-> commit-by-commit in [`BUILDGUARD_AI_COMMIT_PLAN.md`](BUILDGUARD_AI_COMMIT_PLAN.md).
-> The sections below will fill in as each phase lands — see
-> [`CHANGELOG.md`](CHANGELOG.md) for what currently exists versus what is
-> planned.
+> ✅ **v1.0.0 — released.** Built in public, phase by phase, following the
+> roadmap in [`BUILDGUARD_AI_PROJECT_SCOPE.md`](BUILDGUARD_AI_PROJECT_SCOPE.md),
+> tracked commit-by-commit in
+> [`BUILDGUARD_AI_COMMIT_PLAN.md`](BUILDGUARD_AI_COMMIT_PLAN.md). See
+> [`CHANGELOG.md`](CHANGELOG.md) for the full release history and
+> [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) for what this version
+> deliberately does not cover yet.
 
 [![CI](https://github.com/pinheiro-dataworks/buildguard-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/pinheiro-dataworks/buildguard-ai/actions/workflows/ci.yml)
 [![Security](https://github.com/pinheiro-dataworks/buildguard-ai/actions/workflows/security.yml/badge.svg)](https://github.com/pinheiro-dataworks/buildguard-ai/actions/workflows/security.yml)
