@@ -16,6 +16,12 @@ FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim
 
 WORKDIR /app
 
+# LightGBM's wheel links against the OpenMP runtime (libgomp), which the
+# slim base image does not ship -- without it, importing lightgbm fails.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
 # Dependencies first, for layer caching -- changes to application code
 # below never invalidate this layer.
 COPY pyproject.toml uv.lock README.md ./
