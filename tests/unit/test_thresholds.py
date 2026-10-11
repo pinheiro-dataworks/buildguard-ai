@@ -1,4 +1,4 @@
-"""Unit tests for business-cost threshold optimization (Section 17)."""
+"""Unit tests for business-cost threshold optimization."""
 
 from __future__ import annotations
 

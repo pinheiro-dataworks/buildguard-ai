@@ -1,7 +1,7 @@
-"""Slice evaluation (Section 18).
+"""Slice evaluation.
 
-A strong global metric can hide poor subgroup behavior -- Section 18 is
-explicit that this must be *documented, not hidden*. `evaluate_by_slice()`
+A strong global metric can hide poor subgroup behavior, and that has to
+be *documented, not hidden*. `evaluate_by_slice()`
 computes the same metric BuildGuard already reports globally (ROC-AUC for
 the classifiers, MAE for `final_cost`) independently within each subgroup
 of a slicing dimension: project type, construction standard, geography
@@ -86,7 +86,7 @@ def bucket_by_quantile(
 
     Used for slice dimensions with no natural categories -- project size
     (`gross_floor_area_m2`) and budget segment (`approved_budget`),
-    Section 18's two dimensions that aren't already columns.
+    the two slice dimensions that aren't already categorical columns.
     """
     bucket_labels = labels or [f"q{i + 1}_of_{n_buckets}" for i in range(n_buckets)]
     return pd.qcut(series, q=n_buckets, labels=bucket_labels, duplicates="drop")

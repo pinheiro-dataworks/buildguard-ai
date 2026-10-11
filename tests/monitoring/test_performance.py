@@ -1,4 +1,4 @@
-"""Unit tests for performance and operational monitoring (Section 23/24)."""
+"""Unit tests for performance and operational monitoring."""
 
 from __future__ import annotations
 

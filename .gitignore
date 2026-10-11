@@ -50,9 +50,8 @@ data/external/**
 !data/external/README.md
 
 # ---- Models & large artifacts ----
-# The three champion joblib files ARE committed, deliberately (Section
-# 54: "packaged artifacts in-repo... when size permits" -- ~6MB total,
-# well under it). Streamlit Community Cloud deploys straight from this
+# The three champion joblib files ARE committed, deliberately (~6MB in
+# total, well under the 100MB artifact budget). Streamlit Community Cloud deploys straight from this
 # repo with no build/training step (ADR-0013), so the deployed app has
 # no way to produce them itself -- only *.pkl/*.cbm/*.txt (formats this
 # project never actually produces) stay ignored, as a guard against
@@ -69,8 +68,8 @@ reports/monitoring/*
 !reports/figures/.gitkeep
 !reports/metrics/.gitkeep
 !reports/monitoring/.gitkeep
-# The monitoring report itself is small and is real evidence (Section 23:
-# "implemented, not just documented") -- committed like the other
+# The monitoring report itself is small and is real evidence that
+# monitoring runs, not just a plan -- committed like the other
 # reports/experiments/*.json summaries, unlike figures/metrics.
 !reports/monitoring/monitoring_report.json
 

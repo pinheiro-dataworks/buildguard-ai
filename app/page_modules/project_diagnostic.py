@@ -1,4 +1,4 @@
-"""Project Diagnostic page (Section 30): timeline, CPI/SPI, predictions, uncertainty, SHAP drivers."""
+"""Project Diagnostic page: timeline, CPI/SPI, predictions, uncertainty, SHAP drivers."""
 
 from __future__ import annotations
 

@@ -1,23 +1,22 @@
-"""Performance and operational monitoring (Section 23/24).
+"""Performance and operational monitoring.
 
 **Performance monitoring** deliberately reuses `buildguard.evaluation`'s
 metric dataclasses rather than recomputing ROC-AUC/PR-AUC/Brier/MAE/RMSE a
-second way (Section 27: no duplicated logic) -- this module only adds what
+second way -- this module only adds what
 `evaluation/` doesn't have: comparing a `current` metric value against a
 `baseline` one and flagging a degradation past a configured threshold,
-which is the actual "performance drop > X%" retraining trigger Section 24
-names.
+which is the "performance drop" retraining trigger in `docs/MONITORING.md`.
 
 **Operational monitoring** (inference latency, prediction count, errors)
-has no live traffic to measure yet -- there is no deployed API until Phase
-8. `measure_inference_latency` closes that gap honestly: it times real
-(not simulated) repeated calls into an already-fitted model's own
-`predict`/`predict_proba`, which is the same code path Phase 8's FastAPI
-service will call per request, so the latency figures it reports now are
-genuine local numbers against Section 49's "p95 < 500ms local CPU"
-target -- not a placeholder. `PredictionLogEntry`/`summarize_operational_log`
-are the aggregation half of the same story, ready for the API to append
-real request-level entries to once it exists.
+has no live request log to read: the public app predicts in-process and
+the API does not persist request records. `measure_inference_latency`
+closes that gap honestly: it times real (not simulated) repeated calls
+into an already-fitted model's own `predict`/`predict_proba`, the same
+code path the FastAPI service calls per request, so the latency figures
+it reports are genuine local numbers against the "p95 < 500ms on a local
+CPU" target -- not a placeholder. `PredictionLogEntry`/`summarize_operational_log`
+are the aggregation half of the same story, ready for request-level
+entries once a request log exists.
 """
 
 from __future__ import annotations

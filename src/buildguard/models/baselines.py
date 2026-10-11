@@ -1,16 +1,16 @@
-"""Baseline models (Section 13) -- mandatory before any advanced model.
+"""Baseline models -- mandatory before any advanced model.
 
-Every candidate model trained later (Session H / Section 14) must beat
-these, not just a naive statistical baseline: "the ML model must beat a
-meaningful construction-management baseline, not only a naive statistical
-one." Classification and regression baselines share a minimal
+Every candidate model (`classification.py`, `regression.py`) must beat
+these -- and not just the naive statistical floor: the bar is a
+meaningful construction-management baseline (a CPI rule, the deterministic
+EVM estimate at completion). Classification and regression baselines share a minimal
 ``fit``/``predict[_proba]`` interface (`ClassificationBaseline`,
-`RegressionBaseline` protocols) so evaluation code added in a later phase
-never needs to special-case "is this a baseline or a real model."
+`RegressionBaseline` protocols) so training and evaluation code never
+needs to special-case "is this a baseline or a real model."
 
 All baselines consume the output of
 `buildguard.features.pipeline.build_feature_table` directly -- the same
-feature table real models will use, so a baseline-vs-model comparison is
+feature table the real models use, so a baseline-vs-model comparison is
 never confounded by different inputs.
 """
 
@@ -80,7 +80,7 @@ class LogisticRegressionBaseline:
 
 
 class CpiRuleBaseline:
-    """Domain rule baseline (Section 13's own example): ``CPI < threshold -> High Cost Risk``.
+    """Domain rule baseline: ``CPI < threshold -> High Cost Risk``.
 
     No fitting happens -- a hand-written rule has nothing to learn from
     data, and is kept in the same interface as the learned baselines only
@@ -133,8 +133,8 @@ class MedianRegressionBaseline:
 class DeterministicEacBaseline:
     """Uses the EVM CPI-based Estimate at Completion already on each row.
 
-    Zero-parameter and deterministic -- `forecast_cost` (`evm.estimate_at_completion_cpi`,
-    Section 9) is computed once at data-generation/serving time from that
+    Zero-parameter and deterministic -- `forecast_cost` (`evm.estimate_at_completion_cpi`)
+    is computed once at data-generation/serving time from that
     row's own CPI, not learned from a training set. `fit` is a no-op kept
     only for interface uniformity with the learned baselines.
     """

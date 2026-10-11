@@ -1,4 +1,4 @@
-"""Unit tests for inflation-adjusted cost normalization (Section 10)."""
+"""Unit tests for inflation-adjusted cost normalization."""
 
 from __future__ import annotations
 

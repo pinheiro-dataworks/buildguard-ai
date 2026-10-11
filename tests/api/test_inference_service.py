@@ -1,4 +1,4 @@
-"""API contract tests for the FastAPI inference service (Section 28/29).
+"""API contract tests for the FastAPI inference service.
 
 Runs against the real trained/calibrated champions committed under
 `models/` -- the same artifacts `scripts/evaluate.py`/`scripts/monitor.py`
@@ -138,7 +138,7 @@ class TestPredictCostRisk:
     def test_completion_before_start_fails_safely_with_422(self) -> None:
         # Individually valid dates, but violating the contract's
         # dataframe-level completion_after_start check -- Pydantic alone
-        # can't catch this (Section 48: schema/contract violations must
+        # can't catch this (schema/contract violations must
         # fail safely, not crash).
         request = copy.deepcopy(_healthy_request())
         request["project"]["planned_completion_date"] = "2022-01-01"

@@ -1,11 +1,11 @@
 """Shared data loading and in-process prediction calls for the Streamlit app.
 
 Reuses the same report JSON files (`reports/experiments/`,
-`reports/monitoring/`, `reports/error_analysis/`) every other phase of
-this project already produces and commits -- the dashboard never
+`reports/monitoring/`, `reports/error_analysis/`) the pipeline scripts
+already produce and commit -- the dashboard never
 recomputes a metric a script already computed. Predictions are made
-in-process by calling the FastAPI endpoint functions directly (Section 29:
-"Streamlit app may call it in-process (zero cost)"), so there is exactly
+in-process by calling the FastAPI endpoint functions directly (zero
+hosting cost, no second service to deploy), so there is exactly
 one prediction code path shared by the API and the UI.
 """
 
@@ -172,7 +172,7 @@ def portfolio_latest_scores() -> pd.DataFrame:
     `build_feature_table` training/evaluation already use, rather than 400
     individual single-project API calls -- a legitimate different access
     pattern (batch vs. single-prediction) sharing the same feature
-    pipeline and champion artifacts (Section 28).
+    pipeline and champion artifacts.
     """
     features = full_feature_table()
     # approved_budget is already carried through from build_feature_table's
@@ -215,7 +215,7 @@ def predict_all(
 ) -> dict[str, Any]:
     """Cost-risk, schedule-risk, and final-cost predictions for one project,
     calling the exact same FastAPI endpoint functions the live API serves
-    -- in-process, no HTTP round trip (Section 29)."""
+    -- in-process, no HTTP round trip."""
     state = get_state()
     request = _build_request(project_id, as_of_snapshot_index, override_snapshots)
     return {
@@ -227,7 +227,7 @@ def predict_all(
 
 @st.cache_data(show_spinner="Computing SHAP drivers...")
 def local_explanation(task_name: str, project_id: str) -> Any:
-    """Per-prediction SHAP drivers (Section 20) for `project_id`'s latest
+    """Per-prediction SHAP drivers for `project_id`'s latest
     snapshot, using a portfolio-wide sample as the SHAP background."""
     from buildguard.explainability.shap import explain_local
 

@@ -1,4 +1,4 @@
-"""Unit tests for probability calibration (Section 16)."""
+"""Unit tests for probability calibration."""
 
 from __future__ import annotations
 

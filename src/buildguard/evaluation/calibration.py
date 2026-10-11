@@ -1,4 +1,4 @@
-"""Held-out calibration check (Section 18).
+"""Held-out calibration check.
 
 `buildguard.models.calibration.evaluate_calibration_methods` *fits* the
 calibration mapping and reports its Brier score on the same calibration
@@ -26,7 +26,7 @@ def evaluate_calibration_on_holdout(
     method: CalibrationMethod,
     n_bins: int = 10,
 ) -> CalibrationCurve:
-    """`y_proba` is the already-applied `method`'s output (Section 16's
+    """`y_proba` is the already-applied `method`'s output (the
     winning calibrator, e.g. "isotonic"), scored here on a split that
     calibrator was never fit or selected on.
     """

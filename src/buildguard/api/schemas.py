@@ -1,4 +1,4 @@
-"""Pydantic request/response schemas for the inference API (Section 28/29).
+"""Pydantic request/response schemas for the inference API.
 
 Request schemas mirror the raw table shapes `buildguard.data.contracts`
 already validates (Projects / Project Snapshots / Change Orders) rather
@@ -6,8 +6,8 @@ than a bespoke "prediction request" shape -- a caller sends a project's
 real snapshot *history* (not just its latest state), because
 `buildguard.features.pipeline.build_feature_table` -- the same function
 training uses -- needs that history to compute trend/streak features
-identically to how it was computed offline (Section 28's train/serve
-consistency requirement). The endpoint scores the most recent snapshot.
+identically to how it was computed offline (no train/serve skew). The
+endpoint scores the most recent snapshot.
 """
 
 from __future__ import annotations

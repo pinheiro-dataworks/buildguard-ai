@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Final held-out evaluation, explainability, and failure analysis (Section 18/20/47).
+"""Final held-out evaluation, explainability, and failure analysis.
 
 Usage::
 
@@ -11,20 +11,20 @@ Loads the calibrated champions (``models/*_champion.joblib``, produced by
 made on the calibration split (``reports/experiments/calibration_summary.json``:
 threshold, calibration method, conformal quantile) and applies them,
 unchanged, to the **test** split -- the one split reserved for exactly one
-final evaluation (Section 12, ``docs/adr/0003-temporal-validation.md``).
+final evaluation (``docs/adr/0003-temporal-validation.md``).
 Nothing here selects a threshold, a calibration method, or a champion; it
 only measures what was already decided, on data none of those decisions
 ever saw.
 
-For ``cost_overrun`` / ``schedule_delay``: the full Section 18
-classification battery, an out-of-sample calibration check, slice
+For ``cost_overrun`` / ``schedule_delay``: the full classification metric
+battery, an out-of-sample calibration check, slice
 evaluation across the mandatory dimensions (project type, size,
 construction standard, lifecycle stage, geography, budget segment) plus an
-inflation-regime dimension answering Section 47's "does inflation regime
-change performance" question, global SHAP/permutation explanations, and a
-Section 47 failure analysis written to ``reports/error_analysis/``.
+inflation-regime dimension answering "does the inflation regime change
+performance?", global SHAP/permutation explanations, and a failure
+analysis written to ``reports/error_analysis/``.
 
-For ``final_cost``: the Section 18 regression battery, the conformal
+For ``final_cost``: the regression metric battery, the conformal
 interval's true out-of-sample coverage, the same slice dimensions scored
 by both MAE and mean signed error (bias direction), and a failure analysis
 of the largest errors. ``final_cost``'s champion (``DeterministicEacBaseline``,
@@ -180,11 +180,11 @@ def _classification_failure_report(
         ]
 
     lines = [
-        f"# Failure Analysis -- {task_name} (Section 47)",
+        f"# Failure Analysis -- {task_name}",
         "",
         f"Held-out **test split** ({len(test)} rows across "
         f"{test['project_id'].nunique()} projects). Threshold={threshold:.3f} "
-        "(Section 17, optimized on the calibration split, never on test).",
+        "(optimized for business cost on the calibration split, never on test).",
         "",
         "## Where the model fails",
         "",
@@ -269,7 +269,7 @@ def _classification_failure_report(
         '- Predictions for the subgroups listed under "Hardest subgroups" above, where the model\'s'
         " discriminative power is weakest even though the global metric looks strong.",
         f"- False negatives specifically: at this threshold the model trades a higher false-positive"
-        f" rate for a lower false-negative rate (Section 17's cost matrix makes a missed overrun far"
+        f" rate for a lower false-negative rate (the business cost matrix makes a missed overrun far"
         f" more expensive than a false alarm) -- but the {len(fn)} false negatives above are the"
         f" cases that slipped through anyway and deserve manual follow-up.",
     ]
@@ -310,7 +310,7 @@ def _regression_failure_report(
         ]
 
     lines = [
-        "# Failure Analysis -- final_cost (Section 47)",
+        "# Failure Analysis -- final_cost",
         "",
         f"Held-out **test split** ({len(test)} rows across "
         f"{test['project_id'].nunique()} projects). Champion is "

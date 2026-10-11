@@ -1,13 +1,13 @@
 # syntax=docker/dockerfile:1
 #
-# Section 32: slim base image, non-root runtime, deterministic install,
-# no secrets, reasonable size. Not part of the mandatory zero-cost public
+# Slim base image, non-root runtime, deterministic install, no secrets,
+# reasonable size. Not part of the mandatory zero-cost public
 # path (Streamlit Community Cloud deploys straight from the repo, no
 # Docker involved -- ADR-0013) -- this image is for local/portable use
 # and as engineering evidence that the system is genuinely containerizable.
 #
 # Champion models are trained and calibrated *inside* the build
-# (deterministic, fixed seed in configs/base.yaml -- Section 26), so the
+# (deterministic, fixed seed in configs/base.yaml), so the
 # image is fully self-contained and reproducible from source alone,
 # never dependent on whatever happens to be in the host's models/
 # directory when `docker build` runs.
@@ -29,17 +29,18 @@ COPY app/ app/
 COPY assets/ assets/
 COPY docs/design/ docs/design/
 COPY data/sample/ data/sample/
-# Already-committed evaluation/monitoring reports (Model Performance and
-# Model Health pages read these; they are not regenerated at build time
-# -- refreshed by whoever last ran `make evaluate`/`make monitor`).
+# Already-committed reports. The evaluation and monitoring reports read by
+# the Model Performance and Model Health pages are not regenerated at
+# build time; training_summary.json and calibration_summary.json are
+# rewritten by the train/calibrate step below.
 COPY reports/ reports/
 
 # Train + calibrate the three champions against this exact image's code
-# (Section 26 reproducibility) -- not copied in from the host, and never
-# stale relative to the code that will serve them.
+# -- not copied in from the host, and never stale relative to the code
+# that will serve them.
 RUN uv run python scripts/train.py && uv run python scripts/calibrate.py
 
-# Non-root runtime (Section 32) -- ownership fixed after training, which
+# Non-root runtime -- ownership fixed after training, which
 # necessarily runs as root during the build.
 RUN useradd --create-home --shell /usr/sbin/nologin buildguard \
     && chown -R buildguard:buildguard /app

@@ -1,4 +1,4 @@
-"""Executive Overview page (Section 30)."""
+"""Executive Overview page: portfolio-wide risk at a glance."""
 
 from __future__ import annotations
 
@@ -81,7 +81,7 @@ def render() -> None:
         fig.update_layout(showlegend=False, plot_bgcolor=theme.SURFACE, paper_bgcolor=theme.SURFACE)
         st.plotly_chart(fig, use_container_width=True)
 
-    st.subheader("Estimated decision-support value (Section 21)")
+    st.subheader("Estimated decision-support value")
     impact = load_json_report("experiments/business_impact.json")
     if impact is not None:
         st.markdown(

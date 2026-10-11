@@ -1,4 +1,4 @@
-"""Unit tests for the EVM formula engine (Section 9 / 35)."""
+"""Unit tests for the EVM formula engine."""
 
 from __future__ import annotations
 

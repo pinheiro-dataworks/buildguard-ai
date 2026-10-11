@@ -1,11 +1,11 @@
-"""Prediction uncertainty for the final-cost estimate (Section 19).
+"""Prediction uncertainty for the final-cost estimate.
 
 Split conformal prediction -- model-agnostic, so it works identically
 whether the point predictor is a fitted regressor or (as it actually is
 for `final_cost`; see `docs/adr/0006-model-selection.md`) a deterministic
 formula baseline with no learned notion of its own uncertainty. The
 conformal quantile is computed from residuals on the **calibration**
-split only, never train, never test (Section 12), giving a symmetric
+split only, never train, never test, giving a symmetric
 interval with a marginal coverage guarantee under the standard conformal
 exchangeability assumption -- empirically checked, not just asserted, by
 `empirical_coverage`.

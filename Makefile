@@ -20,7 +20,7 @@ evaluate: ## Re-run evaluation (metrics, slices, error analysis) for the current
 monitor: ## Run data quality, drift, and performance monitoring (requires make evaluate first)
 	$(UV) run python scripts/monitor.py
 
-business-impact: ## Compute the Section 21 business impact scenario (requires make evaluate first)
+business-impact: ## Compute the scenario-based business impact estimate (requires make evaluate first)
 	$(UV) run python scripts/business_impact.py
 
 test: ## Run the full test suite with coverage

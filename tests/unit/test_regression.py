@@ -1,4 +1,4 @@
-"""Unit tests for candidate regression models (Section 14/15)."""
+"""Unit tests for candidate regression models."""
 
 from __future__ import annotations
 

@@ -2,8 +2,7 @@
 
 Every threshold and magic number referenced by ``src/buildguard`` should
 resolve back to a value declared in ``configs/*.yaml`` and modeled here,
-rather than being hard-coded at the call site (Section 27/37 of
-``BUILDGUARD_AI_PROJECT_SCOPE.md``).
+rather than being hard-coded at the call site.
 """
 
 from __future__ import annotations

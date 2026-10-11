@@ -1,4 +1,4 @@
-"""About / Governance page (Section 22/30/53)."""
+"""About / Governance page: intended use, limits, and human oversight."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ def render() -> None:
         "cost-overrun probability, schedule-delay probability, and a final-cost estimate "
         "with an explicit uncertainty interval, built on Earned Value Management analytics. "
         "It is trained and evaluated entirely on a deterministic **synthetic** portfolio "
-        "(Section 8.2/ADR-0004) -- no real client or project data is used."
+        "(ADR-0004) -- no real client or project data is used."
     )
 
     st.subheader("What it is not")
@@ -67,9 +67,9 @@ def render() -> None:
 
     st.subheader("Human oversight")
     st.markdown(
-        "- Every risk prediction ships with its calibration method and decision threshold "
-        "(Section 16/17), never a bare score.\n"
-        "- Retraining is never automatic (Section 24): the monitoring pipeline "
+        "- Every risk prediction ships with its calibration method and decision threshold, "
+        "never a bare score.\n"
+        "- Retraining is never automatic: the monitoring pipeline "
         "(`scripts/monitor.py`) only flags triggers -- Detect -> **Investigate** -> Validate "
         "data -> Retrain candidate -> Compare vs. champion -> Approve -> Release is always a "
         "human-run workflow. See the Model Health page for what is currently flagged.\n"
@@ -78,7 +78,7 @@ def render() -> None:
         "failure analysis."
     )
 
-    st.subheader("Zero-cost architecture (Section 31)")
+    st.subheader("Zero-cost architecture")
     st.markdown(
         "GitHub (public repo) -> GitHub Actions (lint/test/type-check) -> Streamlit Community "
         "Cloud, serving this UI, the packaged models, and an in-process prediction service "
@@ -92,7 +92,7 @@ def render() -> None:
 
     st.subheader("Project links")
     st.markdown(
-        f"- [Project scope & specification](https://github.com/pinheiro-dataworks/buildguard-ai/blob/main/BUILDGUARD_AI_PROJECT_SCOPE.md)\n"
+        f"- [Requirements](https://github.com/pinheiro-dataworks/buildguard-ai/blob/main/docs/REQUIREMENTS.md)\n"
         f"- [Architecture Decision Records](https://github.com/pinheiro-dataworks/buildguard-ai/tree/main/docs/adr)\n"
         f"- [Full source on GitHub]({theme.GITHUB_URL})"
     )

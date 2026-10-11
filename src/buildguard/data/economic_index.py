@@ -1,4 +1,4 @@
-"""Economic index access (Section 8.3).
+"""Economic index access.
 
 ```
 EconomicIndexProvider
@@ -97,18 +97,18 @@ class DemoIndexProvider(EconomicIndexProvider):
 class ExternalLicensedProvider(EconomicIndexProvider):
     """Architectural placeholder for a real, license-verified index.
 
-    Deliberately not implemented (Section 8.3): no external economic index
+    Deliberately not implemented: no external economic index
     has had its redistribution/usage license independently verified for
     this project. The public app and the synthetic generator must never
     depend on this class -- it exists only so the provider seam is visible
     in the codebase before such a license is ever verified. See
-    `docs/DATA_PRIVACY.md` Section 6.
+    "Public economic indicators" in `docs/DATA_PRIVACY.md`.
     """
 
     def __init__(self, *_args: object, **_kwargs: object) -> None:
         raise NotImplementedError(
             "ExternalLicensedProvider has no verified licensed data source. "
-            "Use DemoIndexProvider. See docs/DATA_PRIVACY.md Section 6."
+            "Use DemoIndexProvider. See docs/DATA_PRIVACY.md (Public economic indicators)."
         )
 
     def get_series(self) -> pd.DataFrame:  # pragma: no cover

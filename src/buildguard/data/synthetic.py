@@ -1,25 +1,25 @@
-"""Deterministic synthetic construction-portfolio generator (Section 8.2).
+"""Deterministic synthetic construction-portfolio generator.
 
 Generates the six core tables (Projects, Project Snapshots, Work Packages,
 Change Orders, Suppliers, Economic Index) from a single seeded
 `numpy.random.Generator`, so the whole portfolio is byte-identical across
-runs and machines given the same `configs/base.yaml` (Section 26, Section
-8.1 — no external data, no `datetime.now()`, no machine-specific state).
+runs and machines given the same `configs/base.yaml` (no external data,
+no `datetime.now()`, no machine-specific state).
 
-Design rationale, and how the required realism relationships (Section 8.2)
-are encoded, is recorded in `docs/adr/0004-synthetic-data-design.md`. In
+Design rationale, and how the required realism relationships
+(`docs/REQUIREMENTS.md`) are encoded, is recorded in `docs/adr/0004-synthetic-data-design.md`. In
 short: each project gets a latent, unobserved "risk profile" (cost/schedule
 efficiency trends) that consistently drives its snapshots, change orders,
 and supplier performance — so a "bad" project looks bad across every table,
 the way correlated risk actually behaves in real portfolios.
 
 There is no separate `actual_completion_date` or `final_cost` column in the
-data model (Section 8.4) — both are *derived*, later, from the snapshot
+data model — both are *derived*, later, from the snapshot
 history: a project's final cost is the `actual_cost` of its last snapshot,
 and its actual completion date is that snapshot's `snapshot_date`, once
 `actual_progress` has reached 1.0. Projects still short of 1.0 progress at
 `reference_date` are in-flight (censored) and carry no resolved label yet —
-this is intentional, not a gap; see Section 11 on temporal integrity.
+this is intentional, not a gap; see `docs/LEAKAGE_POLICY.md`.
 """
 
 from __future__ import annotations
@@ -128,7 +128,7 @@ _WORK_PACKAGE_NAMES: tuple[str, ...] = (
 
 @dataclass(frozen=True)
 class PortfolioDataset:
-    """The six core tables of a generated synthetic portfolio (Section 8.4)."""
+    """The six core tables of a generated synthetic portfolio."""
 
     projects: pd.DataFrame
     snapshots: pd.DataFrame
@@ -237,9 +237,9 @@ def _sample_risk_profiles(
         cost_drift = float(rng.normal(-0.05, 0.09))
         schedule_base = float(np.clip(rng.normal(1.0, 0.15), 0.5, 1.4))
         schedule_drift = float(rng.normal(-0.04, 0.08))
-        # Worse cost efficiency -> more change orders (Section 8.2).
+        # Worse cost efficiency -> more change orders.
         co_propensity = float(max(0.05, (2.0 - cost_base) * 0.9 + rng.normal(0, 0.15)))
-        # Better-run projects tend to vet suppliers better (Section 8.2).
+        # Better-run projects tend to vet suppliers better.
         supplier_quality = float(np.clip(5.0 + 2.5 * cost_base + rng.normal(0, 0.6), 0.0, 10.0))
         committed_buffer = float(rng.uniform(0.02, 0.15))
         profiles[project_id] = _RiskProfile(
@@ -492,8 +492,8 @@ def _generate_suppliers(
             quality_score = float(
                 np.clip(rng.normal(profile.supplier_quality_mean, 1.0), 0.0, 10.0)
             )
-            # Worse-vetted suppliers deliver later, more often (Section 8.2:
-            # procurement delay -> schedule impact).
+            # Worse-vetted suppliers deliver later, more often (procurement
+            # delay -> schedule impact).
             delay_mean = (7.0 - quality_score) * 4.0
             delivery_delay_days = round(rng.normal(delay_mean, 10.0))
             rework_cost = round(
@@ -520,7 +520,7 @@ def generate_portfolio(config: BaseAppConfig) -> PortfolioDataset:
     """Generate the full synthetic BuildGuard AI portfolio from `config`.
 
     Deterministic: the same `config.seed` and `config.synthetic_data`
-    always produce byte-identical output (Section 26). Every returned table
+    always produce byte-identical output. Every returned table
     is validated against its data contract (`buildguard.data.contracts`)
     before being returned -- a contract violation here is a generator bug,
     and must fail loudly rather than ship silently malformed demo data.

@@ -1,4 +1,4 @@
-"""Unit tests for experiment tracking (Section 25)."""
+"""Unit tests for experiment tracking."""
 
 from __future__ import annotations
 

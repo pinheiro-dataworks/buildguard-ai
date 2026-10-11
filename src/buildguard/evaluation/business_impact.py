@@ -1,4 +1,4 @@
-"""Business impact scenario (Section 21).
+"""Business impact scenario.
 
 ```
 active_projects x avg_financial_exposure x overrun_prevalence
@@ -9,8 +9,8 @@ x model_recall x avoidable_impact_assumption
 Every factor is either measured directly from the portfolio and the
 held-out test metrics, or an explicit, labeled assumption from
 `configs/business.yaml`. The result is a **scenario-based estimated
-impact**, never a claim of realized savings (Section 21 is explicit that
-"the model saved $X" without real evidence is never acceptable).
+impact**, never a claim of realized savings ("the model saved $X" without
+real evidence is never acceptable).
 
 "Active" means in-flight (`is_resolved` is `False` in
 `buildguard.data.labels.resolve_outcomes`'s output) -- a project that has

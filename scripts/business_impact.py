@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Business impact scenario computation (Section 21).
+"""Business impact scenario computation.
 
 Usage::
 
@@ -13,7 +13,7 @@ cost-overrun recall). Combines that, the real portfolio composition
 assumption in `configs/business.yaml` into one number -- written to
 `reports/experiments/business_impact.json`, always labeled
 "Scenario-based estimated impact" wherever it is shown (never a claimed
-realized ROI, per Section 21).
+realized ROI).
 """
 
 from __future__ import annotations

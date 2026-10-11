@@ -1,8 +1,8 @@
-"""Earned Value Management (EVM) formulas (Section 9).
+"""Earned Value Management (EVM) formulas.
 
 Operates on `pandas.Series` so it composes directly into the feature
-pipeline (`src/buildguard/features/pipeline.py`, later) over full snapshot
-tables, and is shared verbatim between training and inference (Section 28)
+pipeline (`src/buildguard/features/pipeline.py`) over full snapshot
+tables, and is shared verbatim between training and inference
 so these formulas are never re-implemented at the call site.
 
 Every ratio guards against division by zero: a zero denominator produces
@@ -84,8 +84,8 @@ def estimate_at_completion_composite(
 ) -> pd.Series:
     """EAC (schedule-adjusted) = AC + (BAC - EV) / (CPI * SPI).
 
-    Business meaning: a second, independent EAC baseline (Section 9
-    requires at least two) that discounts remaining work by *both* cost and
+    Business meaning: a second, independent EAC baseline (a single
+    formula is too easy to over-trust) that discounts remaining work by *both* cost and
     schedule efficiency — more conservative than the CPI-only baseline when
     a project is simultaneously over budget and behind schedule, which is
     the historically riskier combination. Undefined (NaN) when

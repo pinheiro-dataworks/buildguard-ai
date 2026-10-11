@@ -1,11 +1,11 @@
-"""Data contracts for the core BuildGuard AI data model (Section 8.4/8.5).
+"""Data contracts for the core BuildGuard AI data model.
 
 Each table in the data model gets a declarative `pandera` schema enforcing,
 at minimum: non-null keys, valid value ranges, categorical domains, and
 uniqueness constraints. Validation always runs with ``lazy=True`` so every
 violation in a batch is collected before raising, and always with
 ``coerce=False`` so a malformed value fails loudly instead of being
-silently cast into range — see Section 8.5.
+silently cast into range.
 """
 
 from __future__ import annotations
@@ -167,7 +167,7 @@ def validate_economic_index(df: pd.DataFrame) -> pd.DataFrame:
 def check_snapshots_within_project_lifecycle(
     projects: pd.DataFrame, snapshots: pd.DataFrame
 ) -> None:
-    """Cross-table chronological consistency check (Section 8.5).
+    """Cross-table chronological consistency check.
 
     Every snapshot's ``snapshot_date`` must fall on or after its project's
     ``planned_start_date``. Snapshots may extend past ``planned_completion_date``

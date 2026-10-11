@@ -1,4 +1,4 @@
-"""Unit tests for regression evaluation metrics (Section 18)."""
+"""Unit tests for regression evaluation metrics."""
 
 from __future__ import annotations
 

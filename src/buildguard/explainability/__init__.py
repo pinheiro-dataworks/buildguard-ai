@@ -1,1 +1,1 @@
-"""Model explainability (Section 20)."""
+"""Model explainability."""

@@ -1,11 +1,9 @@
-"""Renan-standard visual tokens and CSS injection (docs/design/UI_DESIGN_SPEC.md).
+"""Renan-standard visual tokens and CSS injection (docs/design/UI_DESIGN.md).
 
-Colors and the sidebar treatment come from `docs/design/renan-standard.png`
--- the prototype HTML (`docs/design/prototype-inspiration.html`) is layout
-inspiration only, its blue color system is never used. Risk-band colors
-are adapted from the prototype's own accessible palette (dropped to three
-bands, matching `buildguard.models.thresholds.risk_band`'s low/medium/high
--- this project's thresholds never produce a fourth "critical" band).
+Colors and the sidebar treatment come from `docs/design/renan-standard.png`.
+Risk-band colors are a separate accessible palette with three bands,
+matching `buildguard.models.thresholds.risk_band`'s low/medium/high (the
+thresholds never produce a fourth "critical" band).
 """
 
 from __future__ import annotations

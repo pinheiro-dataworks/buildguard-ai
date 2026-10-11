@@ -1,4 +1,4 @@
-"""Unit tests for the economic index provider interface (Section 8.3)."""
+"""Unit tests for the economic index provider interface."""
 
 from __future__ import annotations
 

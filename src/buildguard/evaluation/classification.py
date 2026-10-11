@@ -1,11 +1,11 @@
-"""Classification evaluation metrics (Section 18).
+"""Classification evaluation metrics.
 
-Deliberately separate from `buildguard.models.calibration` (Section 16,
-which *fits* a calibration mapping on the calibration split) and
-`buildguard.models.thresholds` (Section 17, which *selects* a decision
+Deliberately separate from `buildguard.models.calibration` (which
+*fits* a calibration mapping on the calibration split) and
+`buildguard.models.thresholds` (which *selects* a decision
 threshold on the calibration split). This module only *measures* -- it
 takes an already-decided threshold and an already-calibrated probability
-column and reports the metric battery Section 18 requires, on whichever
+column and reports the full metric battery, on whichever
 split the caller passes in (in practice, always the held-out test split --
 the one evaluation `docs/adr/0003-temporal-validation.md` reserves it for).
 """
@@ -54,7 +54,7 @@ def compute_classification_metrics(
     y_proba: npt.NDArray[np.float64],
     threshold: float,
 ) -> ClassificationMetrics:
-    """The full Section 18 classification battery at a fixed `threshold`.
+    """The full classification metric battery at a fixed `threshold`.
 
     `y_proba` is the positive-class probability (already calibrated, if a
     calibrator was selected); ROC-AUC, PR-AUC, and Brier score are

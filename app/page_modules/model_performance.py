@@ -1,4 +1,4 @@
-"""Model Performance page (Section 18/30) -- the real held-out test-set evaluation."""
+"""Model Performance page -- the real held-out test-set evaluation."""
 
 from __future__ import annotations
 
@@ -89,7 +89,7 @@ def render() -> None:
     st.title("Model Performance")
     st.caption(
         "Final, one-shot evaluation on the held-out **test split** -- never touched until "
-        "this evaluation (Section 12 / ADR-0003)."
+        "this evaluation (ADR-0003)."
     )
 
     metrics = load_json_report("experiments/test_set_metrics.json")

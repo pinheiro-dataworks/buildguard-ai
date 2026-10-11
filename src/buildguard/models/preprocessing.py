@@ -1,9 +1,9 @@
 """Shared feature preprocessing for every model that consumes the feature table.
 
 Promoted out of `baselines.py` once `classification.py`/`regression.py`
-(Session H) needed the identical numeric/categorical handling -- exactly
+needed the identical numeric/categorical handling -- exactly
 the point at which sharing stops being a guess about future needs and
-starts being real duplication (Section 27: "no duplicated feature logic").
+starts being real duplication.
 """
 
 from __future__ import annotations

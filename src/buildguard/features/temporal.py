@@ -1,4 +1,4 @@
-"""Temporal / lifecycle features (Section 8.2: risk evolving over the lifecycle).
+"""Temporal / lifecycle features: how risk evolves over a project's lifecycle.
 
 Complements `evm.py` (point-in-time EVM ratios) and `inflation.py`
 (point-in-time real-terms restatement) with features about *where a

@@ -1,10 +1,10 @@
-"""Loads models and configuration once, shared across requests (Section 28/29).
+"""Loads models and configuration once, shared across requests.
 
 `get_service_state()` is `lru_cache`d so the three champion artifacts and
 the calibration decisions (threshold, calibration method, conformal
 quantile) are read from disk exactly once per process, not once per
 request -- reading a joblib-pickled sklearn pipeline on every call would
-blow through Section 49's p95 < 500ms budget on its own. A cached function
+blow through the p95 < 500ms latency budget on its own. A cached function
 that raises does *not* poison the cache in Python (the exception
 propagates without being stored), so a request made before `make train` /
 `make calibrate` have ever run fails cleanly and a later retry -- after

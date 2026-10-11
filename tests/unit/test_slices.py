@@ -1,4 +1,4 @@
-"""Unit tests for slice evaluation (Section 18)."""
+"""Unit tests for slice evaluation."""
 
 from __future__ import annotations
 

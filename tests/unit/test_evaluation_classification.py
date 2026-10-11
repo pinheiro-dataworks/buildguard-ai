@@ -1,4 +1,4 @@
-"""Unit tests for classification evaluation metrics (Section 18)."""
+"""Unit tests for classification evaluation metrics."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Data contract tests (Section 8.5 / 35): required columns, ranges,
+"""Data contract tests: required columns, ranges,
 uniqueness, categorical domains, and chronological consistency.
 """
 

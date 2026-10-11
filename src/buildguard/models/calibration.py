@@ -1,9 +1,9 @@
-"""Probability calibration (Section 16).
+"""Probability calibration.
 
 Compares raw (uncalibrated) probabilities from an already-fitted
 classifier against Platt/sigmoid and isotonic calibration, fit on the
-**calibration** split only (never train, never test -- Section 12). This
-answers the question Section 16 poses directly: "when BuildGuard says 70%
+**calibration** split only (never train, never test). This answers the
+question calibration exists for: "when BuildGuard says 70%
 risk, is that probability approximately trustworthy?"
 
 Calibrators are fit directly on `(raw_probability, label)` pairs -- Platt
@@ -15,17 +15,17 @@ That wrapping route was tried first and rejected: it requires the wrapped
 object to be a full sklearn estimator (`fit` *and* `predict`), which
 BuildGuard's own baselines (`buildguard.models.baselines`) don't implement
 -- they only expose `predict_proba` (the same class of problem hit with
-MLflow's skops serialization in Session H). Calibrating directly on the
+MLflow's skops serialization during model logging). Calibrating directly on the
 probability output works uniformly for baselines and real sklearn
 pipelines alike, with no assumptions about the underlying model's API.
 
 **Known limitation:** Brier score and the calibration curve here are
 measured on the same calibration-split rows used to fit the calibration
 mapping (in-sample for that split). This is standard for the
-train/calibration/test design (Section 12's CALIBRATION block is exactly
-where this fitting happens), but it is optimistic relative to genuinely
+train/calibration/test design (the calibration split exists for exactly
+this fitting), but it is optimistic relative to genuinely
 held-out data -- true out-of-sample calibration quality is only confirmed
-at the one final test evaluation (a later phase), never here.
+at the one final test evaluation (`scripts/evaluate.py`), never here.
 """
 
 from __future__ import annotations
