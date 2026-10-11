@@ -1,6 +1,6 @@
 [project]
 name = "buildguard-ai"
-version = "1.0.1"
+version = "1.0.2"
 description = "Production-oriented ML platform for construction cost-overrun and schedule-delay risk, built on Earned Value Management analytics — leakage-safe features, calibrated probabilities, uncertainty, and explainability, deployed at zero recurring cost."
 readme = "README.md"
 requires-python = ">=3.11,<3.13"

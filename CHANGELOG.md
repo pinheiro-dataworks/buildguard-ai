@@ -7,12 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-## [1.0.1] - 2026-10-11
+## [1.0.2] - 2026-10-11
 
-Documentation cleanup and dependency security fixes. No change to data,
-features, models, or metrics: the documentation now stands on its own,
-every number in it matches the committed reports, and the security scan
-passes again.
+Dependency security fixes. No change to data, features, models, or
+metrics.
 
 ### Security
 - Upgraded locked dependencies with published advisories: mlflow 3.17.0,
@@ -22,6 +20,16 @@ passes again.
   since 2026-09-01 as these advisories were published.
 - Removed the `pip-audit` exception for the `cryptography` advisory:
   mlflow 3.17 no longer caps `cryptography` below the fixed version.
+
+### Changed
+- `docs/ARCHITECTURE.md` and `docs/RUNBOOK.md` describe the scan without
+  the old exception, and how to handle new advisories.
+
+## [1.0.1] - 2026-10-10
+
+Documentation cleanup. No change to data, features, models, or metrics:
+the documentation now stands on its own, and every number in it matches
+the committed reports.
 
 ### Added
 - `docs/REQUIREMENTS.md`: product scope, prediction tasks, data,
