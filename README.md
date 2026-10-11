@@ -253,8 +253,9 @@ signature of the chronological split, not a defect); `schedule_delay`
 fired all three computed retraining triggers (PSI, performance drop,
 calibration deterioration) despite negligible prediction drift — caught
 only because performance monitoring uses labels and drift detection does
-not. Inference latency: p95 20.8ms / 5.6ms / 0.03ms for cost-overrun /
-schedule-delay / final-cost, well under the 500ms target. **Never
+not. Inference latency (committed monitoring report): p95 37.2ms /
+11.3ms / 0.06ms for cost-overrun / schedule-delay / final-cost, well under
+the 500ms target. **Never
 auto-retrains** — the retraining policy (Detect → Investigate → Validate →
 Retrain → Compare → Approve → Release) is enforced structurally:
 `scripts/monitor.py` has no code path that calls `scripts/train.py`. Full
