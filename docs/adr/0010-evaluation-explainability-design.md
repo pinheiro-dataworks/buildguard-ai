@@ -4,14 +4,13 @@
 
 ## Context
 
-Three requirements converge on the same moment in the project: Section 18
-mandates slice analysis across six dimensions ("a high global metric with
-poor subgroup behavior must be documented, not hidden"); Section 20
-mandates global/local SHAP explanations with a fixed causality disclaimer;
-Section 47 mandates a senior-level failure analysis (false negatives,
-false positives, largest regression errors, low-confidence predictions,
-out-of-distribution examples) answering specific questions about which
-project types, lifecycle stages, and inflation regimes are hardest.
+Three requirements converge on the same moment in the project: slice
+analysis across six dimensions (a high global metric with poor subgroup
+behavior must be documented, not hidden); global and local SHAP
+explanations with a fixed causality disclaimer; and a failure analysis
+(false negatives, false positives, largest regression errors,
+low-confidence predictions, out-of-distribution examples) that answers
+which project types, lifecycle stages, and inflation regimes are hardest.
 
 All three need the same thing to be honest: the **test split**, untouched
 since ADR-0003, used for exactly the one evaluation it was reserved for.
@@ -25,20 +24,19 @@ the design of the module that finally does.
 `evaluation/regression.py`, and `evaluation/calibration.py` only compute
 metrics on a `(y_true, prediction)` pair the caller supplies -- they never
 fit a calibrator, select a threshold, or pick a champion. That already
-happened in `models/calibration.py` (Section 16) and `models/thresholds.py`
-(Section 17) on the calibration split; this module answers a narrower
+happened in `models/calibration.py` (ADR-0007) and `models/thresholds.py`
+(ADR-0008) on the calibration split; this module answers a narrower
 question: given those already-frozen decisions, how do they hold up on
 data that never influenced them. `evaluation/calibration.py` in particular
 exists specifically to close a limitation `models/calibration.py`'s own
 docstring flags: its Brier score is measured in-sample, on the same
 calibration rows the mapping was fit on.
 
-**Seven slice dimensions**, not six: the mandatory Section 18 set (project
+**Seven slice dimensions**, not six: the six required dimensions (project
 type, project size, construction standard, lifecycle stage, geography,
 budget segment) plus an `inflation_regime` dimension (a 3-way quantile
-bucket of `inflation_multiplier`), added specifically to give Section 47's
-"does inflation regime change performance" question a real, computed
-answer rather than a qualitative guess. Size, budget, and inflation regime
+bucket of `inflation_multiplier`), added specifically to give the "does the
+inflation regime change performance?" question a real, computed answer rather than a qualitative guess. Size, budget, and inflation regime
 are continuous, so all three are bucketed with the same
 `slices.bucket_by_quantile` (tercile split) used for lifecycle-stage-style
 categorical slicing elsewhere.
@@ -53,14 +51,14 @@ baseline is constant regardless of class balance.
 **Out-of-distribution flagging via a per-feature train-range envelope**:
 a test row is flagged if any `NUMERIC_FEATURE_COLUMNS` value falls outside
 `[train.min(), train.max()]` for that column. Deliberately the simplest
-thing that works, not a learned novelty detector -- Section 47 asks what a
-*human reviewer* should check, and a reviewer can audit "this CPI is
+thing that works, not a learned novelty detector -- the failure analysis is
+written for a *human reviewer*, and a reviewer can audit "this CPI is
 outside the range the model ever trained on" at a glance in a way an
 IsolationForest score cannot be sanity-checked at all.
 
 **Near-threshold band (+/-0.05) as the "low-confidence" definition**,
-not a band around 0.50. Both classifiers' optimized thresholds (Section
-17) sit far from 0.50 by design (0.080 for `cost_overrun`, 0.140 for
+not a band around 0.50. Both classifiers' optimized thresholds (ADR-0008)
+sit far from 0.50 by design (0.080 for `cost_overrun`, 0.140 for
 `schedule_delay`) because the business cost matrix (`configs/business.yaml`)
 values recall far above precision -- the actual decision boundary a human
 reviewer should distrust the most is the one the system actually uses to
@@ -103,7 +101,7 @@ theoretical risks flagged in earlier ADRs:
   slice's worst value is `ES` at AUC 0.597 (n=76) -- close to random,
   against a global AUC of 0.9495 (`reports/error_analysis/cost_overrun_failure_analysis.md`).
   This is exactly the "high global metric, poor subgroup behavior" case
-  Section 18 requires documenting rather than hiding.
+  that has to be documented rather than hidden.
 
 Both findings are real, reproducible (`make evaluate` regenerates them
 identically under the fixed seed), and neither was fabricated after the
@@ -115,16 +113,17 @@ added" note.
 - **Compute slice metrics on the calibration split instead of test** --
   rejected. The calibration split was already used to fit calibrators and
   select thresholds; scoring slices there would repeat the same in-sample
-  optimism ADR-0007 explicitly flags, defeating Section 47's purpose.
+  optimism ADR-0007 explicitly flags, defeating the purpose of a failure
+  analysis.
 - **A learned novelty/outlier detector for out-of-distribution flagging**
   (e.g. `IsolationForest`, Mahalanobis distance) -- more statistically
-  principled but opaque to the human reviewer Section 47 is written for;
+  principled but opaque to the human reviewer the analysis is written for;
   a per-feature range check is auditable without trusting a second model.
 - **Static Plotly/matplotlib figures in `reports/figures/` for the
-  calibration curves and slice tables** -- deferred, not rejected. The
-  Streamlit dashboard (Phase 8) is `plotly`'s actual intended home in this
-  project and will render these same numbers interactively; building a
-  static-image version now would be thrown away once Phase 8 lands.
+  calibration curves and slice tables** -- rejected. The Streamlit
+  dashboard's Model Performance page renders these same numbers
+  interactively with `plotly`; a second, static copy would only drift out
+  of date.
 - **Explaining the calibrated probability directly (differentiate through
   the isotonic/sigmoid calibrator)** -- rejected, consistent with
   `explainability/shap.py`'s own module docstring: the calibration mapping
@@ -136,14 +135,13 @@ added" note.
 
 - `schedule_delay`'s out-of-sample calibration gap and `cost_overrun`'s
   `ES`-state weakness are now documented findings, not open questions --
-  both must be carried forward into `docs/LIMITATIONS.md` and
-  `docs/MODEL_CARD.md` once those are written (Session N), not left
-  sitting only in `reports/error_analysis/`.
+  both are carried forward into `docs/LIMITATIONS.md` and
+  `docs/MODEL_CARD.md`, not left sitting only in `reports/error_analysis/`.
 - `final_cost`'s holdout coverage (0.899) running above its 0.80 target
   means the conformal interval is currently wider than the guarantee
   strictly requires -- conservative, not incorrect, but a concrete
-  candidate for ADR-0009's deferred "asymmetric interval" alternative if a
-  future session revisits uncertainty quantification.
+  candidate for ADR-0009's deferred "asymmetric interval" alternative if
+  uncertainty quantification is revisited.
 - Every number in this ADR and in `reports/error_analysis/*.md` traces back
   to one `make evaluate` run against `git_sha` recorded in
   `reports/experiments/test_set_metrics.json` -- retraining the champions

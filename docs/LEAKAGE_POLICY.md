@@ -1,6 +1,6 @@
 # Anti-Leakage Policy
 
-**Rule (Section 11):** a model predicting risk at month `t` may use only
+**Rule:** a model predicting risk at month `t` may use only
 information available on or before `t`. This document is the single
 reference for what that means concretely in BuildGuard AI, and how it is
 enforced in code and tests -- not just in intent.
@@ -50,17 +50,17 @@ Projects still in-flight as of the dataset's `reference_date` get `pd.NA`
 for every outcome field -- never a coerced `False`, which would silently
 teach a model that "not yet finished" means "did not overrun."
 
-## 4. Forbidden features (Section 11)
+## 4. Forbidden features
 
 Never allowed as a model input, anywhere in `src/buildguard/features/`:
 
 - `final_cost` (nominal or real), or anything derived from a project's
   *last* snapshot when predicting from an *earlier* one.
 - Future change orders (`date > snapshot_date`) -- structurally impossible
-  via `merge_asof`, see Section 2.
+  via `merge_asof`, see [Feature availability timestamp](#2-feature-availability-timestamp).
 - Future supplier delivery delays -- moot today: Work Packages and
-  Suppliers are entirely excluded from the feature pipeline (see Section
-  6), precisely because those tables represent "as of the project's last
+  Suppliers are entirely excluded from the feature pipeline (see
+  [Known limitation](#6-known-limitation-work-packages-and-suppliers)), precisely because those tables represent "as of the project's last
   snapshot" status, not a genuine per-date time series.
 - Final completion status (`actual_progress >= 1.0` as a *feature* --
   it is only ever used, appropriately, as the *resolution condition* for a
@@ -70,12 +70,12 @@ Never allowed as a model input, anywhere in `src/buildguard/features/`:
 - Whole-lifecycle aggregates computed over a project's full history when
   scoring an earlier snapshot (e.g. "average CPI over the whole project").
 - Any label or label-derived value (`cost_overrun`, `schedule_delay`,
-  `final_cost_real`) appearing as a feature -- see Section 3.
+  `final_cost_real`) appearing as a feature -- see [Label creation](#3-label-creation).
 
 ## 5. Temporal validation strategy
 
 Chronological, **project-grouped** split
-(`buildguard.data.split.chronological_project_split`, Section 12):
+(`buildguard.data.split.chronological_project_split`):
 projects are sorted by `planned_start_date` and assigned wholesale to
 train (60%, oldest) / calibration (20%) / test (20%, newest) -- never split
 at the snapshot-row level, so no project's history can appear in more than
@@ -84,10 +84,12 @@ one split. Rationale for this method over alternatives (e.g. plain
 [ADR-0003](adr/0003-temporal-validation.md).
 
 The test split is reserved for exactly one final, unbiased evaluation
-(Section 12) -- it must never be touched for feature selection,
+(`scripts/evaluate.py`) -- it must never be touched for feature selection,
 hyperparameter tuning, calibration, or threshold selection. This is a
 process discipline this document records but code cannot fully enforce;
-future model-training scripts must respect it explicitly.
+every training script must respect it explicitly. One early exception is
+on record: the first baseline validation scored on the test split, with
+no selection made from it ([`LIMITATIONS.md`](LIMITATIONS.md#11-the-test-split-was-seen-once-before-the-final-evaluation)).
 
 ## 6. Known limitation: Work Packages and Suppliers
 
@@ -98,12 +100,12 @@ feature pipeline as-is would leak each project's *final* state into every
 `build_feature_table` rather than included unsafely (see the module
 docstring in `src/buildguard/features/pipeline.py`). Wiring them in
 correctly would require giving both tables real per-row dates -- a schema
-change, not attempted in this phase.
+change, not attempted in the current version.
 
 ## 7. Automated leakage tests
 
-`tests/leakage/test_pipeline_leakage.py` -- the Section 11-mandated
-automated check, run on every CI build:
+`tests/leakage/test_pipeline_leakage.py` -- the automated check behind
+the rule above, run on every CI build:
 
 - A change order dated after a project's snapshots must never contribute
   to any row's cumulative change-order features (`max(feature_timestamp)

@@ -1,10 +1,9 @@
 # Limitations
 
 Every item here is a real, measured finding from this project's own runs
-(ADRs and `reports/`), not a hedge added for appearances — Section 18's
-rule ("a high global metric with poor subgroup behavior must be
-documented, not hidden") applies to this whole document, not just slice
-analysis.
+(ADRs and `reports/`), not a hedge added for appearances. The same rule
+that applies to slice analysis applies to this whole document: a strong
+headline metric does not excuse hiding where the system is weak.
 
 ## 1. Synthetic data only — no real-world validation
 
@@ -58,34 +57,36 @@ Forest) both scored worse on the calibration split.
 ## 6. Work Packages and Suppliers are excluded from features entirely
 
 Both tables represent status "as of the project's last snapshot," not a
-real per-row time series ([`LEAKAGE_POLICY.md`](LEAKAGE_POLICY.md)
-Section 6). Including them as-is would leak each project's *final* state
-into every *earlier* prediction. They are excluded rather than included
-unsafely — meaning supplier performance and work-package-level detail
-play no role in any prediction today, even though they are plausibly
-informative.
+real per-row time series ([`LEAKAGE_POLICY.md`](LEAKAGE_POLICY.md#6-known-limitation-work-packages-and-suppliers)).
+Including them as-is would leak each project's *final* state into every
+*earlier* prediction. They are excluded rather than included unsafely —
+meaning supplier performance and work-package-level detail play no role
+in any prediction today, even though they are plausibly informative.
 
-## 7. Operational monitoring has no live traffic yet
+## 7. Operational monitoring has no live traffic
 
 `monitoring.performance.measure_inference_latency` reports real, measured
-latency, but request volume and error rate stay unpopulated until the
-FastAPI service has real production traffic — there is no deployed
-public instance yet. See [`MONITORING.md`](MONITORING.md) Section 5.
+latency, but request volume and error rate stay unpopulated: the public
+app predicts in-process and the API keeps no request log. See
+[`MONITORING.md`](MONITORING.md#5-known-limitation-operational-monitoring-has-no-live-traffic).
 
 ## 8. The custom Streamlit sidebar router has no per-page URLs
 
 Chosen over `st.navigation()` after that API's sidebar nav proved unable
-to render below the logo/title as the design spec requires
+to render below the logo and project name
 ([ADR-0012](adr/0012-streamlit-fastapi-boundary.md)). The trade-off:
 no deep-linking to a specific page and no browser back-button support
 for in-app navigation.
 
-## 9. Business impact is not yet quantified
+## 9. Business impact is a scenario, not a measurement
 
-Section 21's decision-support value estimate (active projects × exposure
-× overrun prevalence × recall × avoidable-impact assumption) has not
-been computed or documented yet — tracked as pending in `README.md`
-Section 11.
+The decision-support value ($142.9M, `reports/experiments/business_impact.json`)
+multiplies real measured inputs (55 in-flight projects, $18.9M average
+approved budget, 47.0% overrun prevalence, 97.4% held-out recall) by one
+explicit assumption: that 30% of a correctly flagged overrun is avoidable
+(`configs/business.yaml`). That assumption is not measured anywhere in
+this project, and the result moves linearly with it. It is an estimate to
+challenge, not realized savings.
 
 ## 10. Feature drift between train and test is real, but expected
 
@@ -93,7 +94,18 @@ Section 11.
 between the train and test splits (dominated by `inflation_multiplier`
 and `months_since_start`). This is the expected signature of the
 chronological anti-leakage split itself, not a data defect — but it does
-mean any single PSI alert needs the same investigation step Section 24
-requires before being read as a problem. See
+mean any single PSI alert needs the investigation step of the retraining
+policy before being read as a problem. See
 [ADR-0011](adr/0011-monitoring-drift-detection.md) and
-[`MONITORING.md`](MONITORING.md) Section 3.
+[`MONITORING.md`](MONITORING.md#3-reading-a-drift-alert-correctly).
+
+## 11. The test split was seen once before the final evaluation
+
+While the baselines were first validated, their scores were computed on
+the test split (recorded in [`ARCHITECTURE.md`](ARCHITECTURE.md#8-baselines)).
+No threshold, calibration method, hyperparameter, or champion was chosen
+from those numbers — all selection happened on the calibration split —
+but it was still a look at data that should have stayed unseen until the
+final evaluation. The practical effect on the reported test metrics is
+expected to be small, since nothing was tuned on it; a stricter rerun
+would regenerate the portfolio with a new seed and evaluate once.

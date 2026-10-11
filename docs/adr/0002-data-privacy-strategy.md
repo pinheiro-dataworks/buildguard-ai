@@ -16,7 +16,7 @@ rates, subgroup heterogeneity).
 Two local UK NISTA/IPA major-projects annual-report CSVs were made
 available during scoping as a possible real-data source, but they are
 portfolio-level annual figures, not row-level project time series — they
-don't match the data model in Section 8.4 (no `PV`/`EV`/`AC` snapshots), and
+don't match the project's data model (no `PV`/`EV`/`AC` snapshots), and
 their redistribution license has not been independently verified.
 
 ## Decision
@@ -45,8 +45,8 @@ their redistribution license has not been independently verified.
   these specific files, and the data doesn't fit the project's schema
   anyway. Revisit explicitly (new ADR) if redistribution becomes useful.
 - **Skip a synthetic generator and hand-write a small fixture dataset** —
-  rejected: too small to support the target scale (100-500 projects,
-  Section 8.2) or meaningful slice analysis (Section 18).
+  rejected: too small to support the target scale (100-500 projects)
+  or meaningful slice analysis.
 
 ## Consequences
 
@@ -55,6 +55,6 @@ their redistribution license has not been independently verified.
 - The synthetic generator itself becomes a first-class, carefully designed
   component (not a throwaway script) — its realism *is* the project's
   credibility, which is why it gets its own dedicated module, seed
-  discipline, and documented relationships (Section 8.2).
+  discipline, and documented realism relationships (ADR-0004).
 - Any future move to real data (e.g., a licensed dataset) requires a new ADR
   and a fresh privacy review — it does not happen by default.

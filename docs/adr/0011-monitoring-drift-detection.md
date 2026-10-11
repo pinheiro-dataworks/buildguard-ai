@@ -4,14 +4,13 @@
 
 ## Context
 
-Section 23 requires monitoring to be **implemented, not just documented**,
-across five categories (data quality, data drift, prediction drift,
-performance, operational) and a dedicated Model Health page (Phase 8).
-Section 24 requires a retraining policy with specific triggers, explicit
-that drift alone must never auto-trigger a retrain. Unlike Sections
-16-19 (Phase 5) and 18/20/47 (Phase 6), there is no live production
-system yet to monitor -- no deployed API, no real request stream, no
-second batch of genuinely new labeled data. Every design decision below
+Monitoring has to be **implemented, not just documented**, across five
+categories (data quality, data drift, prediction drift, performance,
+operational), with a Model Health page in the app and a retraining policy
+with explicit triggers -- and drift alone must never auto-trigger a
+retrain. At the time of this decision there was no live production system
+to monitor: no deployed API, no real request stream, no second batch of
+genuinely new labeled data. Every design decision below
 is about how to implement *real, computed* monitoring against that
 constraint honestly, rather than either skipping it (deferring everything
 to "once the API exists") or faking it (inventing synthetic drift on data
@@ -24,12 +23,12 @@ reference/current pairs**, rather than fabricating a second dataset.
 Two pairings, each already meaningful for a different reason:
 
 - **Feature drift**: reference = **train** split, current = **test**
-  split -- the same chronological split every other Section 18/47
-  comparison in this project already relies on, standing in for
+  split -- the same chronological split every other evaluation
+  in this project already relies on, standing in for
   "the next batch of production data" until real production history
   exists.
 - **Prediction drift**: reference = **calibration** split (what the
-  threshold was tuned against, Section 17), current = **test** split --
+  threshold was tuned against, ADR-0008), current = **test** split --
   isolates drift in the model's *output* from drift in its *inputs*.
 
 **PSI for every variable type, KS test and Wasserstein distance for
@@ -48,28 +47,28 @@ already recorded during training/calibration
 (`reports/experiments/training_summary.json`'s `calibration_auc`,
 `calibration_summary.json`'s `brier_scores`/`recall_at_threshold`).
 Current = the same task's genuinely held-out test-split metric from
-Session J (`reports/experiments/test_set_metrics.json`). This reuses
+ADR-0010 (`reports/experiments/test_set_metrics.json`). This reuses
 `buildguard.evaluation`'s metric functions rather than recomputing them a
-second way (Section 27) -- `buildguard.monitoring.performance` only adds
+second way -- `buildguard.monitoring.performance` only adds
 the comparison-and-threshold logic evaluation didn't need.
 
 **Risk bands** (`models/thresholds.risk_band()`): "low" below the
 optimized decision threshold, the flagged zone above it split at its own
 midpoint into "medium"/"high". This is a display/reporting convenience
-(Section 23's risk-band proportions, the Section 28 API response shape),
+(risk-band proportions in monitoring, the `risk_band` field in API responses),
 not a second business-cost decision the way the threshold itself is.
 
 **Operational latency is measured for real, not simulated**
 (`monitoring.performance.measure_inference_latency`): it times actual
 repeated calls into each champion's own `predict`/`predict_proba` -- the
-same code path Phase 8's FastAPI service will call per request. Request
-volume and error rate have no real traffic to report on yet (no API
-exists); `PredictionLogEntry`/`summarize_operational_log` are the
-aggregation half of that story, ready for the API to append real entries
-to once it exists, rather than a stub with no code behind it.
+same code path the FastAPI service calls per request. Request volume and
+error rate have no real traffic to report on (the app predicts in-process
+and the API keeps no request log); `PredictionLogEntry`/`summarize_operational_log`
+are the aggregation half of that story, ready for a request log once one
+exists, rather than a stub with no code behind it.
 
 **Retraining triggers: computed where a single run can, documented where
-it can't** (Section 24 lists six). Four are evaluated for real by
+it can't** (the policy defines six). Four are evaluated for real by
 `scripts/monitor.py` against this run's actual signals: PSI above the
 critical threshold, performance drop beyond
 `monitoring.performance_drop_threshold`, calibration deterioration
@@ -79,11 +78,11 @@ violations. Two are calendar/volume-driven policy that no single run can
 evaluate -- new labeled-data volume above N, and scheduled quarterly
 evaluation -- and are documented as policy in `docs/MONITORING.md` rather
 than computed. **The script only flags triggers; it never retrains** --
-Section 24's "Never auto-retrain solely because drift exists" is enforced
+"never auto-retrain solely because drift exists" is enforced
 structurally (`scripts/monitor.py` has no code path that calls
 `scripts/train.py`), not just by convention.
 
-### Real results (full portfolio, this session's run)
+### Real results (full portfolio, `make monitor`)
 
 ```
 Data quality:     0 violations across Projects / Snapshots / Change Orders
@@ -114,7 +113,7 @@ Performance:       cost_overrun: no metric degraded (ROC-AUC 0.898 -> 0.950, an
 Operational:       cost_overrun (RandomForest) p50=14.9ms / p95=20.8ms
                    schedule_delay (LightGBM) p50=4.6ms / p95=5.6ms
                    final_cost (formula) p50=0.02ms / p95=0.03ms
-                   All comfortably under Section 49's 500ms p95 target.
+                   All comfortably under the 500ms p95 target.
 
 Triggers fired:    psi_above_critical_threshold, performance_drop_above_threshold,
                    calibration_deterioration -- all three point at schedule_delay.
@@ -126,8 +125,8 @@ would have missed the `schedule_delay` problem.** Its probability output
 and risk-band proportions barely moved (PSI ~0.002) between the
 calibration and test cohorts, even though its held-out accuracy dropped
 sharply. Only the label-dependent performance and calibration checks
-caught it -- exactly why Section 24 lists multiple independent trigger
-types instead of relying on drift detection alone.
+caught it -- exactly why the retraining policy uses multiple independent
+trigger types instead of relying on drift detection alone.
 
 ## Alternatives Considered
 
@@ -142,17 +141,19 @@ types instead of relying on drift detection alone.
 - **A learned/statistical novelty detector (e.g. `IsolationForest`) for
   drift, instead of PSI/KS/Wasserstein** -- rejected for the same reason
   ADR-0010 rejected it for out-of-distribution flagging: opaque to a human
-  reviewer, and Section 23 names PSI/KS/Wasserstein explicitly.
-- **Treat all six Section 24 triggers as equally "implementable" and stub
+  reviewer, while PSI/KS/Wasserstein are standard, explainable, and
+  easy to threshold.
+- **Treat all six retraining triggers as equally "implementable" and stub
   the two calendar/volume ones with a fake computed value** -- rejected;
   a fabricated "47 new labeled projects" number with no real labeling
   pipeline behind it would be exactly the kind of dishonest placeholder
   this project's "never fabricate metrics" rule forbids. Documenting them
   as policy, honestly labeled as not computed, is more defensible than a
   number with nothing real behind it.
-- **Fire a retraining action automatically when triggers fire** -- Section
-  24 explicitly forbids this ("Never auto-retrain solely because drift
-  exists"); `scripts/monitor.py` only ever writes a report.
+- **Fire a retraining action automatically when triggers fire** --
+  rejected: drift is a reason to investigate, not proof the model is
+  wrong, and an automatic retrain on a bad batch would ship a worse model
+  with no human review. `scripts/monitor.py` only ever writes a report.
 
 ## Consequences
 
@@ -160,20 +161,18 @@ types instead of relying on drift detection alone.
   the expected signature of the anti-leakage temporal split design
   (ADR-0003) and should be read as confirmation the split is doing what
   it is supposed to, not as evidence of a data pipeline problem. This
-  must be stated plainly wherever monitoring results are shown (Model
-  Health page, Phase 8) so a PSI alert on `inflation_multiplier` doesn't
+  must be stated plainly wherever monitoring results are shown (the Model
+  Health page) so a PSI alert on `inflation_multiplier` doesn't
   get misread as a production incident.
 - `schedule_delay`'s three fired triggers (PSI, performance drop,
   calibration deterioration) are a real, standing finding that -- per
-  Section 24's Detect -> **Investigate** -> ... workflow -- warrants
+  the Detect -> **Investigate** -> ... workflow -- warrants
   human investigation before any retraining decision, not an automatic
-  one. This carries forward into `docs/LIMITATIONS.md` and
-  `docs/MODEL_CARD.md` once written (Session N), alongside ADR-0010's
-  matching finding.
+  one. This is carried forward into `docs/LIMITATIONS.md` and
+  `docs/MODEL_CARD.md`, alongside ADR-0010's matching finding.
 - Operational monitoring's request-volume/error-rate half stays inert
-  until Phase 8's FastAPI service exists to feed it real entries -- the
-  aggregation logic is complete and tested now, but `reports/monitoring/`
-  will not show real traffic numbers until then.
+  until the API records requests -- the aggregation logic is complete and
+  tested, but `reports/monitoring/` does not show real traffic numbers.
 - Re-running `make monitor` after any retraining or new `make evaluate`
   run regenerates this report deterministically against whatever is
   currently in `models/` and `reports/experiments/` -- like ADR-0010, the

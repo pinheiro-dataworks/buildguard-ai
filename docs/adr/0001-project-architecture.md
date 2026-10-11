@@ -14,23 +14,22 @@ layer, each independently testable.
 
 ## Decision
 
-Adopt the `src/`-layout Python package structure defined in
-`BUILDGUARD_AI_PROJECT_SCOPE.md` Section 33:
+Adopt a `src/`-layout Python package structure:
 
 - `src/buildguard/` — the installable package (`data`, `features`, `models`,
   `evaluation`, `explainability`, `monitoring`, `api`, `utils`), consumed by
   both the FastAPI service and the Streamlit app so feature logic is never
-  duplicated between training and inference (Section 28).
+  duplicated between training and inference.
 - `app/` — Streamlit UI only; no business logic lives here.
 - `scripts/` — thin CLI entry points (`generate_data.py`, `train.py`,
   `evaluate.py`, `monitor.py`, `package_model.py`) that call into
   `src/buildguard/`.
 - `configs/` — externalized YAML configuration; no scattered magic numbers.
 - `tests/` — mirrors the concern split (`unit`, `integration`, `contracts`,
-  `leakage`, `monitoring`, `api`) so each testing layer in Section 35 has an
+  `leakage`, `monitoring`, `api`) so each testing layer has an
   unambiguous home.
-- `notebooks/` — exploration only, per the notebook policy (Section 34);
-  accepted logic graduates into `src/buildguard/`.
+- `notebooks/` — exploration only; accepted logic graduates into
+  `src/buildguard/`.
 
 Package management: [`uv`](https://docs.astral.sh/uv/) with a committed
 `uv.lock`, Python 3.11 pinned via `.python-version`. Ruff (lint + format)
@@ -52,12 +51,11 @@ commit, rather than retrofitted later.
 
 ## Consequences
 
-- Every new capability has one obvious home; the mapping from
-  `BUILDGUARD_AI_PROJECT_SCOPE.md` sections to folders stays legible to a
-  reviewer.
+- Every new capability has one obvious home, and the mapping from a
+  requirement to the folder that implements it stays legible to a reviewer.
 - `mypy --strict` from day one is stricter than most portfolio projects
   attempt — this is intentional signal, and it forward-loads a small amount
   of typing overhead onto every future PR.
 - Because `src/buildguard/` is shared by API, app, and scripts, a train/serve
-  consistency test (Section 28, Section 35) becomes possible and is required
-  before v1.0.0.
+  consistency test becomes possible (the API contract tests rebuild
+  features through the same `build_feature_table` training uses).

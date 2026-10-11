@@ -4,11 +4,11 @@
 
 ## Context
 
-Section 17 forbids silently defaulting to a 0.50 classification threshold
-and requires optimizing against a configurable business-cost matrix,
-reporting threshold, precision, recall, expected business cost, and the
-confusion matrix -- all on validation/calibration data, never test
-(Section 12).
+A 0.50 classification threshold silently assumes that a missed overrun
+and a false alarm cost the same, which is rarely true. The threshold
+should instead minimize a configurable business-cost matrix, and the
+chosen threshold, precision, recall, expected business cost, and confusion
+matrix should all be reported -- measured on calibration data, never test.
 
 ## Decision
 
@@ -23,7 +23,7 @@ defined as costing more than a false alarm (a false positive):
 
 `src/buildguard/models/thresholds.py: optimize_threshold()` sweeps 199
 candidate thresholds strictly between 0 and 1 on the **calibration**
-split's *calibrated* probabilities (Section 16's output feeds directly
+split's *calibrated* probabilities (ADR-0007's output feeds directly
 into this, not the raw model), and picks the threshold minimizing
 `expected_cost = false_negatives * fn_cost + false_positives * fp_cost`.
 
@@ -46,8 +46,7 @@ a far smaller cost than a genuine overrun going undetected.
 
 ## Alternatives Considered
 
-- **Fixed 0.50 threshold** -- the exact practice Section 17 forbids;
-  would have meant materially fewer flagged projects (lower recall) at
+- **Fixed 0.50 threshold** -- would have meant materially fewer flagged projects (lower recall) at
   each task's default operating point, missing real overruns/delays the
   cost matrix says are expensive to miss.
 - **Maximize F1 score instead of minimizing expected cost** -- rejected:
@@ -61,10 +60,7 @@ a far smaller cost than a genuine overrun going undetected.
   balancing the two error rates evenly.
 - **A finer or coarser threshold grid** -- 199 candidates (step size
   0.005) was chosen as more than fine enough to find a stable optimum on
-  a cost surface this smooth, without the cost of a much larger sweep;
-  Section 15's "avoid unjustified exhaustive grids" guidance for
-  hyperparameter search applies in spirit here too, even though this is a
-  1-D sweep, not a model-tuning search.
+  a cost surface this smooth, without the cost of a much larger sweep.
 
 ## Consequences
 

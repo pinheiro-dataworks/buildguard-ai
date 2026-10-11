@@ -37,7 +37,7 @@ real project, company, or person.
 - **No real entities:** project names, cities, supplier names, and IDs are
   synthesized; any resemblance to a real project or company is coincidental
   and not sourced from any real record.
-- **No PII:** the data model (Section 8.4 of `BUILDGUARD_AI_PROJECT_SCOPE.md`)
+- **No PII:** the data model ([`DATA_DICTIONARY.md`](DATA_DICTIONARY.md))
   contains no personal data fields at all — no names, contacts, or employee
   identifiers.
 
