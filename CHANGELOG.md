@@ -7,11 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-## [1.0.1] - 2026-10-10
+## [1.0.1] - 2026-10-11
 
-Documentation cleanup. No change to data, features, models, or metrics:
-the documentation now stands on its own, and every number in it matches
-the committed reports.
+Documentation cleanup and dependency security fixes. No change to data,
+features, models, or metrics: the documentation now stands on its own,
+every number in it matches the committed reports, and the security scan
+passes again.
+
+### Security
+- Upgraded locked dependencies with published advisories: mlflow 3.17.0,
+  cryptography 50.0.2, gitpython 3.2.0, jupyterlab 4.6.4, notebook 7.6.3,
+  tornado 6.5.10, urllib3 2.8.0, virtualenv 21.14.6, werkzeug 3.1.9,
+  multidict 6.9.1. The security workflow had been failing on `main`
+  since 2026-09-01 as these advisories were published.
+- Removed the `pip-audit` exception for the `cryptography` advisory:
+  mlflow 3.17 no longer caps `cryptography` below the fixed version.
 
 ### Added
 - `docs/REQUIREMENTS.md`: product scope, prediction tasks, data,

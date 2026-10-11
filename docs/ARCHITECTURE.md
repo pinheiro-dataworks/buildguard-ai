@@ -420,10 +420,10 @@ rather than each stage tested only in isolation.
 
 **CI** (`.github/workflows/ci.yml`): two parallel jobs, `quality`
 (`ruff check`, `ruff format --check`, `mypy src`) and `test` (`make
-train && make calibrate`, then the full suite with an 85% coverage gate). **Security** (`security.yml`): `pip-audit` and `bandit`,
-weekly plus every push/PR -- one real, documented exception (a
-`cryptography` CVE pinned below the fix by `mlflow` itself, on a
-Databricks-integration code path this project never exercises).
+train && make calibrate`, then the full suite with an 85% coverage gate). **Security**
+(`security.yml`): `pip-audit` and `bandit`, weekly plus every push/PR,
+with no ignored vulnerabilities. New advisories against locked
+dependencies are fixed by upgrading them in `uv.lock`.
 
 **Documentation set:** [`REQUIREMENTS.md`](REQUIREMENTS.md),
 [`DATA_DICTIONARY.md`](DATA_DICTIONARY.md), [`DATA_PRIVACY.md`](DATA_PRIVACY.md),
