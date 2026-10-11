@@ -164,9 +164,13 @@ construction.
 - **`mypy` fails on a new third-party import in `src/`.** Add it to
   `pyproject.toml`'s `[[tool.mypy.overrides]]` `ignore_missing_imports`
   list rather than adding inline `# type: ignore` comments throughout.
-- **A CI security-scan failure on a dependency you can't upgrade.** Check
-  whether the fix is blocked by another dependency's own version pin
-  (`uv lock --upgrade-package <name> --verbose` shows the real
-  constraint chain) before assuming it's fixable — see
-  `.github/workflows/security.yml`'s documented `cryptography` exception
-  for a worked example.
+- **The weekly security scan starts failing with no code change.** New
+  advisories get published against locked versions. Upgrade the flagged
+  packages (`uv lock --upgrade-package <name>`), re-export
+  `requirements.txt` (command in [Deployment](#3-deployment-streamlit-community-cloud)),
+  and run the tests. If the fix is blocked by another dependency's version
+  pin (`uv lock --upgrade-package <name> --verbose` shows the constraint
+  chain), check whether the vulnerable code path is reachable and document
+  the reason in `security.yml` before adding `--ignore-vuln`. Example: a
+  `cryptography` advisory stayed ignored while `mlflow` capped it below the
+  fix, and was cleared once `mlflow` 3.17 lifted the cap.
