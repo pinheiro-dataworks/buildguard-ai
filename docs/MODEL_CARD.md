@@ -106,8 +106,10 @@ out-of-sample calibration gap. The business cost matrix
 (`configs/business.yaml`) values missing a real overrun/delay far above
 a false alarm (10x for cost, 8x for schedule) — both classifiers'
 thresholds are deliberately tuned toward high recall, low precision as a
-result ([ADR-0008](adr/0008-threshold-policy.md)); expect roughly 4-5
-false alarms for every true positive investigated.
+result ([ADR-0008](adr/0008-threshold-policy.md)). On the test split that
+meant about 0.8 false alarms per true positive for cost overrun (211
+false positives vs. 259 true positives) and about 0.4 for schedule delay
+(139 vs. 367).
 
 ## Drift policy and retraining criteria
 

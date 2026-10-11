@@ -354,8 +354,9 @@ documenting a plan:
   performance monitoring is label-dependent and drift detection is not.
 - **Operational monitoring**: real (not simulated) inference latency,
   timing actual `predict`/`predict_proba` calls. **Real result:** p95
-  20.8ms / 5.6ms / 0.03ms for cost-overrun / schedule-delay / final-cost,
-  all comfortably under the 500ms target. Request volume/error rate stay
+  37.2ms / 11.3ms / 0.06ms for cost-overrun / schedule-delay / final-cost,
+  all comfortably under the 500ms target (wall-clock figures, so they vary
+  with the machine that runs `make monitor`). Request volume/error rate stay
   inert: the app predicts in-process and the API keeps no request log.
 - **Risk bands** (`models/thresholds.risk_band()`): "low" below the
   optimized decision threshold, the flagged zone above it split at its

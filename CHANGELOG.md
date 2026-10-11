@@ -25,6 +25,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   Health page, business impact, committed model artifacts, and the
   sample-data, models, and app READMEs.
 
+### Fixed
+- Inference-latency figures in the README, `docs/ARCHITECTURE.md`, and
+  ADR-0011/0012 now match the committed monitoring report (p95 37.2ms /
+  11.3ms / 0.06ms). The report was regenerated when the model artifacts
+  were committed, and the docs were not updated; latency is wall-clock and
+  varies between runs. All three stay far below the 500ms target.
+- The model card's false-alarm estimate ("4-5 per true positive") now
+  matches the test split: about 0.8 for cost overrun and 0.4 for schedule
+  delay.
+
 ### Removed
 - Internal planning files: the project scope charter, the development
   roadmap, the interview notes, and the pre-implementation UI mockup and

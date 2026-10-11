@@ -110,10 +110,12 @@ Performance:       cost_overrun: no metric degraded (ROC-AUC 0.898 -> 0.950, an
                    Brier 0.059 -> 0.145 -- all three degraded beyond threshold.
                    final_cost: MAE $1.96M -> $1.61M, improved.
 
-Operational:       cost_overrun (RandomForest) p50=14.9ms / p95=20.8ms
-                   schedule_delay (LightGBM) p50=4.6ms / p95=5.6ms
-                   final_cost (formula) p50=0.02ms / p95=0.03ms
-                   All comfortably under the 500ms p95 target.
+Operational:       cost_overrun (RandomForest) p50=30.1ms / p95=37.2ms
+                   schedule_delay (LightGBM) p50=9.5ms / p95=11.3ms
+                   final_cost (formula) p50=0.04ms / p95=0.06ms
+                   All comfortably under the 500ms p95 target. Wall-clock
+                   figures from the committed monitoring_report.json; they
+                   vary with the machine that runs `make monitor`.
 
 Triggers fired:    psi_above_critical_threshold, performance_drop_above_threshold,
                    calibration_deterioration -- all three point at schedule_delay.

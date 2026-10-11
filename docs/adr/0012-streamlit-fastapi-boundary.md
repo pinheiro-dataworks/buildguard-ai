@@ -88,7 +88,7 @@ duplicate-`approved_budget`-column merge in the portfolio batch-scorer.
   validation for speed** -- rejected: a second feature/prediction
   implementation is exactly the train/serve skew this design avoids, and
   the validation overhead is negligible next to model inference time
-  (measured p95 latencies: 20.8ms/5.6ms/0.03ms, ADR-0011).
+  (measured p95 latencies: 37.2ms/11.3ms/0.06ms, ADR-0011).
 - **Calling the HTTP API from Streamlit instead of in-process** --
   rejected: an HTTP round trip to a co-located process adds latency and a
   second process to keep alive, for zero benefit in a single-host,
