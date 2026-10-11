@@ -4,14 +4,14 @@
 
 ## Context
 
-Section 11 requires that a model predicting risk at month `t` may only use
-information available on or before `t`, and requires an automated test
-proving it. Section 28 requires the *same* feature logic for training and
-inference (no train/serve skew). `src/buildguard/features/pipeline.py`
-(built in Session F, alongside the temporal split and labels) is the one
-function meeting both requirements at once -- this ADR was not written at
-the time and is added retroactively now, during Session I, to complete the
-minimum ADR set (Section 39).
+A model predicting risk at month `t` may only use information available
+on or before `t`, and that has to be proven by an automated test rather
+than asserted. Training and inference also need the *same* feature logic,
+or the model is scored on features computed differently from the ones it
+learned from (train/serve skew). `src/buildguard/features/pipeline.py`,
+built alongside the temporal split and labels, is the one function meeting
+both requirements. This ADR was written after the pipeline itself, to
+record decisions that were already in the code.
 
 ## Decision
 
@@ -37,7 +37,7 @@ that row's `snapshot_date` **is** its prediction timestamp:
   earlier prediction point. Excluding them outright (rather than including
   them and hoping no one trains on the leaky columns) was chosen over the
   alternative of giving those tables real per-row dates, which would be a
-  schema change out of scope for this phase.
+  schema change out of scope for this version.
 - **Labels are never joined into this table.** `buildguard.data.labels` is
   a separate module that nothing under `features/` imports from -- this
   makes "a target-derived value ends up in the features" structurally
@@ -64,8 +64,8 @@ in [`docs/LEAKAGE_POLICY.md`](../LEAKAGE_POLICY.md) and
   make the leakage guarantee a property of the join itself rather than of
   correctly writing a comparison in a loop body every time.
 - **Include Work Packages/Suppliers with a caveat comment** -- rejected
-  outright per Section 56 ("never ... use future data in features"); a
-  comment is not a control, and the leakage would be real regardless of
+  outright: future data must never reach a feature, and a comment is not a
+  control, and the leakage would be real regardless of
   how well it was documented.
 
 ## Consequences

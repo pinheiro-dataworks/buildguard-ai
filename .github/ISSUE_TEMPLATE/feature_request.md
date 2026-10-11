@@ -12,5 +12,6 @@ What business or engineering need is unmet today?
 
 **Alternatives considered**
 
-**Roadmap alignment**
-Which phase/section of `BUILDGUARD_AI_PROJECT_SCOPE.md` does this belong to?
+**Scope check**
+Which requirement in `docs/REQUIREMENTS.md` does this serve, or which one
+would it change?

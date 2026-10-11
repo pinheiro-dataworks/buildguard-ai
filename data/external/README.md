@@ -25,8 +25,8 @@ dataset for the shipped models.
   distributions, cost variance magnitudes, and schedule narrative patterns
   when designing the synthetic generator. It is **not** row-level project
   time-series data (no `PV`/`EV`/`AC` snapshots), so it cannot and does not
-  drive the BuildGuard data model directly (see Section 8.4 of
-  `BUILDGUARD_AI_PROJECT_SCOPE.md`).
+  drive the BuildGuard data model directly (see
+  [`docs/DATA_DICTIONARY.md`](../../docs/DATA_DICTIONARY.md)).
 - **License status:** UK Government data of this kind is typically published
   under the Open Government Licence v3.0. This has **not** been independently
   re-verified for these specific files, so they are kept local-only and

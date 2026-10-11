@@ -20,7 +20,7 @@ context the model does not have — never a verdict.
 Triage-level risk signals for a construction portfolio: which projects
 are most likely to overrun their budget, miss their schedule, and what
 their expected final cost is, with the model's own drivers surfaced for
-each prediction (SHAP, Section 20). Intended for a human reviewer
+each prediction (SHAP). Intended for a human reviewer
 (project controls, PM office) deciding what to investigate first — not
 for automated action.
 
@@ -28,7 +28,7 @@ for automated action.
 
 - **Not validated on real-world data.** Every metric on this card comes
   from the synthetic portfolio's held-out test split (see
-  [`LIMITATIONS.md`](LIMITATIONS.md) Section 1). Do not treat these
+  [`LIMITATIONS.md`](LIMITATIONS.md#1-synthetic-data-only--no-real-world-validation)). Do not treat these
   numbers as evidence of real-deployment performance without separate
   validation.
 - **Not an autonomous decision-maker.** No prediction here should trigger
@@ -43,7 +43,7 @@ for automated action.
 
 Shared input schema (`src/buildguard/models/preprocessing.py`), built by
 `buildguard.features.pipeline.build_feature_table` — the same function
-used for training, batch scoring, and the live API (Section 28):
+used for training, batch scoring, and the live API:
 
 - **Numeric (20):** `gross_floor_area_m2`, `number_of_towers`,
   `number_of_units`, `cpi`, `spi`, `cost_variance`, `schedule_variance`,
@@ -61,7 +61,7 @@ Anti-leakage guarantees: [`LEAKAGE_POLICY.md`](LEAKAGE_POLICY.md).
 ## Models, metrics, and calibration
 
 Test-split results below are the **one** final evaluation this project
-allows itself per Section 12/[ADR-0003](adr/0003-temporal-validation.md)
+allows itself ([ADR-0003](adr/0003-temporal-validation.md))
 — measured on 752 rows / 41 projects never touched before that run.
 
 ### `cost_overrun` — Random Forest classifier
@@ -114,7 +114,7 @@ false alarms for every true positive investigated.
 Full detail: [`MONITORING.md`](MONITORING.md). Summary: `make monitor`
 computes data quality, feature/prediction drift (PSI/KS/Wasserstein), and
 performance-vs-baseline comparisons against the real portfolio and
-champions. Four of Section 24's six retraining triggers are computed for
+champions. Four of the six retraining triggers are computed for
 real (PSI above threshold, performance drop, calibration deterioration,
 schema changes); two are calendar/volume-driven policy, not computed by
 a single run. **Retraining is never automatic** — every trigger requires
@@ -129,7 +129,7 @@ Approve → Release; `scripts/monitor.py` has no code path that calls
   uncertainty interval.
 - A human must review any prediction flagged out-of-distribution, near
   the decision threshold, or in a subgroup `reports/error_analysis/`
-  identifies as weak (Section 47).
+  identifies as weak.
 - A fired retraining trigger requires human investigation before any
   retraining action — see Drift policy above.
 - The mandatory causality disclaimer ("Feature attribution explains the

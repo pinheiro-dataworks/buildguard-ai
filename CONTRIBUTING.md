@@ -1,16 +1,15 @@
 # Contributing to BuildGuard AI
 
-This is primarily a solo portfolio project, developed openly and following a
-disciplined workflow so the Git history itself is part of the evidence of
-engineering practice. External contributions are welcome under the same
-rules the maintainer follows.
+BuildGuard AI is maintained by a single developer and developed in the
+open. External contributions are welcome under the same rules the
+maintainer follows.
 
 ## Workflow
 
 1. **Open an issue first** for anything beyond a trivial fix — describe the
    problem, not just the solution.
-2. **Branch naming:** `feature/<name>`, `fix/<name>`, `docs/<name>`,
-   `refactor/<name>`, `test/<name>`.
+2. **Branch naming:** `feat/<name>`, `fix/<name>`, `docs/<name>`, `test/<name>`,
+   `ci/<name>`, `chore/<name>`, `refactor/<name>`.
 3. **Commits:** English only, [Conventional Commits](https://www.conventionalcommits.org/)
    style (`feat:`, `fix:`, `test:`, `docs:`, `refactor:`, `ci:`, `perf:`,
    `security:`, `chore:`). Avoid vague messages (`update`, `fix`, `final`).
@@ -38,4 +37,5 @@ make setup
 make test
 ```
 
-See [`README.md`](README.md) Section 13 for the full reproduction path.
+See [How to Run](README.md#13-how-to-run) in the README for the full
+reproduction path.

@@ -4,9 +4,10 @@
 
 ## Context
 
-Section 19 requires at least one valid uncertainty-quantification method
-for the final-cost forecast (conformal prediction, quantile regression, or
-bootstrap interval), with empirically evaluated coverage. This task's
+A final-cost forecast without an interval invites false precision. It
+needs at least one valid uncertainty-quantification method (conformal
+prediction, quantile regression, or a bootstrap interval) whose coverage
+is checked empirically, not assumed. This task's
 particular constraint (ADR-0006): the `final_cost` champion is
 `DeterministicEacBaseline` -- a zero-parameter closed-form formula
 (`BAC / CPI`), not a fitted regressor. Quantile regression is not directly
@@ -21,7 +22,7 @@ shipping uncertainty bounds for a forecast nobody is actually using.
 because it is model-agnostic: it only needs a stream of `(actual, point
 prediction)` pairs, regardless of whether those predictions came from a
 formula or a fitted model. On the **calibration** split (never train,
-never test -- Section 12):
+never test):
 
 1. Compute absolute residuals `|actual - predicted|` for every calibration
    row.
@@ -55,8 +56,8 @@ data the quantile was never fit on).
   around a point forecast nobody is deploying (the champion is the EAC
   formula, not a fitted regressor) -- exactly the "re-derive a worse
   version of the EAC formula under a different name" trap flagged in
-  ADR-0006. Worth reconsidering only if a future session's `final_cost`
-  champion becomes a real fitted model.
+  ADR-0006. Worth reconsidering only if the `final_cost` champion
+  becomes a real fitted model.
 - **Bootstrap interval** (resample the calibration set, refit, take the
   spread of predictions) -- doesn't apply cleanly here either:
   `DeterministicEacBaseline` has no fitting step to bootstrap over (it's a
@@ -68,16 +69,15 @@ data the quantile was never fit on).
   quantile regression) -- a legitimate refinement if residuals turn out
   to be skewed (a project running over budget arguably has more room to
   overshoot than undershoot). Not attempted here to keep the first
-  uncertainty pass simple and auditable; worth checking once slice
-  evaluation (a later phase) shows whether the residual distribution is
+  uncertainty pass simple and auditable; worth checking against the slice
+  evaluation (ADR-0010), which shows whether the residual distribution is
   actually symmetric across project types/sizes.
 
 ## Consequences
 
-- Every `final_cost` prediction the UI (Phase 8) shows must be
-  accompanied by this interval, in the exact style Section 19's own
-  worked example uses: "Expected Final Cost: $X / 80% Prediction
-  Interval: $X - quantile to $X + quantile" -- never a bare point number.
+- Every `final_cost` prediction the UI shows must be accompanied by this
+  interval: "Expected Final Cost: $X / 80% Prediction Interval: $X -
+  quantile to $X + quantile" -- never a bare point number.
 - The interval width ($6.17M) is wide relative to typical project budgets
   in the synthetic portfolio -- this is an honest reflection of how much
   residual spread the EAC formula leaves even after conditioning on
@@ -87,5 +87,5 @@ data the quantile was never fit on).
   genuinely held-out coverage check (`tests/unit/test_uncertainty.py`'s
   0.812-vs-0.80 result) uses synthetic data specifically constructed for
   that test, not this task's real calibration split. True held-out
-  coverage on real data is confirmed only at the one final test
-  evaluation, a later phase.
+  coverage is confirmed only at the one final test evaluation (ADR-0010:
+  0.899 against the 0.80 target).

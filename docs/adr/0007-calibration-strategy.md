@@ -4,22 +4,22 @@
 
 ## Context
 
-Section 16 requires comparing raw vs. Platt/sigmoid vs. isotonic
-calibration on data separate from the final test set, and requires
-answering: "when BuildGuard says 70% risk, is that probability
-approximately trustworthy?" A tree-ensemble classifier's raw
+The risk scores are shown to people as probabilities, so they have to
+answer one question honestly: "when BuildGuard says 70% risk, is that
+probability approximately trustworthy?" That means comparing raw vs.
+Platt/sigmoid vs. isotonic calibration on data separate from the final
+test set. A tree-ensemble classifier's raw
 `predict_proba` output is a score, not a guaranteed-calibrated
 probability -- Random Forest and LightGBM are both well known to produce
 systematically over- or under-confident probabilities depending on
-depth/leaf-size settings, which is exactly what Section 16 exists to catch
-and correct.
+depth/leaf-size settings, which is exactly what calibration exists to
+catch and correct.
 
 ## Decision
 
 `src/buildguard/models/calibration.py: evaluate_calibration_methods()`
 fits both calibration methods directly on `(raw_probability, label)`
-pairs from the **calibration** split (never train, never test -- Section
-12):
+pairs from the **calibration** split (never train, never test):
 
 - **Sigmoid (Platt scaling)**, implemented as a one-feature
   `LogisticRegression` fit on the raw probability -- the textbook
@@ -61,18 +61,17 @@ in `models/*_champion.joblib`.
   `final_cost` -- ADR-0006), the calibration method had to work uniformly
   for baselines and real sklearn pipelines alike. This is the second time
   in this project a "must be a proper sklearn estimator" assumption broke
-  on a custom baseline class (the first was MLflow's `sklearn.log_model`,
-  Session H) -- calibrating directly on the probability output sidesteps
+  on a custom baseline class (the first was MLflow's `sklearn.log_model`
+  during model logging) -- calibrating directly on the probability output sidesteps
   the whole class of problem rather than patching around it again.
-- **Only report Brier score, skip the calibration curve** -- rejected;
-  Section 16 explicitly asks for the calibration curve, and a single
-  scalar can hide *where* in probability space a model is miscalibrated
+- **Only report Brier score, skip the calibration curve** -- rejected:
+  a single scalar can hide *where* in probability space a model is miscalibrated
   (e.g. well-calibrated at low risk, overconfident at high risk).
   `CalibrationCurve.mean_predicted_value`/`fraction_of_positives` (10 bins
   by default) are computed and stored for exactly this reason, even though
   this ADR only tabulates the summary Brier scores.
 - **Expected Calibration Error (ECE) instead of / alongside Brier score**
-  -- Section 16 marks ECE optional ("(optionally) ECE"). Not implemented:
+  -- optional, and not implemented:
   Brier score alone was sufficient to make the sigmoid-vs-isotonic
   decision here, and adding a second metric with no disagreement to
   resolve would not have changed the outcome.
@@ -86,10 +85,9 @@ in `models/*_champion.joblib`.
   these artifacts must only ever call `.predict_proba(features)`, exactly
   as before; the wrapper is transparent to callers.
 - Like ADR-0006's results, Brier scores here are measured in-sample on the
-  same calibration-split rows the mapping was fit on (Section 12's
-  CALIBRATION block is exactly where this fitting happens) -- genuinely
-  held-out calibration quality is confirmed only at the one final test
-  evaluation, a later phase.
+  same calibration-split rows the mapping was fit on (the calibration split
+  exists for exactly this fitting) -- genuinely held-out calibration
+  quality is confirmed only at the one final test evaluation (ADR-0010).
 - Any future model retrained for these tasks must re-run this comparison
   -- calibration quality is a property of a specific fitted model, not
   something that transfers across retraining.

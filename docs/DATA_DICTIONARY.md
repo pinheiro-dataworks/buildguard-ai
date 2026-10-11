@@ -1,7 +1,6 @@
 # Data Dictionary
 
-Describes the six core tables of the BuildGuard AI data model (Section 8.4
-of `BUILDGUARD_AI_PROJECT_SCOPE.md`). Every column and constraint here is
+Describes the six core tables of the BuildGuard AI data model. Every column and constraint here is
 enforced in code by `src/buildguard/data/contracts.py`
 (`buildguard.data.contracts`) -- if this document and the code ever
 disagree, the code (and its tests) is authoritative; file an issue.
@@ -34,7 +33,7 @@ No `actual_completion_date` or `final_cost` column exists -- both are
 ## Project Snapshots
 
 One row per project per month observed. `(project_id, snapshot_date)` is
-unique. This is the EVM time series (Section 9) that everything else
+unique. This is the EVM time series that everything else
 (features, labels, models) is built on.
 
 | Column | Type | Constraint | Meaning |
@@ -59,8 +58,9 @@ dataset's reference date and has no resolved outcome label yet.
 `actual_cost` is nominal, while `approved_budget` (Projects) and
 `planned_cost` are expressed in original-approval terms -- comparing them
 directly conflates inflation with execution performance. See
-[ADR-0004](adr/0004-synthetic-data-design.md) and Section 10 (inflation
-normalization) before using either as a raw model target.
+[ADR-0004](adr/0004-synthetic-data-design.md) and the inflation
+normalization section of [`ARCHITECTURE.md`](ARCHITECTURE.md#5-inflation-normalization-methodology)
+before using either as a raw model target.
 
 ## Work Packages
 
@@ -114,7 +114,7 @@ supplier (`supplier_id`) can appear against multiple projects, by design
 
 One row per `(reference_month, index_name)` -- a demo, illustrative
 construction-cost inflation index (never a real published index; see
-[`docs/DATA_PRIVACY.md`](DATA_PRIVACY.md) Section 6).
+[`docs/DATA_PRIVACY.md`](DATA_PRIVACY.md#6-public-economic-indicators)).
 
 | Column | Type | Constraint | Meaning |
 |---|---|---|---|

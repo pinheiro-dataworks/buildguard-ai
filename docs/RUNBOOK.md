@@ -1,9 +1,8 @@
 # Runbook
 
 Operational procedures for running, deploying, and maintaining BuildGuard
-AI. Not a description of a live deployment — see
-[`BUILDGUARD_AI_COMMIT_PLAN.md`](../BUILDGUARD_AI_COMMIT_PLAN.md) for
-current deployment status (Session O, not yet done).
+AI. The public app is live at
+<https://buildguard-ai-renands.streamlit.app/>.
 
 ## 1. Local setup and full pipeline
 
@@ -25,8 +24,8 @@ silently.
 
 **`make calibrate` is not idempotent** — running it twice in a row against
 an already-calibrated champion artifact silently double-calibrates and
-produces wrong comparison numbers (discovered and documented in
-`scripts/calibrate.py`'s own docstring while building Session K). Always
+produces wrong comparison numbers (discovered while validating the monitoring
+pipeline, and documented in `scripts/calibrate.py`'s own docstring). Always
 run `make train` immediately before `make calibrate`, never `make
 calibrate` alone a second time.
 
@@ -42,18 +41,18 @@ Both require `make train && make calibrate` to have already produced
 otherwise every prediction endpoint/page returns a clean 503 /
 `FileNotFoundError` rather than crashing (`buildguard.api.dependencies.get_service_state`).
 
-## 3. Deployment (Streamlit Community Cloud — Section 31)
+## 3. Deployment (Streamlit Community Cloud)
 
-Live at <https://buildguard-ai-renands.streamlit.app/> (deployed Session O).
+Live at <https://buildguard-ai-renands.streamlit.app/>.
 Deploying itself is a manual step — Streamlit Community Cloud requires a
-GitHub-authenticated dashboard session, which nothing running in this
-repo's automation has access to.
+GitHub-authenticated dashboard session, which the CI pipeline has no
+access to.
 
 **Why this works with no build step:** Streamlit Community Cloud clones
 the repo and runs `app/Home.py` directly — it does not run `make train`/
 `make calibrate` first. `models/*.joblib` and
 `reports/experiments/calibration_summary.json` are therefore committed
-to the repo (deliberately, ~6MB total, Section 49's <100MB target) —
+to the repo (deliberately, ~6MB total, well under the 100MB artifact budget) —
 without them, every prediction page would 503 on first load. A locked
 `requirements.txt` (`uv export --format requirements.txt --no-dev
 --no-hashes --no-emit-project`) is committed alongside `pyproject.toml`/
@@ -69,12 +68,13 @@ collapsing those groups into `dependencies` directly (every one of them
 is genuinely required to run `app/Home.py` now that the API/app both
 exist, so the "optional per phase" split no longer reflected reality)
 and by having `Home.py` add `src/` to `sys.path` explicitly rather than
-assuming `buildguard` itself ends up importable. See Section 6 below.
+assuming `buildguard` itself ends up importable. See
+[Known troubleshooting](#6-known-troubleshooting) below.
 
 **Steps:**
 
 1. Push `main` with `models/*.joblib` and `requirements.txt` present
-   (already true as of this commit).
+   (both are committed).
 2. Go to [share.streamlit.io](https://share.streamlit.io), sign in with
    the GitHub account that owns this repo.
 3. "New app" → repository `pinheiro-dataworks/buildguard-ai`, branch
@@ -88,12 +88,12 @@ assuming `buildguard` itself ends up importable. See Section 6 below.
 6. Confirm the Model Health and Model Performance pages render real
    numbers (not a 503/`FileNotFoundError`) before sharing the link.
 7. Never upgrade to a paid tier or point at an external database/model
-   endpoint — the zero-cost path (Section 31,
-   [ADR-0013](adr/0013-zero-cost-deployment.md)) is mandatory for the
+   endpoint — the zero-cost path
+   ([ADR-0013](adr/0013-zero-cost-deployment.md)) is mandatory for the
    public demo.
 
 **Smoke test after deploying:** re-run the same Playwright check used to
-verify the app locally in Session L, pointed at the live URL instead of
+verify the app locally (ADR-0012), pointed at the live URL instead of
 `localhost:8501`, checking each page loads and the console has no errors.
 Run against the live URL above — passed: all six pages render, the
 sidebar logo/footer fix holds in production, and hovering the logo shows
@@ -107,7 +107,8 @@ platform wrapper, not this app, and is expected for an anonymous visit.
 ## 4. Responding to a monitoring alert
 
 `make monitor`'s `retraining_triggers` (see [`MONITORING.md`](MONITORING.md))
-can fire without meaning "retrain now." Follow Section 24's sequence:
+can fire without meaning "retrain now." Follow the retraining policy's
+sequence:
 
 1. **Detect** — a trigger fires in `reports/monitoring/monitoring_report.json`.
 2. **Investigate** — read the relevant ADR-0011 context first: is this a
