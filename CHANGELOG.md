@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- Docker build failed while training: LightGBM needs the OpenMP runtime
+  (`libgomp1`), which the slim base image doesn't ship. The image now
+  installs it; build, health check, and predictions verified locally.
+
 ## [1.0.2] - 2026-10-11
 
 Dependency security fixes. No change to data, features, models, or

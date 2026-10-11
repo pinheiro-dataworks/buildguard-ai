@@ -438,11 +438,16 @@ and thirteen ADRs under [`adr/`](adr/).
 with the committed champion artifacts, at
 <https://buildguard-ai-renands.streamlit.app/>
 ([ADR-0013](adr/0013-zero-cost-deployment.md); deployment steps and the
-live smoke test are in [`RUNBOOK.md`](RUNBOOK.md#3-deployment-streamlit-community-cloud)).
+live smoke test are in [`RUNBOOK.md`](RUNBOOK.md#4-deployment-streamlit-community-cloud)).
 
 **Container image:** the `Dockerfile` (`make docker-build`,
 `make docker-run`) installs from `uv.lock`, trains and calibrates the
 champions inside the build, and runs the Streamlit app as a non-root user
 with a health check. It is an optional, portable path, not part of the
-public deployment, and has not yet been validated with a real
-`docker build`.
+public deployment. Validated locally: the build retrains the champions
+with the same calibration-split scores as the committed reports (AUC
+0.8977 / 0.9739, MAE $1.96M), the container reports `healthy`, runs as
+the non-root `buildguard` user, and serves predictions through both the
+API and the app's in-process path. The image is about 3.2 GB, mostly the
+ML dependency stack. Inside the image `data_version` reads `unknown`,
+because `.git` is excluded from the build context.

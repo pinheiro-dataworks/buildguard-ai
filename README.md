@@ -306,8 +306,8 @@ items: synthetic data only, no real-world validation yet;
   features without leakage.
 - Add a request log to the API so operational monitoring reports real
   request volume and error rate.
-- Plot drifted distributions on the Model Health page, and validate the
-  Docker image in CI.
+- Plot drifted distributions on the Model Health page, and build the
+  Docker image in CI so a missing system library is caught on every PR.
 
 ---
 
