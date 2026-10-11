@@ -1,17 +1,16 @@
-"""Explainability for the tree-based classifiers (Section 20).
+"""Explainability for the tree-based classifiers.
 
 SHAP `TreeExplainer` computes attributions on the underlying model's raw
 (pre-calibration) score -- `cost_overrun`'s Random Forest,
-`schedule_delay`'s LightGBM. The calibration mapping (Section 16,
-`buildguard.models.calibration.CalibratedModel`) is a monotonic 1-D
+`schedule_delay`'s LightGBM. The calibration mapping
+(`buildguard.models.calibration.CalibratedModel`) is a monotonic 1-D
 transform of that score, so it changes the probability *scale* but never
 *which* features drove the prediction -- explaining the pre-calibration
 score is both correct and simpler than trying to differentiate through the
 calibrator.
 
 Global explanations report **both** mean absolute SHAP value and
-permutation importance (Section 20 lists them as two separate outputs, not
-one) -- deliberately, since they can disagree (most often under correlated
+permutation importance -- deliberately, since they can disagree (most often under correlated
 features) and reporting only one would hide that disagreement. They are
 computed over different feature spaces by construction: SHAP explains the
 model's *encoded* inputs (after the pipeline's one-hot expansion of
@@ -23,7 +22,7 @@ preprocessing runs) -- both are returned, not forced into a shared shape.
 formula, not a fitted model -- nothing here applies to it; the formula
 itself (`BAC / CPI`) already is the explanation.
 
-**Mandatory disclaimer (Section 20)**, exported as `CAUSALITY_DISCLAIMER`
+**Mandatory disclaimer**, exported as `CAUSALITY_DISCLAIMER`
 so every explanation-bearing UI surface displays the identical wording:
 "Feature attribution explains the model prediction; it does not establish
 causality."

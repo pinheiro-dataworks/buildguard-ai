@@ -1,4 +1,4 @@
-"""Model Health page (Section 23/30) -- renders the real `make monitor` output."""
+"""Model Health page -- renders the real `make monitor` output."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ def render() -> None:
 
     st.caption(f"From the last `make monitor` run -- git SHA `{report['git_sha']}`.")
 
-    st.subheader("Retraining triggers (Section 24)")
+    st.subheader("Retraining triggers")
     st.markdown(
         '<div class="bg-disclaimer">Never auto-retrained: this page only reports what the '
         "last monitoring run flagged. Every trigger requires a human to Investigate before "
@@ -87,6 +87,4 @@ def render() -> None:
         for task, s in report["operational"].items()
     ]
     st.dataframe(pd.DataFrame(op_rows), hide_index=True, use_container_width=True)
-    st.caption(
-        "Target: p95 < 500ms on local CPU (Section 49). All three champions are well under it."
-    )
+    st.caption("Target: p95 < 500ms on local CPU. All three champions are well under it.")

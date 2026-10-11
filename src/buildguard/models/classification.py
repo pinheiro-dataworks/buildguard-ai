@@ -1,25 +1,23 @@
-"""Candidate classification models (Section 14) for `cost_overrun` and
+"""Candidate classification models for `cost_overrun` and
 `schedule_delay` -- the same binary-classification machinery serves both
-tasks (Section 6.1/6.2); only the label column supplied to `fit` differs.
+tasks; only the label column supplied to `fit` differs.
 
 Two advanced families are compared here against the mandatory baselines
-(Section 13, `buildguard.models.baselines`): `RandomForestClassifier` and
-LightGBM. Deliberately not also XGBoost/CatBoost -- Section 14 lists them
-as an either/or gradient-boosted-tree option, and adding a second one
-alongside LightGBM would pad the dependency stack for no comparative
-benefit a reviewer could act on (Section 61).
+(`buildguard.models.baselines`): `RandomForestClassifier` and LightGBM.
+Deliberately not also XGBoost/CatBoost -- they fill the same
+gradient-boosted-tree slot as LightGBM, and adding a second one would pad
+the dependency stack without a comparison anyone could act on.
 
-Hyperparameter search uses Optuna (Section 15: "Randomized Search / Optuna
-/ Bayesian optimization only -- avoid unjustified exhaustive grids"),
-scored with `GroupKFold` on `project_id` (Section 12's cross-validation
-policy: "Group K-Fold -- multiple rows per project, prevents project
-leakage across folds"). Every snapshot row of a project carries that
-project's single final outcome label, so an ungrouped split would let
+Hyperparameter search uses Optuna (a sampled search, not an exhaustive
+grid), scored with `GroupKFold` on `project_id` because there are multiple
+rows per project and a plain K-fold would leak a project across folds.
+Every snapshot row of a project carries that project's single final
+outcome label, so an ungrouped split would let
 near-duplicate rows of the same project sit on both sides of a fold.
 
 Tuning and fitting here only ever touch the **train** split. Selecting
 among tuned candidates happens on the **calibration** split
-(`scripts/train.py`) -- never on test (Section 12).
+(`scripts/train.py`) -- never on test.
 """
 
 from __future__ import annotations

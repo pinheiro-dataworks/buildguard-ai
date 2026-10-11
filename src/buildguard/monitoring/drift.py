@@ -1,4 +1,4 @@
-"""Data and prediction drift detection (Section 23).
+"""Data and prediction drift detection.
 
 Method chosen per variable type, not one-size-fits-all: **PSI** (Population
 Stability Index) applies to both numeric and categorical columns alike (it

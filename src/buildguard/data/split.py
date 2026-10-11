@@ -1,16 +1,16 @@
-"""Chronological, project-grouped train/calibration/test split (Section 12).
+"""Chronological, project-grouped train/calibration/test split.
 
 Splits at the **project** level, never at the snapshot-row level: every
 snapshot, change order, work package, and supplier row for a given project
 goes to exactly one of train/calibration/test, so no project's history can
 "contaminate" more than one split the way a naive random row split would
-(Section 12's `GroupKFold`-style requirement -- see
+(the same guarantee `GroupKFold` gives -- see
 `docs/adr/0003-temporal-validation.md` for why this method was chosen).
 
 Projects are ordered chronologically by `planned_start_date` (ties broken
 by `project_id` for determinism) -- oldest projects in TRAIN, newest in
 TEST, per `configs/base.yaml: split` fractions. The test split is meant to
-be used for exactly one final evaluation (Section 12): nothing in this
+be used for exactly one final evaluation: nothing in this
 module or its callers may use test-split data for feature selection,
 tuning, calibration, or threshold selection.
 """

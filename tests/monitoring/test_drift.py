@@ -1,4 +1,4 @@
-"""Unit tests for data/prediction drift detection (Section 23)."""
+"""Unit tests for data/prediction drift detection."""
 
 from __future__ import annotations
 

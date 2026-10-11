@@ -1,12 +1,12 @@
-"""FastAPI inference service (Section 28/29).
+"""FastAPI inference service.
 
 Single-project, single-prediction endpoints. Every endpoint rebuilds the
 requested project's feature row through the exact same
 `buildguard.features.pipeline.build_feature_table` function training uses
-(Section 28: train/serve consistency) -- there is no second, "online"
+(train/serve consistency) -- there is no second, "online"
 feature implementation to drift out of sync with the offline one.
 
-**Decision support, not an autonomous decision-maker** (Section 22/53):
+**Decision support, not an autonomous decision-maker:**
 every response is a probability/estimate plus its calibration and
 uncertainty context, never a bare "will overrun" verdict.
 """

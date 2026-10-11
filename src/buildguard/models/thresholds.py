@@ -1,11 +1,11 @@
-"""Business-cost threshold optimization (Section 17).
+"""Business-cost threshold optimization.
 
 Never defaults silently to 0.50: the decision threshold is chosen to
 minimize *expected business cost*, using the cost matrix in
 `configs/business.yaml` (a missed real overrun/delay -- a false negative --
 costs more than a false alarm -- a false positive -- and the threshold
 reflects that asymmetry, rather than treating both error types as equally
-bad). Optimized on the **calibration** split only, never test (Section 12).
+bad). Optimized on the **calibration** split only, never test.
 """
 
 from __future__ import annotations
@@ -92,8 +92,8 @@ def risk_band(proba: npt.NDArray[np.float64], threshold: float) -> npt.NDArray[n
     17) is always "low". The flagged zone above it is split at its own
     midpoint into "medium" and "high" -- there is no further business-cost
     justification for where exactly to split it, unlike `threshold` itself,
-    so this is a display/reporting convenience (Section 23's risk-band
-    proportions, the API response shape in Section 28), not a second
+    so this is a display/reporting convenience (risk-band proportions in
+    monitoring, the `risk_band` field in API responses), not a second
     business decision.
     """
     midpoint = threshold + (1.0 - threshold) / 2.0

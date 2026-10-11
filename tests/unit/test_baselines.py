@@ -1,10 +1,10 @@
-"""Unit tests for baseline models (Section 13).
+"""Unit tests for baseline models.
 
 Beyond "does it run," these tests check the actual point of a baseline
 suite: the informative baselines (logistic/linear regression, the CPI
 rule) must be demonstrably better than the uninformative ones (dummy,
 mean/median) on data with a real, known signal -- otherwise the "beat the
-baseline" bar (Section 13) would be trivially easy to clear for nothing.
+baseline" bar would be trivially easy to clear for nothing.
 """
 
 from __future__ import annotations

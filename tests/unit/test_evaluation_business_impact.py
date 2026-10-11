@@ -1,4 +1,4 @@
-"""Unit tests for the business impact scenario formula (Section 21)."""
+"""Unit tests for the business impact scenario formula."""
 
 from __future__ import annotations
 

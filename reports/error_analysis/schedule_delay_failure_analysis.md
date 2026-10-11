@@ -1,6 +1,6 @@
-# Failure Analysis -- schedule_delay (Section 47)
+# Failure Analysis -- schedule_delay
 
-Held-out **test split** (752 rows across 41 projects). Threshold=0.140 (Section 17, optimized on the calibration split, never on test).
+Held-out **test split** (752 rows across 41 projects). Threshold=0.140 (optimized for business cost on the calibration split, never on test).
 
 ## Where the model fails
 
@@ -82,4 +82,4 @@ Top 5 features by permutation importance (original feature space, ROC-AUC drop):
 - Any prediction within +-0.05 of the 0.140 threshold -- the model's decision there is close to a coin flip between the two sides of the boundary.
 - Any prediction flagged out-of-distribution above -- the model is extrapolating, not interpolating within data it was trained on.
 - Predictions for the subgroups listed under "Hardest subgroups" above, where the model's discriminative power is weakest even though the global metric looks strong.
-- False negatives specifically: at this threshold the model trades a higher false-positive rate for a lower false-negative rate (Section 17's cost matrix makes a missed overrun far more expensive than a false alarm) -- but the 28 false negatives above are the cases that slipped through anyway and deserve manual follow-up.
+- False negatives specifically: at this threshold the model trades a higher false-positive rate for a lower false-negative rate (the business cost matrix makes a missed overrun far more expensive than a false alarm) -- but the 28 false negatives above are the cases that slipped through anyway and deserve manual follow-up.

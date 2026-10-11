@@ -1,4 +1,4 @@
-"""Unit tests for the chronological, project-grouped split (Section 12)."""
+"""Unit tests for the chronological, project-grouped split."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Unit tests for the held-out calibration check (Section 18)."""
+"""Unit tests for the held-out calibration check."""
 
 from __future__ import annotations
 

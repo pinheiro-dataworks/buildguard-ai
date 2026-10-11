@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """Calibrate probabilities, optimize thresholds, and quantify uncertainty
-for the three champion models (Section 16/17/19).
+for the three champion models.
 
 Usage::
 
@@ -10,15 +10,14 @@ Usage::
 Loads the already-trained champions from ``models/*_champion.joblib``
 (produced by ``scripts/train.py`` / ``make train``) and regenerates the
 same deterministic portfolio (same seed -> identical features/split), then
-works on the **calibration** split only (Section 12 -- test stays
-untouched):
+works on the **calibration** split only (test stays untouched):
 
 - ``cost_overrun`` / ``schedule_delay``: compares raw vs. sigmoid vs.
-  isotonic calibration (Section 16), then optimizes a business-cost
-  threshold (Section 17) against `configs/business.yaml`'s cost matrix,
-  using the *calibrated* probabilities. The calibrated model (or the raw
+  isotonic calibration, then optimizes a business-cost threshold against
+  `configs/business.yaml`'s cost matrix, using the *calibrated*
+  probabilities. The calibrated model (or the raw
   champion, if calibration didn't help) replaces the saved artifact.
-- ``final_cost``: fits a split-conformal interval (Section 19) around the
+- ``final_cost``: fits a split-conformal interval around the
   champion's point predictions and checks its own coverage.
 
 Every task's outcome is logged as one MLflow run and appended to
@@ -28,7 +27,8 @@ Every task's outcome is logged as one MLflow run and appended to
 calibrated model replaces the saved champion artifact in place, running
 this script twice in a row calibrates an *already-calibrated* model a
 second time, which silently produces a different (and wrong) comparison.
-The intended flow (Section 24: Detect -> Investigate -> Validate data ->
+The intended flow (the retraining policy in `docs/MONITORING.md`: Detect ->
+Investigate -> Validate data ->
 Retrain candidate -> Compare vs. champion -> Approve -> Release) always
 regenerates a fresh, uncalibrated candidate via ``scripts/train.py``
 immediately before this script runs -- never calibrate the same artifact

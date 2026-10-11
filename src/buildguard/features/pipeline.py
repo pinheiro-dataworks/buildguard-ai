@@ -1,11 +1,11 @@
-"""Leakage-safe feature assembly (Section 11 / 28).
+"""Leakage-safe feature assembly.
 
 The single function that turns raw tables into the model-ready feature
-table, shared verbatim by training, batch scoring, and (Phase 8) the
+table, shared verbatim by training, batch scoring, and the
 FastAPI inference service, so features are never computed a second,
-slightly different way at serving time (Section 28).
+slightly different way at serving time.
 
-**Leakage rule (Section 11):** for the output row whose prediction
+**Leakage rule:** for the output row whose prediction
 timestamp is `snapshot_date`, every input to that row's features must have
 its own timestamp `<= snapshot_date`. Concretely:
 

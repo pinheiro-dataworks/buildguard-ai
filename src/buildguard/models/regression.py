@@ -1,14 +1,13 @@
-"""Candidate regression models (Section 14) for the final-cost task (Section 6.3).
+"""Candidate regression models for the final-cost task.
 
 Mirrors `classification.py`: `RandomForestRegressor` and LightGBM compared
-against the mandatory baselines (Section 13,
-`buildguard.models.baselines`), tuned with Optuna (Section 15) scored by
-grouped-CV MAE (`GroupKFold` on `project_id`, Section 12) so a project's
+against the mandatory baselines (`buildguard.models.baselines`), tuned with
+Optuna and scored by grouped-CV MAE (`GroupKFold` on `project_id`) so a project's
 own rows never appear on both sides of a fold.
 
 The regression target is `final_cost_real` (inflation-adjusted, currency
-units) -- not a normalized ratio. Section 6.3 allows either and says
-normalization "must be justified experimentally"; that comparison is left
+units) -- not a normalized ratio. A normalized target would need to be
+justified experimentally; that comparison is left
 as a documented follow-up (`docs/adr/0006-model-selection.md`) rather than
 explored unboundedly here.
 

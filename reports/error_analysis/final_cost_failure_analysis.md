@@ -1,4 +1,4 @@
-# Failure Analysis -- final_cost (Section 47)
+# Failure Analysis -- final_cost
 
 Held-out **test split** (752 rows across 41 projects). Champion is `DeterministicEacBaseline` (`BAC / CPI`, ADR-0006), so there is no SHAP/permutation explanation to attach here -- the formula itself is the explanation.
 

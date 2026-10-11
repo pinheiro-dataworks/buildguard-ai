@@ -1,4 +1,4 @@
-"""Unit tests for the leakage-safe feature pipeline (Section 11 / 28)."""
+"""Unit tests for the leakage-safe feature pipeline."""
 
 from __future__ import annotations
 

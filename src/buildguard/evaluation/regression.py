@@ -1,11 +1,11 @@
-"""Regression evaluation metrics (Section 18).
+"""Regression evaluation metrics.
 
 MAE/RMSE/R² are the standard error-magnitude battery; MAPE and SMAPE
 express that same error as a percentage (SMAPE is reported alongside MAPE
 because `final_cost_real` values are strictly positive but can still be
 small for short/cheap projects, where MAPE alone can blow up); the two
 business-terms figures (median dollar error, median percent error) are
-what Section 18 asks for so a non-technical reader can answer "how far off
+there so a non-technical reader can answer "how far off
 is this, in money, for a typical project" without decoding RMSE.
 """
 

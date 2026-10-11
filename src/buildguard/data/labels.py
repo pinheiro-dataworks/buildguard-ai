@@ -1,16 +1,16 @@
-"""Ground-truth label derivation (Section 6 / 11).
+"""Ground-truth label derivation.
 
-Labels are never stored as columns on Projects (Section 8.4 has none) --
+Labels are never stored as columns on Projects (the data model has none) --
 derived here, once, from the snapshot history, so training and any future
-batch-scoring path resolve outcomes identically (Section 28). Nothing under
+batch-scoring path resolve outcomes identically. Nothing under
 `src/buildguard/features/` may import from this module: a predictive
 feature computed from the same information used to build the label it's
-meant to predict is exactly the "target-derived feature" Section 11
-forbids.
+meant to predict is a target-derived feature -- the textbook form of
+leakage (`docs/LEAKAGE_POLICY.md`).
 
 **Label basis (resolves the open question from ADR-0004):** `cost_overrun`
 is computed against the **inflation-adjusted (real)** final cost, not the
-raw nominal `actual_cost`. Section 10 documents why: nominal cost includes
+raw nominal `actual_cost`, because nominal cost includes
 years of compounding demo inflation on top of a budget fixed in
 approval-time terms, which alone pushes ~79% of completed projects "over
 budget" in nominal terms versus ~47% once inflation is stripped out --

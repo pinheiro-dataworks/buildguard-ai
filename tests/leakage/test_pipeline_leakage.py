@@ -1,4 +1,4 @@
-"""Automated anti-leakage tests (Section 11 -- mandatory before v1.0.0).
+"""Automated anti-leakage tests.
 
 Rule under test: for a feature row whose prediction timestamp is
 `snapshot_date`, every input to that row's features must have its own
@@ -153,7 +153,7 @@ class TestTemporalTrendLeakage:
     """Trend/streak features must only reflect a project's own past."""
 
     def test_max_feature_timestamp_never_exceeds_prediction_timestamp(self) -> None:
-        """The literal Section 11 requirement: for every project, the
+        """The core anti-leakage requirement: for every project, the
         snapshot dates feeding a row's trend features never exceed that
         row's own snapshot_date -- checked by construction here, since
         `trailing_change`/`consecutive_decline_streak` only ever look at

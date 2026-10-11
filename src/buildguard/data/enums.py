@@ -1,4 +1,4 @@
-"""Controlled vocabularies for the core data model (Section 8.4).
+"""Controlled vocabularies for the core data model.
 
 Defined once here and reused by the data contracts, the synthetic
 generator, and the feature pipeline, so the set of valid categories can

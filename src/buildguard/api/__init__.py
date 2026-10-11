@@ -1,1 +1,1 @@
-"""FastAPI inference service (Section 28/29)."""
+"""FastAPI inference service."""

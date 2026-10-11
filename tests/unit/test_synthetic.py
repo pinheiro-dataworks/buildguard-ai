@@ -1,4 +1,4 @@
-"""Tests for the synthetic portfolio generator (Section 8.2 / 35)."""
+"""Tests for the synthetic portfolio generator."""
 
 from __future__ import annotations
 

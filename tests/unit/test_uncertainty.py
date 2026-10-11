@@ -1,4 +1,4 @@
-"""Unit tests for split-conformal prediction intervals (Section 19)."""
+"""Unit tests for split-conformal prediction intervals."""
 
 from __future__ import annotations
 

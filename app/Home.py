@@ -1,28 +1,26 @@
-"""Streamlit entry point (Section 30/33).
+"""Streamlit entry point.
 
-A custom sidebar router, not `st.navigation()`: `docs/design/UI_DESIGN_SPEC.md`
-requires an exact sidebar order (logo, then project name, then bordered
+A custom sidebar router, not `st.navigation()`: `docs/design/UI_DESIGN.md`
+defines an exact sidebar order (logo, then project name, then bordered
 rectangular nav buttons, then a version/GitHub footer). `st.navigation()`
 was tried first and rejected -- its sidebar nav widget always renders at
 a fixed position, regardless of where surrounding `st.sidebar` calls are
-placed in the script, so the logo/title could not be positioned above it
-as the spec requires. A plain `st.sidebar.button()` per page, styled via
-CSS and tracked in `st.session_state`, gives full control over both order
-and appearance.
+placed in the script, so the logo/title could not be positioned above
+it. A plain `st.sidebar.button()` per page, styled via CSS and tracked in
+`st.session_state`, gives full control over both order and appearance.
 
-Page content lives one file per page under `page_modules/` (not
-Section 33's suggested `pages/` -- that literal directory name triggers
+Page content lives one file per page under `page_modules/` (not the
+conventional `pages/` -- that literal directory name triggers
 Streamlit's legacy auto-discovery regardless of navigation approach,
 confirmed empirically: it produced a second, unstyled nav list stacked on
 top of this one). Each file exposes a single `render()` function.
 
 `src/` is added to `sys.path` explicitly (not relying on `buildguard`
 being pip-installed) because Streamlit Community Cloud has no build step
-of its own -- it can install from `requirements.txt`, `pyproject.toml`,
-or both depending on what it finds, and a `pyproject.toml`-only install
-(`pip install .`) only pulls this project's core dependencies, never the
-`ml`/`api`/`app` extras every page here actually needs. Never assume
-`buildguard` is importable "for free"; this makes it importable either way.
+of its own: depending on which dependency file it picks up, it may install
+from `requirements.txt`, which is exported with `--no-emit-project` and so
+pulls every dependency but never the `buildguard` package itself. This
+makes `buildguard` importable whichever install path the platform takes.
 """
 
 from __future__ import annotations

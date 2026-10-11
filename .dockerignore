@@ -17,7 +17,7 @@ build/
 .vscode/
 .idea/
 
-# Local-only / gitignored data (Section 32: no secrets, no local-only data)
+# Local-only / gitignored data: no secrets or local-only data in the image
 data/processed/
 data/external/
 mlruns/

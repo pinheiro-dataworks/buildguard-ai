@@ -1,4 +1,4 @@
-"""Scenario Simulator page (Section 30) -- what-if only, explicitly not causal."""
+"""Scenario Simulator page -- what-if only, explicitly not causal."""
 
 from __future__ import annotations
 

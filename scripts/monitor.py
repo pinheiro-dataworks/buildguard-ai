@@ -1,12 +1,13 @@
 #!/usr/bin/env python
-"""Data quality, drift, and performance monitoring (Section 23/24).
+"""Data quality, drift, and performance monitoring.
 
 Usage::
 
     uv run python scripts/monitor.py
     make monitor
 
-Everything Section 23 asks to be *implemented, not just documented*, run
+Every monitoring signal in `docs/MONITORING.md`, implemented rather than
+just documented, and run
 against the real generated portfolio and the real trained/calibrated
 champions -- never simulated drift on synthetic data invented just to make
 a demo look interesting:
@@ -27,17 +28,18 @@ a demo look interesting:
   comparing each task's **training-time calibration-split baseline**
   (`reports/experiments/training_summary.json` / `calibration_summary.json`)
   against its **genuinely held-out test-split result**
-  (`reports/experiments/test_set_metrics.json`, Session J) -- this is a
+  (`reports/experiments/test_set_metrics.json`) -- this is a
   real comparison of two different runs, not a trivial self-comparison.
 - **Operational monitoring**: real (not simulated) inference latency,
   timing repeated calls into each champion's own `predict`/`predict_proba`
-  -- there is no deployed API yet (Phase 8), so there is no live request
-  volume/error-rate to report yet; that half of this module activates once
-  the FastAPI service exists and starts appending to the same log shape.
-- **Retraining triggers** (Section 24): evaluates the triggers that can
+  -- the app predicts in-process and the API keeps no request log, so
+  there is no live request volume/error rate to report; that half of
+  `buildguard.monitoring.performance` is ready for a request log once one
+  exists.
+- **Retraining triggers**: evaluates the triggers that can
   actually be computed from a single run (PSI above threshold, performance
   drop, calibration deterioration, schema violations) against the signals
-  above. Two triggers Section 24 names -- new labeled-data volume and
+  above. Two policy triggers -- new labeled-data volume and
   scheduled quarterly evaluation -- are calendar/volume-driven policy, not
   something one script run can evaluate; they are documented, not computed
   (see `docs/MONITORING.md`). **Never auto-retrains** -- this script only
@@ -281,7 +283,7 @@ def _evaluate_retraining_triggers(
     feature_drift_results: list[DriftResult],
     performance: dict[str, Any],
 ) -> list[dict[str, Any]]:
-    """Section 24's computable triggers, evaluated -- never acted on -- against this run's signals."""
+    """Evaluate the computable retraining triggers against this run's signals (never act on them)."""
     triggers: list[dict[str, Any]] = []
 
     drifted_columns = [d.column for d in feature_drift_results if d.psi_severity == "significant"]
@@ -438,7 +440,7 @@ def main() -> None:
                 c["is_degraded"],
             )
 
-    logger.info("Measuring real local inference latency (no live API yet -- Phase 8)...")
+    logger.info("Measuring real local inference latency...")
     operational = _operational_monitoring(models_dir, features, outcomes, assignment, data_version)
     for task_name, summary in operational.items():
         logger.info(

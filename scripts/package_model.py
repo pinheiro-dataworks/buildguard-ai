@@ -1,16 +1,15 @@
 #!/usr/bin/env python
-"""Package trained/calibrated model artifacts for distribution (Section 25/33).
+"""Package trained/calibrated model artifacts for distribution.
 
 Usage::
 
     uv run python scripts/package_model.py
 
-Bundles `models/*.joblib` with a `MANIFEST.json` -- Section 25's exact
+Bundles `models/*.joblib` with a `MANIFEST.json` -- the model-version
 metadata fields (`model_name, semantic_version, training_date,
 data_version, git_sha, metrics, threshold, calibration_method`) per task
 -- into `dist/buildguard-models-v{version}.tar.gz`, suitable as a GitHub
-Release asset (Section 54: "packaged artifacts in-repo or as release
-assets when size permits"). Reads real numbers only, from
+Release asset. Reads real numbers only, from
 `reports/experiments/{training,calibration}_summary.json` and (if
 present) `test_set_metrics.json` -- never fabricates a metric that
 doesn't already exist on disk from a real `make train`/`calibrate`/
@@ -136,7 +135,7 @@ def main() -> None:
     logger.info("Packaged %s (%.1f MB)", archive_path, size_mb)
     if size_mb > 100:
         logger.warning(
-            "Package size %.1fMB exceeds Section 49's <100MB target -- "
+            "Package size %.1fMB exceeds the <100MB artifact target -- "
             "consider excluding a model or compressing further.",
             size_mb,
         )

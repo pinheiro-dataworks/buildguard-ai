@@ -1,4 +1,4 @@
-"""Unit tests for ground-truth label derivation (Section 6 / 11)."""
+"""Unit tests for ground-truth label derivation."""
 
 from __future__ import annotations
 

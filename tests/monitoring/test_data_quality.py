@@ -1,4 +1,4 @@
-"""Unit tests for data quality monitoring (Section 23)."""
+"""Unit tests for data quality monitoring."""
 
 from __future__ import annotations
 

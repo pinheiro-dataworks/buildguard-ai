@@ -1,4 +1,4 @@
-"""Inflation-adjusted cost normalization (Section 10).
+"""Inflation-adjusted cost normalization.
 
 Preserves the legacy GETEC separation of *nominal* cost growth (what was
 actually spent, in the currency units of each month) from *operational*
@@ -8,7 +8,7 @@ construction (see `docs/adr/0004-synthetic-data-design.md`); `approved_budget`
 and `planned_cost` are expressed in original-approval terms and need no
 adjustment.
 
-**Language rule (Section 10):** every output here is an *estimated*
+**Language rule:** every output here is an *estimated*
 inflation-adjusted figure, derived from one demo/illustrative index. Never
 describe it as an exact or causal decomposition of why a project's cost
 moved -- say "estimated inflation-adjusted variance", not "the inflation
@@ -75,7 +75,7 @@ def operational_variance(earned_value: pd.Series, real_actual_cost: pd.Series) -
 
     `operational_variance = EV - real_actual_cost`, i.e.
     `evm.cost_variance(earned_value, real_actual_cost)`. This is what
-    Section 10 calls both "real_cost_variance" and "operational_variance" --
+    the feature set exposes as both "real_cost_variance" and "operational_variance" --
     the same figure under two names emphasizing different readings: an
     accounting restatement (real terms) and a business one (performance net
     of market effects).

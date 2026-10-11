@@ -1,4 +1,4 @@
-"""Unit tests for temporal / lifecycle features (Section 8.2 / 18)."""
+"""Unit tests for temporal / lifecycle features."""
 
 from __future__ import annotations
 

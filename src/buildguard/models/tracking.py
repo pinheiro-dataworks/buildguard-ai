@@ -1,11 +1,10 @@
-"""Experiment tracking (Section 25) -- MLflow, zero-cost local/file-based.
+"""Experiment tracking -- MLflow, zero-cost local/file-based.
 
 Wraps MLflow's SQLite-backed local tracking
 (`configs/base.yaml: paths.mlflow_tracking_uri`) with BuildGuard-specific
 conventions: every run is tagged with its git SHA, so a run recorded today
-can always be traced back to the exact code that produced it (Section 25:
-"Track run_id, model, params, features, data version, metrics, plots,
-artifacts, duration, git SHA").
+can always be traced back to the exact code that produced it, alongside
+its parameters, features, data version, metrics, artifacts, and duration.
 
 SQLite, not MLflow's raw filesystem store: MLflow's filesystem tracking
 backend (`file:./mlruns`) is now in maintenance mode and raises unless

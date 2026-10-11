@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Train and select the three core BuildGuard AI models (Section 6/13/14/15/25).
+"""Train and select the three core BuildGuard AI models.
 
 Usage::
 
@@ -10,22 +10,21 @@ For each task -- cost-overrun classification, schedule-delay
 classification, final-cost regression:
 
 1. Assemble the task dataset: every feature-table row of a *resolved*
-   project (Section 11), joined to that project's single outcome label
+   project, joined to that project's single outcome label
    (`buildguard.data.labels`).
 2. Restrict to the **train** split; tune `RandomForest` and LightGBM via
    Optuna with `GroupKFold` (grouped by `project_id`) cross-validation
-   (Sections 12/14/15).
-3. Fit the mandatory baselines (Section 13) and the tuned candidates, all
+3. Fit the mandatory baselines and the tuned candidates, all
    on train only.
 4. Evaluate every candidate on the **calibration** split -- never on test
-   (Section 12) -- and select the champion by that metric.
-5. Log every candidate as one MLflow run (Section 25); save the champion
+   -- and select the champion by that metric.
+5. Log every candidate as one MLflow run; save the champion
    pipeline to ``models/``.
 6. Write a human-readable comparison to ``reports/experiments/``.
 
 The **test** split is never touched by this script -- it is reserved for
-exactly one final evaluation in a later phase (calibration/threshold
-optimization must happen first).
+exactly one final evaluation (``scripts/evaluate.py``), after
+calibration and threshold optimization.
 """
 
 from __future__ import annotations

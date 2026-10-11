@@ -1,4 +1,4 @@
-"""Unit tests for SHAP/permutation-importance explainability (Section 20)."""
+"""Unit tests for SHAP/permutation-importance explainability."""
 
 from __future__ import annotations
 

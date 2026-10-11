@@ -1,13 +1,13 @@
-"""Data quality monitoring (Section 23).
+"""Data quality monitoring.
 
-Tracks the five signals Section 23's Data Quality row names: missing
+Tracks five data-quality signals: missing
 values, schema violations, unexpected categories, range violations, and
 duplicate keys. Schema violations reuse the same `buildguard.data.contracts`
-validators already enforced at ingestion (Section 8.5) -- monitoring never
+validators already enforced at ingestion -- monitoring never
 re-implements what a contract already checks, it just reports when one
 fails on a later batch. Range violations reuse the same
 "outside the reference split's observed range" idea
-`scripts/evaluate.py`'s failure analysis introduced (Section 47); the two
+`scripts/evaluate.py`'s failure analysis introduced; the two
 are now expressed through the same functions so the range definition can
 never drift between the two callers.
 """
@@ -100,7 +100,7 @@ def run_data_quality_checks(
     numeric_ranges: dict[str, tuple[float, float]] | None = None,
     key_columns: list[str] | None = None,
 ) -> DataQualityReport:
-    """Run every applicable Section 23 data-quality check against `df`.
+    """Run every applicable data-quality check against `df`.
 
     Every argument is optional -- pass only the checks relevant to the
     table/batch being monitored (e.g. `key_columns` for a table with a

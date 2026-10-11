@@ -3,9 +3,9 @@
 Not part of `src/buildguard/` deliberately: this is script-level
 orchestration (regenerate the whole portfolio, build features, resolve
 labels, compute the split) specific to batch training/calibration runs --
-the FastAPI inference service (Phase 8) will build features for one
-project at a time from live data, not by regenerating the full synthetic
-portfolio, so this isn't reusable "serving" logic (Section 28's shared
+the FastAPI inference service builds features for one project at a time
+from the request payload, not by regenerating the full synthetic
+portfolio, so this isn't reusable "serving" logic (the shared train/serve
 module is `buildguard.features.pipeline`, which this calls into).
 """
 
