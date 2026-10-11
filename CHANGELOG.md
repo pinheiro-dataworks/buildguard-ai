@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-10
+
+Documentation cleanup. No change to data, features, models, or metrics:
+the documentation now stands on its own, and every number in it matches
+the committed reports.
+
 ### Added
 - `docs/REQUIREMENTS.md`: product scope, prediction tasks, data,
   modeling, serving, and non-functional requirements in one place, each
