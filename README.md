@@ -9,7 +9,7 @@ schedule-delay risk**, built on Earned Value Management analytics —
 leakage-safe features, calibrated probabilities, uncertainty, and
 explainability, deployed at zero recurring cost.
 
-> ✅ **v1.0.0 — released.** Live demo:
+> ✅ **v1.0.1 — released.** Live demo:
 > <https://buildguard-ai-renands.streamlit.app/>. See
 > [`CHANGELOG.md`](CHANGELOG.md) for the release history and
 > [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) for what this version
